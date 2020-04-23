@@ -12,7 +12,6 @@ dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver")
 }
 
-
 publishing {
     publications {
         create<MavenPublication>("matrix-spring-boot-rest-client") {

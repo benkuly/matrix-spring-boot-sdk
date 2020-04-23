@@ -12,7 +12,6 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
 }
 
-
 publishing {
     publications {
         create<MavenPublication>("matrix-spring-boot-bot") {

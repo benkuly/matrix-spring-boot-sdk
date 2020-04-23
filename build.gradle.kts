@@ -56,6 +56,11 @@ subprojects {
         enabled = true
     }
 
+    java {
+        withSourcesJar()
+        withJavadocJar()
+    }
+
     tasks.withType<BootJar> {
         enabled = false
     }
