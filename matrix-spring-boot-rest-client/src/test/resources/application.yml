@@ -1,0 +1,9 @@
+spring:
+  main:
+    web-application-type: NONE
+
+matrix:
+  homeServer:
+    hostname: localhost
+    secure: false
+  token: superSecretToken

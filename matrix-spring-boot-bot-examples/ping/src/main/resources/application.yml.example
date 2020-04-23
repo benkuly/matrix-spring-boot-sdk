@@ -1,0 +1,17 @@
+spring:
+  main:
+    web-application-type: NONE
+  datasource:
+    driver-class-name: org.hsqldb.jdbc.JDBCDriver
+    url: jdbc:hsqldb:file:db/db
+    username: matrixbot
+    password: matrixbot
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+matrix:
+  homeServer:
+    hostname: localhost
+    secure: false
+  token: superSecretToken
