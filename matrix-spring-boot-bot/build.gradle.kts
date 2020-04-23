@@ -20,6 +20,9 @@ publishing {
 
                 from(components["java"])
 
+                project.name = "matrix-spring-boot-bot"
+                project.description = "Spring Boot Starter for matrix-protocol bots."
+                project.uri("https://github.com/benkuly/matrix-spring-boot-sdk")
                 licenses {
                     license {
                         name.set("The Apache License, Version 2.0")
