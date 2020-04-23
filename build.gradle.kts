@@ -4,7 +4,6 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     base
-    `maven-publish`
     id("org.springframework.boot") version "2.2.6.RELEASE" apply false
     id("io.spring.dependency-management") version "1.0.8.RELEASE" apply false
     kotlin("jvm") version "1.3.71"
@@ -77,44 +76,5 @@ dependencies {
     // Make the root project archives configuration depend on every subproject
     subprojects.forEach {
         archives(it)
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("matrix-spring-boot-rest-client") {
-            pom {
-                artifactId = "matrix-spring-boot-rest-client"
-
-                from(components["matrix-spring-boot-rest-client"])
-                
-                licenses {
-                    license {
-                        name.set("The Apache License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("benkuly")
-                    }
-                }
-                scm {
-                    connection.set("scm:git:git://github.com/benkuly/matrix-spring-boot-sdk.git")
-                    developerConnection.set("scm:git:ssh://github.com/benkuly/matrix-spring-boot-sdk.git")
-                    url.set("https://github.com/benkuly/matrix-spring-boot-sdk")
-                }
-            }
-        }
-    }
-    repositories {
-        maven {
-            name = "OSSRH"
-            url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-            credentials {
-                username = System.getenv("MAVEN_USERNAME")
-                password = System.getenv("MAVEN_PASSWORD")
-            }
-        }
     }
 }
