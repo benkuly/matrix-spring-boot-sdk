@@ -13,14 +13,6 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
 }
 
-signing {
-    useInMemoryPgpKeys(
-            System.getenv("MAVEN_SIGN_KEY"),
-            System.getenv("MAVEN_SIGN_PASSWORD")
-    )
-    sign(publishing.publications["matrix-spring-boot-bot"])
-}
-
 publishing {
     publications {
         create<MavenPublication>("matrix-spring-boot-bot") {
@@ -61,4 +53,12 @@ publishing {
             }
         }
     }
+}
+
+signing {
+    useInMemoryPgpKeys(
+            System.getenv("MAVEN_SIGN_KEY"),
+            System.getenv("MAVEN_SIGN_PASSWORD")
+    )
+    sign(publishing.publications["matrix-spring-boot-bot"])
 }

@@ -13,14 +13,6 @@ dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver")
 }
 
-signing {
-    useInMemoryPgpKeys(
-            System.getenv("MAVEN_SIGN_KEY"),
-            System.getenv("MAVEN_SIGN_PASSWORD")
-    )
-    sign(publishing.publications["matrix-spring-boot-rest-client"])
-}
-
 publishing {
     publications {
         create<MavenPublication>("matrix-spring-boot-rest-client") {
@@ -61,6 +53,14 @@ publishing {
             }
         }
     }
+}
+
+signing {
+    useInMemoryPgpKeys(
+            System.getenv("MAVEN_SIGN_KEY"),
+            System.getenv("MAVEN_SIGN_PASSWORD")
+    )
+    sign(publishing.publications["matrix-spring-boot-rest-client"])
 }
 
 
