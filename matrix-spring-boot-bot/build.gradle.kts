@@ -1,5 +1,6 @@
 plugins {
     `maven-publish`
+    signing
 }
 
 dependencies {
@@ -12,6 +13,14 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
 }
 
+signing {
+    useInMemoryPgpKeys(
+            System.getenv("MAVEN_SIGN_KEY"),
+            System.getenv("MAVEN_SIGN_PASSWORD")
+    )
+    sign(publishing.publications["mavenJava"])
+}
+
 publishing {
     publications {
         create<MavenPublication>("matrix-spring-boot-bot") {
@@ -20,9 +29,9 @@ publishing {
 
                 from(components["java"])
 
-                project.name = "matrix-spring-boot-bot"
-                project.description = "Spring Boot Starter for matrix-protocol bots."
-                project.uri("https://github.com/benkuly/matrix-spring-boot-sdk")
+                name.set("matrix-spring-boot-bot")
+                description.set("Spring Boot Starter for matrix-protocol bots.")
+                url.set("https://github.com/benkuly/matrix-spring-boot-sdk")
                 licenses {
                     license {
                         name.set("The Apache License, Version 2.0")

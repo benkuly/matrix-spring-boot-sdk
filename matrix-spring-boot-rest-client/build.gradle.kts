@@ -1,5 +1,6 @@
 plugins {
     `maven-publish`
+    signing
 }
 
 dependencies {
@@ -12,6 +13,14 @@ dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver")
 }
 
+signing {
+    useInMemoryPgpKeys(
+            System.getenv("MAVEN_SIGN_KEY"),
+            System.getenv("MAVEN_SIGN_PASSWORD")
+    )
+    sign(publishing.publications["mavenJava"])
+}
+
 publishing {
     publications {
         create<MavenPublication>("matrix-spring-boot-rest-client") {
@@ -20,9 +29,9 @@ publishing {
 
                 from(components["java"])
 
-                project.name = "matrix-spring-boot-rest-client"
-                project.description = "Spring Boot Starter for matrix-protocol client."
-                project.uri("https://github.com/benkuly/matrix-spring-boot-sdk")
+                name.set("matrix-spring-boot-rest-client")
+                description.set("Spring Boot Starter for matrix-protocol client.")
+                url.set("https://github.com/benkuly/matrix-spring-boot-sdk")
                 licenses {
                     license {
                         name.set("The Apache License, Version 2.0")
