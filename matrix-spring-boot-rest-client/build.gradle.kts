@@ -18,7 +18,7 @@ signing {
             System.getenv("MAVEN_SIGN_KEY"),
             System.getenv("MAVEN_SIGN_PASSWORD")
     )
-    sign(publishing.publications["mavenJava"])
+    sign(publishing.publications["matrix-spring-boot-rest-client"])
 }
 
 publishing {
