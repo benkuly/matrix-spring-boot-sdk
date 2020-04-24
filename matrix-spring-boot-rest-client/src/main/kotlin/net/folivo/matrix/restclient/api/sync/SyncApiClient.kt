@@ -1,7 +1,6 @@
 package net.folivo.matrix.restclient.api.sync
 
 import org.slf4j.LoggerFactory
-import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -14,25 +13,31 @@ class SyncApiClient(private val webClient: WebClient, private val syncBatchToken
     fun syncOnce(
             filter: String? = null,
             since: String? = null,
-            fullState: Boolean? = false,
+            fullState: Boolean = false,
             setPresence: Presence? = null,
-            timeout: Long = 0
+            timeout: Long = 0,
+            asUserId: String? = null
     ): Mono<SyncResponse> {
-        val params = LinkedMultiValueMap<String, String>();
-        filter?.also { params.add("filter", it) }
-        fullState.also { params.add("full_state", it.toString()) }
-        setPresence?.also { params.add("set_presence", it.value) }
-        since?.also { params.add("since", it) }
-        timeout.also { params.add("timeout", it.toString()) }
         return webClient
-                .get().uri { it.path("/r0/sync").queryParams(params).build() }
+                .get().uri {
+                    it.apply {
+                        path("/r0/sync")
+                        if (filter != null) queryParam("filter", filter)
+                        queryParam("full_state", fullState)
+                        if (setPresence != null) queryParam("set_presence", setPresence.value)
+                        if (since != null) queryParam("since", since)
+                        queryParam("timeout", timeout)
+                        if (asUserId != null) queryParam("user_id", asUserId)
+                    }.build()
+                }
                 .retrieve()
                 .bodyToMono(SyncResponse::class.java)
     }
 
     fun syncLoop(
             filter: String? = null,
-            setPresence: Presence? = null
+            setPresence: Presence? = null,
+            asUserId: String? = null
     ): Flux<SyncResponse> {
         return Flux.generate(
                 { syncBatchTokenService.batchToken },
@@ -42,7 +47,8 @@ class SyncApiClient(private val webClient: WebClient, private val syncBatchToken
                             setPresence = setPresence,
                             fullState = false,
                             since = state,
-                            timeout = 30000
+                            timeout = 30000,
+                            asUserId = asUserId
                     ).block()
                     logger.debug("synced (token: $state)")
                     if (syncResponse != null) {
