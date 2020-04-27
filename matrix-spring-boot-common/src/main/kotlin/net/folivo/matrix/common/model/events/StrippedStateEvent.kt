@@ -1,4 +1,4 @@
-package net.folivo.matrix.restclient.model.events
+package net.folivo.matrix.common.model.events
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode

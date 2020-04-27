@@ -3,8 +3,8 @@ package net.folivo.matrix.bot
 import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.bot.handler.MatrixMessageEventHandler
+import net.folivo.matrix.common.model.events.Event
 import net.folivo.matrix.restclient.MatrixClient
-import net.folivo.matrix.restclient.model.events.Event
 import org.slf4j.LoggerFactory
 import reactor.core.Disposable
 

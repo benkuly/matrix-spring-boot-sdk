@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.Version
 import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.jsontype.NamedType
 import com.fasterxml.jackson.databind.module.SimpleDeserializers
-import net.folivo.matrix.restclient.model.events.Event
-import net.folivo.matrix.restclient.model.events.m.room.message.MessageEvent
+import net.folivo.matrix.common.model.events.Event
+import net.folivo.matrix.common.model.events.m.room.message.MessageEvent
 
 
 class MatrixEventJacksonModule(

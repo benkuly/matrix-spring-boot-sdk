@@ -1,4 +1,4 @@
-package net.folivo.matrix.restclient.model.events.m.room.message
+package net.folivo.matrix.common.model.events.m.room.message
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

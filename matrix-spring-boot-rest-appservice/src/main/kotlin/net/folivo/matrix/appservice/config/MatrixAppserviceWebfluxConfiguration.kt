@@ -32,12 +32,16 @@ class MatrixAppserviceWebfluxConfiguration(private val matrixAppservicePropertie
                 .httpBasic().disable()
                 .logout().disable()
                 .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
-//                .exceptionHandling()
         return http.build()
     }
 
     @Bean
     fun matrixHomeServerAuthenticationManager(): MatrixHomeServerAuthenticationManager {
         return MatrixHomeServerAuthenticationManager(matrixAppserviceProperties.hsToken)
+    }
+
+    @Bean
+    fun errorResponseAttributes(): ErrorResponseAttributes {
+        return ErrorResponseAttributes()
     }
 }

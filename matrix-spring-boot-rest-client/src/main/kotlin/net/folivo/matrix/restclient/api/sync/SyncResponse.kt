@@ -1,8 +1,8 @@
 package net.folivo.matrix.restclient.api.sync
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import net.folivo.matrix.restclient.model.events.Event
-import net.folivo.matrix.restclient.model.events.StrippedStateEvent
+import net.folivo.matrix.common.model.events.Event
+import net.folivo.matrix.common.model.events.StrippedStateEvent
 
 data class SyncResponse(
         @JsonProperty("next_batch")

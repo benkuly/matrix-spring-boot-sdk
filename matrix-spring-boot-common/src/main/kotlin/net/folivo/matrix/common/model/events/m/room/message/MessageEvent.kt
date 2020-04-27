@@ -1,9 +1,9 @@
-package net.folivo.matrix.restclient.model.events.m.room.message
+package net.folivo.matrix.common.model.events.m.room.message
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import net.folivo.matrix.restclient.annotation.MatrixEvent
-import net.folivo.matrix.restclient.model.events.RoomEventContent
-import net.folivo.matrix.restclient.model.events.StandardRoomEvent
+import net.folivo.matrix.common.annotation.MatrixEvent
+import net.folivo.matrix.common.model.events.RoomEventContent
+import net.folivo.matrix.common.model.events.StandardRoomEvent
 
 /**
  * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#m-room-message">matrix spec</a>
@@ -34,7 +34,7 @@ class MessageEvent<C : MessageEvent.MessageEventContent> : StandardRoomEvent<Mes
             this.body = body
             this.messageType = messageType
         }
-        
+
         @JsonProperty("body")
         val body: String
 

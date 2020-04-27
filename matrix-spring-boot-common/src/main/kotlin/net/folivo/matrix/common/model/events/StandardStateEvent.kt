@@ -1,3 +1,3 @@
-package net.folivo.matrix.restclient.model.events
+package net.folivo.matrix.common.model.events
 
 typealias StandardStateEvent<C> = StateEvent<C, StateEvent.UnsignedData>

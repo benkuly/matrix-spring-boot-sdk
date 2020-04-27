@@ -1,8 +1,8 @@
 package net.folivo.matrix.restclient.api.rooms
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import net.folivo.matrix.restclient.model.events.RoomEvent
-import net.folivo.matrix.restclient.model.events.StateEvent
+import net.folivo.matrix.common.model.events.RoomEvent
+import net.folivo.matrix.common.model.events.StateEvent
 
 // TODO abstract for internal use only
 data class GetEventsResponse(

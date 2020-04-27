@@ -1,4 +1,4 @@
-package net.folivo.matrix.restclient.model.events
+package net.folivo.matrix.common.model.events
 
 interface EventType {
     val type: String

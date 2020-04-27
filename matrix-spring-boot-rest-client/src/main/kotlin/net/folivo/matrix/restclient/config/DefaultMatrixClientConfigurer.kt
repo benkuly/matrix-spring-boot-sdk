@@ -1,9 +1,10 @@
 package net.folivo.matrix.restclient.config
 
+import net.folivo.matrix.common.model.events.m.room.*
+import net.folivo.matrix.common.model.events.m.room.message.MessageEvent
+import net.folivo.matrix.common.model.events.m.room.message.NoticeMessageEventContent
+import net.folivo.matrix.common.model.events.m.room.message.TextMessageEventContent
 import net.folivo.matrix.restclient.model.events.m.room.*
-import net.folivo.matrix.restclient.model.events.m.room.message.MessageEvent
-import net.folivo.matrix.restclient.model.events.m.room.message.NoticeMessageEventContent
-import net.folivo.matrix.restclient.model.events.m.room.message.TextMessageEventContent
 
 class DefaultMatrixClientConfigurer : MatrixClientConfigurer {
     override fun configure(config: MatrixClientConfiguration) {

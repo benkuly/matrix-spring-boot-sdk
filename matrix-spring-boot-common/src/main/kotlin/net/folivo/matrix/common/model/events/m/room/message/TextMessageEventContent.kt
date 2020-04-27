@@ -1,7 +1,7 @@
-package net.folivo.matrix.restclient.model.events.m.room.message
+package net.folivo.matrix.common.model.events.m.room.message
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import net.folivo.matrix.restclient.annotation.MatrixMessageEventContent
+import net.folivo.matrix.common.annotation.MatrixMessageEventContent
 
 /**
  * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#m-text">matrix spec</a>

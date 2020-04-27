@@ -7,12 +7,12 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.verify
 import net.folivo.matrix.bot.handler.MatrixMessageContentHandler
 import net.folivo.matrix.bot.handler.MatrixMessageEventHandler
+import net.folivo.matrix.common.model.events.RoomEvent
+import net.folivo.matrix.common.model.events.StateEvent
+import net.folivo.matrix.common.model.events.m.room.AliasesEvent
+import net.folivo.matrix.common.model.events.m.room.message.MessageEvent
+import net.folivo.matrix.common.model.events.m.room.message.TextMessageEventContent
 import net.folivo.matrix.restclient.MatrixClient
-import net.folivo.matrix.restclient.model.events.RoomEvent
-import net.folivo.matrix.restclient.model.events.StateEvent
-import net.folivo.matrix.restclient.model.events.m.room.AliasesEvent
-import net.folivo.matrix.restclient.model.events.m.room.message.MessageEvent
-import net.folivo.matrix.restclient.model.events.m.room.message.TextMessageEventContent
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith

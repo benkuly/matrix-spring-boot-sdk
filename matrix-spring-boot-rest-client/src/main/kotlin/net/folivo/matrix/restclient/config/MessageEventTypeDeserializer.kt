@@ -4,9 +4,9 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.JsonNode
-import net.folivo.matrix.restclient.model.events.RoomEvent
-import net.folivo.matrix.restclient.model.events.m.room.message.MessageEvent
-import net.folivo.matrix.restclient.model.events.m.room.message.UnknownMessageEventContent
+import net.folivo.matrix.common.model.events.RoomEvent
+import net.folivo.matrix.common.model.events.m.room.message.MessageEvent
+import net.folivo.matrix.common.model.events.m.room.message.UnknownMessageEventContent
 
 
 class MessageEventTypeDeserializer(

@@ -1,9 +1,9 @@
 package net.folivo.matrix.restclient.config
 
-import net.folivo.matrix.restclient.annotation.MatrixEvent
-import net.folivo.matrix.restclient.annotation.MatrixMessageEventContent
-import net.folivo.matrix.restclient.model.events.Event
-import net.folivo.matrix.restclient.model.events.m.room.message.MessageEvent
+import net.folivo.matrix.common.annotation.MatrixEvent
+import net.folivo.matrix.common.annotation.MatrixMessageEventContent
+import net.folivo.matrix.common.model.events.Event
+import net.folivo.matrix.common.model.events.m.room.message.MessageEvent
 import org.slf4j.LoggerFactory
 import org.springframework.core.annotation.AnnotationUtils
 

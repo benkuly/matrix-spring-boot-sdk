@@ -1,9 +1,9 @@
-package net.folivo.matrix.restclient.model.events.m.room
+package net.folivo.matrix.common.model.events.m.room
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import net.folivo.matrix.restclient.annotation.MatrixEvent
-import net.folivo.matrix.restclient.model.events.StandardStateEvent
-import net.folivo.matrix.restclient.model.events.StateEventContent
+import net.folivo.matrix.common.annotation.MatrixEvent
+import net.folivo.matrix.common.model.events.StandardStateEvent
+import net.folivo.matrix.common.model.events.StateEventContent
 
 /**
  * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#m-room-aliases">matrix spec</a>

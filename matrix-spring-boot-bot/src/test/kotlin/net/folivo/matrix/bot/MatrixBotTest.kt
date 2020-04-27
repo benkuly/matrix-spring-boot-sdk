@@ -10,8 +10,8 @@ import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.restclient.MatrixClient
 import net.folivo.matrix.restclient.api.sync.SyncResponse
-import net.folivo.matrix.restclient.model.events.m.room.message.MessageEvent
-import net.folivo.matrix.restclient.model.events.m.room.message.TextMessageEventContent
+import net.folivo.matrix.common.model.events.m.room.message.MessageEvent
+import net.folivo.matrix.common.model.events.m.room.message.TextMessageEventContent
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import reactor.core.publisher.Flux

@@ -2,9 +2,9 @@ package net.folivo.matrix.restclient.config
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.Module
+import net.folivo.matrix.common.api.ErrorResponse
+import net.folivo.matrix.common.api.MatrixServerException
 import net.folivo.matrix.restclient.MatrixClient
-import net.folivo.matrix.restclient.api.ErrorResponse
-import net.folivo.matrix.restclient.api.MatrixServerException
 import net.folivo.matrix.restclient.api.sync.InMemorySyncBatchTokenService
 import net.folivo.matrix.restclient.api.sync.SyncBatchTokenService
 import org.slf4j.LoggerFactory

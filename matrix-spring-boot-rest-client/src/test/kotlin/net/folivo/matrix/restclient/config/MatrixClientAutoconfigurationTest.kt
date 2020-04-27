@@ -1,8 +1,8 @@
 package net.folivo.matrix.restclient.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import net.folivo.matrix.restclient.api.ErrorResponse
-import net.folivo.matrix.restclient.api.MatrixServerException
+import net.folivo.matrix.common.api.ErrorResponse
+import net.folivo.matrix.common.api.MatrixServerException
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.assertj.core.api.Assertions.assertThat

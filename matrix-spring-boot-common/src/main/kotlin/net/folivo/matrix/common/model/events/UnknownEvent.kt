@@ -1,4 +1,4 @@
-package net.folivo.matrix.restclient.model.events
+package net.folivo.matrix.common.model.events
 
 class UnknownEvent(type: String) : Event<UnknownEvent.UnknownEventContent>(type, UnknownEventContent()) {
 

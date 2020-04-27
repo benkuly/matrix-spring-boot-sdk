@@ -1,4 +1,4 @@
-package net.folivo.matrix.restclient.api
+package net.folivo.matrix.common.api
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

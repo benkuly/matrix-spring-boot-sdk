@@ -1,4 +1,4 @@
-package net.folivo.matrix.restclient.api
+package net.folivo.matrix.common.api
 
 open class MatrixServerException(
         val statusCode: Int,

@@ -1,11 +1,11 @@
 package net.folivo.matrix.restclient.api.rooms
 
-import net.folivo.matrix.restclient.annotation.MatrixEvent
-import net.folivo.matrix.restclient.api.MatrixClientException
-import net.folivo.matrix.restclient.model.events.*
-import net.folivo.matrix.restclient.model.events.m.room.CreateEvent
-import net.folivo.matrix.restclient.model.events.m.room.MemberEvent
-import net.folivo.matrix.restclient.model.events.m.room.PowerLevelsEvent
+import net.folivo.matrix.common.annotation.MatrixEvent
+import net.folivo.matrix.common.api.MatrixClientException
+import net.folivo.matrix.common.model.events.*
+import net.folivo.matrix.common.model.events.m.room.CreateEvent
+import net.folivo.matrix.common.model.events.m.room.MemberEvent
+import net.folivo.matrix.common.model.events.m.room.PowerLevelsEvent
 import org.springframework.core.annotation.MergedAnnotations
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToFlux

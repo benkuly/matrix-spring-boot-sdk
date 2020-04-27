@@ -1,11 +1,11 @@
-package net.folivo.matrix.restclient.model.events.m.room
+package net.folivo.matrix.common.model.events.m.room
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import net.folivo.matrix.restclient.annotation.MatrixEvent
-import net.folivo.matrix.restclient.model.events.Event
-import net.folivo.matrix.restclient.model.events.StateEvent
-import net.folivo.matrix.restclient.model.events.StateEventContent
-import net.folivo.matrix.restclient.model.events.StrippedStateEvent
+import net.folivo.matrix.common.annotation.MatrixEvent
+import net.folivo.matrix.common.model.events.Event
+import net.folivo.matrix.common.model.events.StateEvent
+import net.folivo.matrix.common.model.events.StateEventContent
+import net.folivo.matrix.common.model.events.StrippedStateEvent
 
 /**
  * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#m-room-member">matrix spec</a>

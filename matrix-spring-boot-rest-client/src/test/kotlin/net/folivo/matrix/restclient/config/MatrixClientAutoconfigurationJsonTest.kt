@@ -1,12 +1,12 @@
 package net.folivo.matrix.restclient.config
 
-import net.folivo.matrix.restclient.model.events.Event
-import net.folivo.matrix.restclient.model.events.UnknownEvent
-import net.folivo.matrix.restclient.model.events.m.room.AliasesEvent
-import net.folivo.matrix.restclient.model.events.m.room.CreateEvent
-import net.folivo.matrix.restclient.model.events.m.room.message.MessageEvent
-import net.folivo.matrix.restclient.model.events.m.room.message.TextMessageEventContent
-import net.folivo.matrix.restclient.model.events.m.room.message.UnknownMessageEventContent
+import net.folivo.matrix.common.model.events.Event
+import net.folivo.matrix.common.model.events.UnknownEvent
+import net.folivo.matrix.common.model.events.m.room.AliasesEvent
+import net.folivo.matrix.common.model.events.m.room.CreateEvent
+import net.folivo.matrix.common.model.events.m.room.message.MessageEvent
+import net.folivo.matrix.common.model.events.m.room.message.TextMessageEventContent
+import net.folivo.matrix.common.model.events.m.room.message.UnknownMessageEventContent
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.Test

@@ -1,7 +1,7 @@
 package net.folivo.matrix.bot.handler
 
+import net.folivo.matrix.common.model.events.Event
 import net.folivo.matrix.restclient.MatrixClient
-import net.folivo.matrix.restclient.model.events.Event
 
 interface MatrixEventHandler {
 

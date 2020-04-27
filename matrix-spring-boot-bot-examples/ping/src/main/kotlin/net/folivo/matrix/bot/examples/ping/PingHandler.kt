@@ -2,9 +2,9 @@ package net.folivo.matrix.bot.examples.ping
 
 import net.folivo.matrix.bot.handler.MatrixMessageContentHandler
 import net.folivo.matrix.bot.handler.MessageContext
-import net.folivo.matrix.restclient.model.events.m.room.message.MessageEvent
-import net.folivo.matrix.restclient.model.events.m.room.message.NoticeMessageEventContent
-import net.folivo.matrix.restclient.model.events.m.room.message.TextMessageEventContent
+import net.folivo.matrix.common.model.events.m.room.message.MessageEvent
+import net.folivo.matrix.common.model.events.m.room.message.NoticeMessageEventContent
+import net.folivo.matrix.common.model.events.m.room.message.TextMessageEventContent
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
