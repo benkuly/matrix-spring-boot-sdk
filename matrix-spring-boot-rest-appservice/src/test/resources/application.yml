@@ -1,3 +1,7 @@
 matrix:
   appservice:
-    hsToken: abcde
+    hsToken: validToken
+
+logging:
+  level:
+    org.springframework.security: TRACE

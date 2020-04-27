@@ -8,11 +8,9 @@ class ErrorResponseAttributes : DefaultErrorAttributes() {
 
     override fun getErrorAttributes(request: ServerRequest, includeStackTrace: Boolean): MutableMap<String, Any> {
         val defaultErrorAttributes = super.getErrorAttributes(request, includeStackTrace) // TODO can be optimized
-        val errorAttributes = HashMap<String, Any>()
-
-        errorAttributes.put("errcode", defaultErrorAttributes["status"] ?: 500)
-        errorAttributes.put("error", determineErrorMessage(getError(request)))
-        return errorAttributes
+        defaultErrorAttributes["errcode"] = defaultErrorAttributes["status"] ?: 500
+        defaultErrorAttributes["error"] = determineErrorMessage(getError(request))
+        return defaultErrorAttributes
     }
 
     private fun determineErrorMessage(exception: Throwable): String {

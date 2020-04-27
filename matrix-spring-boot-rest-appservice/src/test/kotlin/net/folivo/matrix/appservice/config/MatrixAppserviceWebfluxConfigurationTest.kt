@@ -18,11 +18,27 @@ class MatrixAppserviceWebfluxConfigurationTest {
     private lateinit var webClient: WebTestClient
 
     @Test
-    fun `should deny unauthorized access`() {
+    fun `should forbid missing token`() {
         webClient.get().uri("/_matrix/something").accept(APPLICATION_JSON)
                 .exchange()
-                .expectStatus().isUnauthorized
+                .expectStatus().isForbidden
                 .expectHeader().contentType(APPLICATION_JSON)
-                .expectBody<ErrorResponse>().isEqualTo(ErrorResponse("401", "M_FORBIDDEN"))
+                .expectBody<ErrorResponse>().isEqualTo(ErrorResponse("403", "M_FORBIDDEN"))
+    }
+
+    @Test
+    fun `should forbid wrong token`() {
+        webClient.get().uri("/_matrix/something?access_token=invalidToken").accept(APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isForbidden
+                .expectHeader().contentType(APPLICATION_JSON)
+                .expectBody<ErrorResponse>().isEqualTo(ErrorResponse("403", "M_FORBIDDEN"))
+    }
+
+    @Test
+    fun `should permit right token`() {
+        webClient.get().uri("/_matrix/something?access_token=validToken").accept(APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk
     }
 }

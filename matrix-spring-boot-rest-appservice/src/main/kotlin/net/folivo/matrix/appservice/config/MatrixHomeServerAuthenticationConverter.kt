@@ -7,8 +7,9 @@ import reactor.core.publisher.Mono
 
 class MatrixHomeServerAuthenticationConverter : ServerAuthenticationConverter {
     override fun convert(exchange: ServerWebExchange): Mono<Authentication> {
-        return Mono.justOrEmpty(exchange.request.queryParams.getFirst("access_token")?.let {
-            MatrixHomeServerAuthenticationToken(it)
+
+        return Mono.justOrEmpty(exchange.request.queryParams.getFirst("access_token").let {
+            MatrixHomeServerAuthenticationToken(it ?: "")
         })
     }
 }
