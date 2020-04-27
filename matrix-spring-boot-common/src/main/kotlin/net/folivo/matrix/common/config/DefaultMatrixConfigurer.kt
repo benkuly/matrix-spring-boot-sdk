@@ -1,13 +1,12 @@
-package net.folivo.matrix.restclient.config
+package net.folivo.matrix.common.config
 
 import net.folivo.matrix.common.model.events.m.room.*
 import net.folivo.matrix.common.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.common.model.events.m.room.message.NoticeMessageEventContent
 import net.folivo.matrix.common.model.events.m.room.message.TextMessageEventContent
-import net.folivo.matrix.restclient.model.events.m.room.*
 
-class DefaultMatrixClientConfigurer : MatrixClientConfigurer {
-    override fun configure(config: MatrixClientConfiguration) {
+class DefaultMatrixConfigurer : MatrixConfigurer {
+    override fun configure(config: MatrixConfiguration) {
         // TODO search in package for annotations
         config.configure {
             registerMatrixEvents(

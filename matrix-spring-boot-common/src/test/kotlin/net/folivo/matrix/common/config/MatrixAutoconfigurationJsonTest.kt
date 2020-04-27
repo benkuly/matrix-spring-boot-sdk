@@ -1,4 +1,4 @@
-package net.folivo.matrix.restclient.config
+package net.folivo.matrix.common.config
 
 import net.folivo.matrix.common.model.events.Event
 import net.folivo.matrix.common.model.events.UnknownEvent
@@ -17,7 +17,7 @@ import org.springframework.boot.test.json.JacksonTester
 
 @SpringBootTest
 @AutoConfigureJsonTesters
-class MatrixClientAutoconfigurationJsonTest {
+class MatrixAutoconfigurationJsonTest {
     @Autowired
     lateinit var json: JacksonTester<Event<*>>
 

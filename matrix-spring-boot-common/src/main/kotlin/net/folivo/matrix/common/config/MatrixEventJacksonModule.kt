@@ -1,4 +1,4 @@
-package net.folivo.matrix.restclient.config;
+package net.folivo.matrix.common.config;
 
 import com.fasterxml.jackson.core.Version
 import com.fasterxml.jackson.databind.Module

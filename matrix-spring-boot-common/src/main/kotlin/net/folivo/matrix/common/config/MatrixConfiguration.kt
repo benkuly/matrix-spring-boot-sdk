@@ -1,4 +1,4 @@
-package net.folivo.matrix.restclient.config
+package net.folivo.matrix.common.config
 
 import net.folivo.matrix.common.annotation.MatrixEvent
 import net.folivo.matrix.common.annotation.MatrixMessageEventContent
@@ -7,14 +7,14 @@ import net.folivo.matrix.common.model.events.m.room.message.MessageEvent
 import org.slf4j.LoggerFactory
 import org.springframework.core.annotation.AnnotationUtils
 
-class MatrixClientConfiguration {
+class MatrixConfiguration {
 
-    private val logger = LoggerFactory.getLogger(MatrixClientConfiguration::class.java)
+    private val logger = LoggerFactory.getLogger(MatrixConfiguration::class.java)
 
     val registeredEvents: MutableMap<String, Class<out Event<*>>> = mutableMapOf()
     val registeredMessageEventContent: MutableMap<String, Class<out MessageEvent.MessageEventContent>> = mutableMapOf()
 
-    fun configure(init: MatrixClientConfiguration.() -> Unit): MatrixClientConfiguration {
+    fun configure(init: MatrixConfiguration.() -> Unit): MatrixConfiguration {
         return this.apply(init)
     }
 

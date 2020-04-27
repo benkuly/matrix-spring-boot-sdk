@@ -1,8 +1,9 @@
 package net.folivo.matrix.appservice.api
 
-import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.RestController
 
-@Controller("/_matrix/app/v1")
+@RestController("/_matrix/app/v1")
 class MatrixAppserviceController {
 
+    
 }

@@ -4,7 +4,10 @@ plugins {
 }
 
 dependencies {
-    implementation("com.fasterxml.jackson.core:jackson-annotations")
+    api("org.springframework.boot:spring-boot-starter-json")
+
+    annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 }
 
 publishing {

@@ -5,7 +5,6 @@ import net.folivo.matrix.restclient.api.sync.SyncBatchTokenService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.boot.autoconfigure.AutoConfigurations
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
 import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientAutoConfiguration
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
@@ -18,8 +17,7 @@ class MatrixClientAutoconfigurationContextTest {
             .withConfiguration(
                     AutoConfigurations.of(
                             MatrixClientAutoconfiguration::class.java,
-                            WebClientAutoConfiguration::class.java,
-                            JacksonAutoConfiguration::class.java
+                            WebClientAutoConfiguration::class.java
                     )
             )
 
@@ -31,9 +29,6 @@ class MatrixClientAutoconfigurationContextTest {
                     assertThat(context).hasSingleBean(MatrixClient::class.java)
                     assertThat(context).hasSingleBean(WebClient::class.java)
                     assertThat(context).hasSingleBean(SyncBatchTokenService::class.java)
-                    assertThat(context).hasSingleBean(DefaultMatrixClientConfigurer::class.java)
-                    assertThat(context).hasSingleBean(MatrixClientConfiguration::class.java)
-                    assertThat(context).hasSingleBean(MatrixEventJacksonModule::class.java)
                 }
     }
 }
