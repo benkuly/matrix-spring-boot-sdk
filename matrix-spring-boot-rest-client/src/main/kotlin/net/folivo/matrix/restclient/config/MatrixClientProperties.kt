@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.context.properties.bind.DefaultValue
 
-@ConfigurationProperties("matrix")
+@ConfigurationProperties("matrix.client")
 @ConstructorBinding
 data class MatrixClientProperties(val homeServer: MatrixHomeServerProperties, val token: String) {
     data class MatrixHomeServerProperties(

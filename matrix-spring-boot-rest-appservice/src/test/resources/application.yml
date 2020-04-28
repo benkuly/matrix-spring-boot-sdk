@@ -1,6 +1,11 @@
 matrix:
   appservice:
     hsToken: validToken
+  client:
+    homeServer:
+      hostname: localhost
+      secure: false
+    token: superSecretToken
 
 logging:
   level:

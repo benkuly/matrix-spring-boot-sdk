@@ -3,13 +3,13 @@ package net.folivo.matrix.restclient.api.rooms
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import net.folivo.matrix.common.api.MatrixClientException
-import net.folivo.matrix.common.model.events.RoomEventContent
-import net.folivo.matrix.common.model.events.StateEvent
-import net.folivo.matrix.common.model.events.StateEventContent
-import net.folivo.matrix.common.model.events.m.room.AliasesEvent
-import net.folivo.matrix.common.model.events.m.room.MemberEvent
-import net.folivo.matrix.common.model.events.m.room.message.TextMessageEventContent
+import net.folivo.matrix.core.api.MatrixClientException
+import net.folivo.matrix.core.model.events.RoomEventContent
+import net.folivo.matrix.core.model.events.StateEvent
+import net.folivo.matrix.core.model.events.StateEventContent
+import net.folivo.matrix.core.model.events.m.room.AliasesEvent
+import net.folivo.matrix.core.model.events.m.room.MemberEvent
+import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
 import net.folivo.matrix.restclient.MatrixClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -25,7 +25,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
 import reactor.test.StepVerifier
 
-@SpringBootTest(properties = ["matrix.homeServer.port=5001"])
+@SpringBootTest(properties = ["matrix.client.homeServer.port=5001"])
 class RoomsApiClientTest {
 
     @Autowired

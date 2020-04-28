@@ -1,6 +1,6 @@
 package net.folivo.matrix.appservice.config
 
-import net.folivo.matrix.common.api.ErrorResponse
+import net.folivo.matrix.core.api.ErrorResponse
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
@@ -21,9 +21,9 @@ class MatrixAppserviceWebfluxConfigurationTest {
     fun `should forbid missing token`() {
         webClient.get().uri("/_matrix/something").accept(APPLICATION_JSON)
                 .exchange()
-                .expectStatus().isForbidden
+                .expectStatus().isUnauthorized
                 .expectHeader().contentType(APPLICATION_JSON)
-                .expectBody<ErrorResponse>().isEqualTo(ErrorResponse("403", "M_FORBIDDEN"))
+                .expectBody<ErrorResponse>().isEqualTo(ErrorResponse("401", "NET.FOLIVO.MATRIX_UNAUTHORIZED"))
     }
 
     @Test
@@ -32,7 +32,7 @@ class MatrixAppserviceWebfluxConfigurationTest {
                 .exchange()
                 .expectStatus().isForbidden
                 .expectHeader().contentType(APPLICATION_JSON)
-                .expectBody<ErrorResponse>().isEqualTo(ErrorResponse("403", "M_FORBIDDEN"))
+                .expectBody<ErrorResponse>().isEqualTo(ErrorResponse("403", "NET.FOLIVO.MATRIX_FORBIDDEN"))
     }
 
     @Test

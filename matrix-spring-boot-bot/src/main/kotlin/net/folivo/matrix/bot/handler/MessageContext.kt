@@ -1,6 +1,6 @@
 package net.folivo.matrix.bot.handler
 
-import net.folivo.matrix.common.model.events.m.room.message.MessageEvent
+import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.restclient.MatrixClient
 import reactor.core.publisher.Mono
 

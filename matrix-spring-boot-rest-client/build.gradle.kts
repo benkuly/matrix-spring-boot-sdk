@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     api("org.springframework.boot:spring-boot-starter-webflux")
-    api(project(":matrix-spring-boot-common"))
+    api(project(":matrix-spring-boot-core"))
 
     annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")

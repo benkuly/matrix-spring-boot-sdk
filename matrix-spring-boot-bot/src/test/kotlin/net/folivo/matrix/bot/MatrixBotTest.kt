@@ -8,10 +8,10 @@ import io.mockk.verify
 import io.mockk.verifyOrder
 import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.handler.MatrixEventHandler
+import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
+import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
 import net.folivo.matrix.restclient.MatrixClient
 import net.folivo.matrix.restclient.api.sync.SyncResponse
-import net.folivo.matrix.common.model.events.m.room.message.MessageEvent
-import net.folivo.matrix.common.model.events.m.room.message.TextMessageEventContent
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import reactor.core.publisher.Flux
@@ -69,13 +69,13 @@ class MatrixBotTest {
         publisher.next(response1, response2)
 
         verifyOrder {
-            eventHandlerMock1.handleEvent(event1, "someRoomId1", matrixClientMock)
-            eventHandlerMock1.handleEvent(event3, "someRoomId2", matrixClientMock)
+            eventHandlerMock1.handleEvent(event1, "someRoomId1")
+            eventHandlerMock1.handleEvent(event3, "someRoomId2")
         }
         verifyOrder {
-            eventHandlerMock2.handleEvent(event1, "someRoomId1", matrixClientMock)
-            eventHandlerMock2.handleEvent(event2, "someRoomId1", matrixClientMock)
-            eventHandlerMock2.handleEvent(event3, "someRoomId2", matrixClientMock)
+            eventHandlerMock2.handleEvent(event1, "someRoomId1")
+            eventHandlerMock2.handleEvent(event2, "someRoomId1")
+            eventHandlerMock2.handleEvent(event3, "someRoomId2")
         }
     }
 
@@ -148,7 +148,7 @@ class MatrixBotTest {
         cut.start()
         publisher.next(response)
 
-        verify(exactly = 2) { eventHandlerMock1.handleEvent(any(), any(), any()) }
+        verify(exactly = 2) { eventHandlerMock1.handleEvent(any(), any()) }
     }
 
     @Test
@@ -175,7 +175,7 @@ class MatrixBotTest {
         cut.stop()
         publisher.next(response)
 
-        verify(exactly = 1) { eventHandlerMock1.handleEvent(any(), any(), any()) }
+        verify(exactly = 1) { eventHandlerMock1.handleEvent(any(), any()) }
     }
 
 }

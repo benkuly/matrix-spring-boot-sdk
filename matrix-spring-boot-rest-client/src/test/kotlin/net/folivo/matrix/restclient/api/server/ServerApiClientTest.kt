@@ -14,7 +14,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 
-@SpringBootTest(properties = ["matrix.homeServer.port=5002"])
+@SpringBootTest(properties = ["matrix.client.homeServer.port=5002"])
 class ServerApiClientTest {
     @Autowired
     lateinit var matrixClient: MatrixClient

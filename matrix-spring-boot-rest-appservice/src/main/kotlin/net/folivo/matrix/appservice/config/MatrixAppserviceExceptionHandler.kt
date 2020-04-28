@@ -1,6 +1,6 @@
 package net.folivo.matrix.appservice.config
 
-import net.folivo.matrix.common.api.ErrorResponse
+import net.folivo.matrix.core.api.ErrorResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler

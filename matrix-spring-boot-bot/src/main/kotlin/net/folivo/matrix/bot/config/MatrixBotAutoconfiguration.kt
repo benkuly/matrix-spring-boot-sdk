@@ -9,6 +9,7 @@ import net.folivo.matrix.bot.sync.SyncBatchTokenRepository
 import net.folivo.matrix.restclient.MatrixClient
 import net.folivo.matrix.restclient.api.sync.SyncBatchTokenService
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
@@ -23,6 +24,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 class MatrixBotAutoconfiguration(private val botProperties: MatrixBotProperties) {
 
     @Bean
+    @ConditionalOnProperty(name = ["matrix.bot.mode"], havingValue = "CLIENT")
     @ConditionalOnMissingBean
     fun matrixBot(matrixClient: MatrixClient, matrixEventHandler: List<MatrixEventHandler>): MatrixBot {
         val matrixBot = MatrixBot(matrixClient, matrixEventHandler, botProperties)
@@ -31,8 +33,11 @@ class MatrixBotAutoconfiguration(private val botProperties: MatrixBotProperties)
     }
 
     @Bean
-    fun matrixMessageEventHandler(matrixMessageContentHandler: List<MatrixMessageContentHandler>): MatrixEventHandler {
-        return MatrixMessageEventHandler(matrixMessageContentHandler)
+    fun matrixMessageEventHandler(
+            matrixMessageContentHandler: List<MatrixMessageContentHandler>,
+            matrixClient: MatrixClient
+    ): MatrixEventHandler {
+        return MatrixMessageEventHandler(matrixMessageContentHandler, matrixClient)
     }
 
     @Bean

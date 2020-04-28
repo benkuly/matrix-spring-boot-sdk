@@ -7,9 +7,10 @@ Just add the maven/gradle dependency `net.folivo.matrix:matrix-spring-boot-rest-
 
 ```yaml
 matrix:
-  homeServer:
-    hostname: example.org
-  token: superSecretMatrixToken
+  client:
+    homeServer:
+      hostname: example.org
+    token: superSecretMatrixToken
 ```
 
 Now a Bean of type `MatrixClient` is created, which can be autowired.

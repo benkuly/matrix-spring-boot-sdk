@@ -1,7 +1,7 @@
 package net.folivo.matrix.appservice.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import net.folivo.matrix.common.api.ErrorResponse
+import net.folivo.matrix.core.api.ErrorResponse
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.buffer.DataBuffer
@@ -38,7 +38,7 @@ class MatrixAppserviceWebfluxConfiguration(private val matrixAppservicePropertie
                         response.headers.contentType = MediaType.APPLICATION_JSON
                         val dataBufferFactory = response.bufferFactory()
                         val buffer: DataBuffer = dataBufferFactory.wrap(
-                                objectMapper.writeValueAsBytes(ErrorResponse("403", "M_FORBIDDEN"))
+                                objectMapper.writeValueAsBytes(ErrorResponse("403", "NET.FOLIVO.MATRIX_FORBIDDEN"))
                         )
                         response.writeWith(Mono.just(buffer))
                                 .doOnError { DataBufferUtils.release(buffer) }

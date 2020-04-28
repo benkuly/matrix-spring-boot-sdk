@@ -3,7 +3,7 @@ package net.folivo.matrix.bot
 import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.bot.handler.MatrixMessageEventHandler
-import net.folivo.matrix.common.model.events.Event
+import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
 import reactor.core.Disposable
@@ -47,6 +47,6 @@ class MatrixBot(
     private fun handleEvent(event: Event<*>, roomId: String) {
         eventHandler
                 .filter { it.supports(event::class.java) }
-                .forEach { it.handleEvent(event, roomId, matrixClient) }
+                .forEach { it.handleEvent(event, roomId) }
     }
 }

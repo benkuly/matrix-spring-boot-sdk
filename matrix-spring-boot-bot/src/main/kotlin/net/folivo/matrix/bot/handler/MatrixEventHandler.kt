@@ -1,11 +1,10 @@
 package net.folivo.matrix.bot.handler
 
-import net.folivo.matrix.common.model.events.Event
-import net.folivo.matrix.restclient.MatrixClient
+import net.folivo.matrix.core.model.events.Event
 
 interface MatrixEventHandler {
 
     fun supports(clazz: Class<*>): Boolean
 
-    fun handleEvent(event: Event<*>, roomId: String, matrixClient: MatrixClient)
+    fun handleEvent(event: Event<*>, roomId: String)
 }

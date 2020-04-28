@@ -7,11 +7,11 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.verify
 import net.folivo.matrix.bot.handler.MatrixMessageContentHandler
 import net.folivo.matrix.bot.handler.MatrixMessageEventHandler
-import net.folivo.matrix.common.model.events.RoomEvent
-import net.folivo.matrix.common.model.events.StateEvent
-import net.folivo.matrix.common.model.events.m.room.AliasesEvent
-import net.folivo.matrix.common.model.events.m.room.message.MessageEvent
-import net.folivo.matrix.common.model.events.m.room.message.TextMessageEventContent
+import net.folivo.matrix.core.model.events.RoomEvent
+import net.folivo.matrix.core.model.events.StateEvent
+import net.folivo.matrix.core.model.events.m.room.AliasesEvent
+import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
+import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
 import net.folivo.matrix.restclient.MatrixClient
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -31,7 +31,7 @@ class MatrixMessageEventHandlerTest {
 
     @Test
     fun `should support message events`() {
-        val cut = MatrixMessageEventHandler(listOf())
+        val cut = MatrixMessageEventHandler(listOf(), matrixClientMock)
         assertThat(cut.supports(MessageEvent::class.java)).isTrue()
     }
 
@@ -41,7 +41,7 @@ class MatrixMessageEventHandlerTest {
                 listOf(
                         messageContentHandler1,
                         messageContentHandler2
-                )
+                ), matrixClientMock
         )
         val content = TextMessageEventContent("test")
         cut.handleEvent(
@@ -52,7 +52,7 @@ class MatrixMessageEventHandlerTest {
                         sender = "someSender",
                         originTimestamp = 1234,
                         unsigned = RoomEvent.UnsignedData()
-                ), "roomId", matrixClientMock
+                ), "roomId"
         )
         verify { messageContentHandler1.handleMessage(content, any()) }
         verify { messageContentHandler1.handleMessage(content, any()) }
@@ -64,7 +64,7 @@ class MatrixMessageEventHandlerTest {
                 listOf(
                         messageContentHandler1,
                         messageContentHandler2
-                )
+                ), matrixClientMock
         )
         cut.handleEvent(
                 AliasesEvent(
@@ -75,7 +75,7 @@ class MatrixMessageEventHandlerTest {
                         originTimestamp = 1234,
                         stateKey = "",
                         unsigned = StateEvent.UnsignedData()
-                ), "roomId", matrixClientMock
+                ), "roomId"
         )
         verify { messageContentHandler1 wasNot Called }
         verify { messageContentHandler2 wasNot Called }

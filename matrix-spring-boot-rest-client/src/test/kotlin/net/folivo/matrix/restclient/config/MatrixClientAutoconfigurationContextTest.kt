@@ -24,7 +24,7 @@ class MatrixClientAutoconfigurationContextTest {
     @Test
     fun `default services`() {
         this.contextRunner
-                .withPropertyValues("matrix.homeServer.hostname=localhost", "matrix.token=test")
+                .withPropertyValues("matrix.client.homeServer.hostname=localhost", "matrix.client.token=test")
                 .run { context: AssertableApplicationContext ->
                     assertThat(context).hasSingleBean(MatrixClient::class.java)
                     assertThat(context).hasSingleBean(WebClient::class.java)

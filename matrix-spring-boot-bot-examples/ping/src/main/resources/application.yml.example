@@ -11,7 +11,8 @@ spring:
       ddl-auto: update
 
 matrix:
-  homeServer:
-    hostname: localhost
-    secure: false
-  token: superSecretToken
+  client:
+    homeServer:
+      hostname: localhost
+      secure: false
+    token: superSecretToken

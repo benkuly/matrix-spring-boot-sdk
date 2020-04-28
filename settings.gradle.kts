@@ -1,5 +1,5 @@
 rootProject.name = "matrix-spring-boot-sdk"
-include("matrix-spring-boot-common")
+include("matrix-spring-boot-core")
 include("matrix-spring-boot-rest-client")
 include("matrix-spring-boot-rest-appservice")
 include("matrix-spring-boot-bot")

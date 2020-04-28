@@ -7,13 +7,14 @@ import org.springframework.web.reactive.function.server.ServerRequest
 class ErrorResponseAttributes : DefaultErrorAttributes() {
 
     override fun getErrorAttributes(request: ServerRequest, includeStackTrace: Boolean): MutableMap<String, Any> {
-        val defaultErrorAttributes = super.getErrorAttributes(request, includeStackTrace) // TODO can be optimized
+        val defaultErrorAttributes = super.getErrorAttributes(request, includeStackTrace)
         defaultErrorAttributes["errcode"] = defaultErrorAttributes["status"] ?: 500
         defaultErrorAttributes["error"] = determineErrorMessage(getError(request))
         return defaultErrorAttributes
     }
 
     private fun determineErrorMessage(exception: Throwable): String {
+        println("have ${exception.message}")
         return if (exception is AccessDeniedException) {
             "M_UNAUTHORIZED"
         } else {

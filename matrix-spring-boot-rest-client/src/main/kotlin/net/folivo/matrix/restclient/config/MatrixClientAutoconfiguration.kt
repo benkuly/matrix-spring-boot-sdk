@@ -1,7 +1,7 @@
 package net.folivo.matrix.restclient.config
 
-import net.folivo.matrix.common.api.ErrorResponse
-import net.folivo.matrix.common.api.MatrixServerException
+import net.folivo.matrix.core.api.ErrorResponse
+import net.folivo.matrix.core.api.MatrixServerException
 import net.folivo.matrix.restclient.MatrixClient
 import net.folivo.matrix.restclient.api.sync.InMemorySyncBatchTokenService
 import net.folivo.matrix.restclient.api.sync.SyncBatchTokenService

@@ -20,7 +20,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import reactor.test.StepVerifier
 
-@SpringBootTest(properties = ["matrix.homeServer.port=5003"])
+@SpringBootTest(properties = ["matrix.client.homeServer.port=5003"])
 @ExtendWith(MockKExtension::class)
 class SyncApiClientTest {
     @Autowired
