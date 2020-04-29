@@ -14,8 +14,7 @@ class PingHandler : MatrixMessageContentHandler {
 
     override fun handleMessage(content: MessageEvent.MessageEventContent, context: MessageContext) {
         if (content is TextMessageEventContent) {
-            val body = content.body
-            if (body.contains("ping")) {
+            if (content.body.contains("ping")) {
                 val id = context.answer(NoticeMessageEventContent("pong")).block()
                 logger.info("pong (messageid: $id)")
             }

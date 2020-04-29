@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import net.folivo.matrix.core.model.events.RoomEvent
 import net.folivo.matrix.core.model.events.StateEvent
 
-// TODO abstract for internal use only
 data class GetEventsResponse(
         @JsonProperty("start")
         val start: String,
