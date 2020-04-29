@@ -29,6 +29,8 @@ class MatrixClientAutoconfigurationContextTest {
                     assertThat(context).hasSingleBean(MatrixClient::class.java)
                     assertThat(context).hasSingleBean(WebClient::class.java)
                     assertThat(context).hasSingleBean(SyncBatchTokenService::class.java)
+                    assertThat(context).hasSingleBean(MatrixClientConfiguration::class.java)
+                    assertThat(context).hasSingleBean(WebClientTokenAuthorizationFilter::class.java)
                 }
     }
 }

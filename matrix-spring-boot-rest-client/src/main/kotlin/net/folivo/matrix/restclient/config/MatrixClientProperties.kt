@@ -6,10 +6,15 @@ import org.springframework.boot.context.properties.bind.DefaultValue
 
 @ConfigurationProperties("matrix.client")
 @ConstructorBinding
-data class MatrixClientProperties(val homeServer: MatrixHomeServerProperties, val token: String) {
+data class MatrixClientProperties(
+        val homeServer: MatrixHomeServerProperties,
+        val token: String?
+) {
     data class MatrixHomeServerProperties(
             val hostname: String,
-            @DefaultValue("443") val port: Int,
-            @DefaultValue("true") val secure: Boolean
+            @DefaultValue("443")
+            val port: Int,
+            @DefaultValue("true")
+            val secure: Boolean
     )
 }

@@ -22,9 +22,15 @@ import reactor.core.publisher.Mono
 
 @Configuration
 @EnableConfigurationProperties(MatrixClientProperties::class)
-class MatrixClientAutoconfiguration() {
+class MatrixClientAutoconfiguration {
 
     private val logger = LoggerFactory.getLogger(MatrixClientAutoconfiguration::class.java)
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun matrixClientConfiguration(config: MatrixClientProperties): MatrixClientConfiguration {
+        return MatrixClientConfiguration(config)
+    }
 
     @Bean
     @ConditionalOnMissingBean
@@ -43,11 +49,17 @@ class MatrixClientAutoconfiguration() {
         return InMemorySyncBatchTokenService()
     }
 
+    @Bean
+    fun webClientTokenAuthorizationFilter(matrixClientConfiguration: MatrixClientConfiguration): WebClientTokenAuthorizationFilter {
+        return WebClientTokenAuthorizationFilter(matrixClientConfiguration)
+    }
+
     @Bean("matrixWebClient")
     @ConditionalOnMissingBean
     fun matrixWebClient(
             config: MatrixClientProperties,
-            webClientBuilder: WebClient.Builder
+            webClientBuilder: WebClient.Builder,
+            webClientTokenAuthorizationFilter: WebClientTokenAuthorizationFilter
     ): WebClient {
         return webClientBuilder
                 .baseUrl(
@@ -58,7 +70,6 @@ class MatrixClientAutoconfiguration() {
                                 .path("/_matrix/client").build().toASCIIString()
                 )
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer ${config.token}")
                 .filter(ExchangeFilterFunction.ofResponseProcessor { clientResponse ->
                     if (clientResponse.statusCode().isError) {
                         clientResponse.bodyToMono<ErrorResponse>()
@@ -74,6 +85,7 @@ class MatrixClientAutoconfiguration() {
                         Mono.just(clientResponse)
                     }
                 })
+                .filter(webClientTokenAuthorizationFilter)
                 .build();
     }
 }

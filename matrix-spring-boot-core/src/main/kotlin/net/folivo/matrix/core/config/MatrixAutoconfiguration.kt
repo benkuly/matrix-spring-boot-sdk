@@ -12,7 +12,7 @@ class MatrixAutoconfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    fun matrixClientConfiguration(configurer: List<MatrixConfigurer>): MatrixConfiguration {
+    fun matrixConfiguration(configurer: List<MatrixConfigurer>): MatrixConfiguration {
         val config = MatrixConfiguration()
         configurer.forEach {
             it.configure(config)
@@ -21,7 +21,7 @@ class MatrixAutoconfiguration {
     }
 
     @Bean
-    fun defaultMatrixClientConfigurer(): DefaultMatrixConfigurer {
+    fun defaultMatrixConfigurer(): DefaultMatrixConfigurer {
         return DefaultMatrixConfigurer()
     }
 
