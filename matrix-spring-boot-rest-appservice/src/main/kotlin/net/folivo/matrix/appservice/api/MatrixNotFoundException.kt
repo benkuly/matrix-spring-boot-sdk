@@ -1,7 +1,10 @@
 package net.folivo.matrix.appservice.api
 
+import net.folivo.matrix.core.api.ErrorResponse
+import net.folivo.matrix.core.api.MatrixServerException
 import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
 
-class MatrixNotFoundException : ResponseStatusException(HttpStatus.NOT_FOUND, "NET.FOLIVO.MATRIX_NOT_FOUND") {
-}
+class MatrixNotFoundException : MatrixServerException(
+        HttpStatus.NOT_FOUND,
+        ErrorResponse("NET.FOLIVO.MATRIX_NOT_FOUND")
+)

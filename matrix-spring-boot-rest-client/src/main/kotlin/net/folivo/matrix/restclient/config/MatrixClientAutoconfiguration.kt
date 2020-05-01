@@ -74,12 +74,7 @@ class MatrixClientAutoconfiguration {
                     if (clientResponse.statusCode().isError) {
                         clientResponse.bodyToMono<ErrorResponse>()
                                 .flatMap {
-                                    Mono.error<ClientResponse>(
-                                            MatrixServerException(
-                                                    clientResponse.statusCode()
-                                                            .value(), it
-                                            )
-                                    )
+                                    Mono.error<ClientResponse>(MatrixServerException(clientResponse.statusCode(), it))
                                 }
                     } else {
                         Mono.just(clientResponse)

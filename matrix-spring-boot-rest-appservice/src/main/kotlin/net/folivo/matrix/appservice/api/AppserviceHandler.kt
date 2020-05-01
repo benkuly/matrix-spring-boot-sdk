@@ -6,6 +6,6 @@ import reactor.core.publisher.Mono
 
 interface AppserviceHandler {
     fun addTransactions(tnxId: String, events: Flux<Event<*>>): Mono<Void>
-    fun hasUser(userId: String): Mono<Void>
-    fun hasRoomAlias(roomAlias: String): Mono<Void>
+    fun hasUser(userId: String): Mono<Boolean>
+    fun hasRoomAlias(roomAlias: String): Mono<Boolean>
 }

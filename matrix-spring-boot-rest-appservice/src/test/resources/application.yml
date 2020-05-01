@@ -6,7 +6,3 @@ matrix:
       hostname: localhost
       secure: false
     token: superSecretToken
-
-logging:
-  level:
-    org.springframework.security: TRACE
