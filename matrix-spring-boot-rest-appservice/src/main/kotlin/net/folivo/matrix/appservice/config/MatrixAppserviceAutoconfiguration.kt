@@ -43,31 +43,13 @@ class MatrixAppserviceAutoconfiguration(private val matrixAppserviceProperties: 
     @Bean
     @ConditionalOnMissingBean
     fun noopMatrixAppserviceUserService(): MatrixAppserviceUserService {
-        return object : MatrixAppserviceUserService {
-            override fun userExistingState(userId: String): MatrixAppserviceUserService.UserExistingState {
-                return MatrixAppserviceUserService.UserExistingState.DOES_NOT_EXISTS
-            }
-
-            override fun saveUser(userId: String) {
-            }
-        }
+        return NoOpMatrixAppserviceUserService()
     }
 
     @Bean
     @ConditionalOnMissingBean
-    fun noopMatrixAppserviceRoomService(): MatrixAppserviceRoomService {
-        return object : MatrixAppserviceRoomService {
-            override fun roomExistingState(roomAlias: String): MatrixAppserviceRoomService.RoomExistingState {
-                return MatrixAppserviceRoomService.RoomExistingState.DOES_NOT_EXISTS
-            }
-
-            override fun getCreateRoomParameter(roomAlias: String): CreateRoomParameter {
-                return CreateRoomParameter()
-            }
-
-            override fun saveRoom(roomAlias: String, roomId: String) {
-            }
-        }
+    fun noOpMatrixAppserviceRoomService(): MatrixAppserviceRoomService {
+        return NoOpMatrixAppserviceRoomService()
     }
 
     @Bean
