@@ -3,17 +3,38 @@ package net.folivo.matrix.appservice.api
 import net.folivo.matrix.appservice.api.MatrixAppserviceRoomService.RoomExistingState
 import net.folivo.matrix.appservice.api.MatrixAppserviceUserService.UserExistingState
 import net.folivo.matrix.core.model.events.Event
+import net.folivo.matrix.core.model.events.RoomEvent
+import net.folivo.matrix.core.model.events.StateEvent
 import net.folivo.matrix.restclient.MatrixClient
+import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 class DefaultAppserviceHandler(
         private val matrixClient: MatrixClient,
+        private val matrixAppserviceEventService: MatrixAppserviceEventService,
         private val matrixAppserviceUserService: MatrixAppserviceUserService,
         private val matrixAppserviceRoomService: MatrixAppserviceRoomService
 ) : AppserviceHandler {
 
+    private val logger = LoggerFactory.getLogger(AppserviceHandler::class.java)
+
     override fun addTransactions(tnxId: String, events: Flux<Event<*>>): Mono<Void> {
+        events.subscribe {
+            val eventIdOrType = when (it) {
+                is RoomEvent<*, *>  -> it.id
+                is StateEvent<*, *> -> it.id
+                else                -> it.type
+            }
+            when (matrixAppserviceEventService.eventProcessingState(tnxId, eventIdOrType)) {
+                MatrixAppserviceEventService.EventProcessingState.NOT_PROCESSED -> {
+                    
+                }
+                MatrixAppserviceEventService.EventProcessingState.PROCESSED     -> {
+                    logger.info("event $eventIdOrType already processed")
+                }
+            }
+        }
         TODO("Not yet implemented")
     }
 
