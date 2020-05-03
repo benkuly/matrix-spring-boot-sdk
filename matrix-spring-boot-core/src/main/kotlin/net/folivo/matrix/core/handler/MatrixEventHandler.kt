@@ -6,5 +6,5 @@ interface MatrixEventHandler {
 
     fun supports(clazz: Class<*>): Boolean
 
-    fun handleEvent(event: Event<*>, roomId: String)
+    fun handleEvent(event: Event<*>, roomId: String? = null)
 }

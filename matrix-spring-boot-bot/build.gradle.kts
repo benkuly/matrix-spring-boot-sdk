@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     api(project(":matrix-spring-boot-rest-client"))
+    api(project(":matrix-spring-boot-rest-appservice"))
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
     annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")

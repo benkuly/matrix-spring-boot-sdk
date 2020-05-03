@@ -1,4 +1,4 @@
-package net.folivo.matrix.bot.sync
+package net.folivo.matrix.bot.client
 
 import javax.persistence.Entity
 import javax.persistence.Id

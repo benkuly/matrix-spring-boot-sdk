@@ -10,9 +10,13 @@ spring:
     hibernate:
       ddl-auto: update
 
+logging:
+  level:
+    net.folivo.matrix: DEBUG
+
 matrix:
   client:
     homeServer:
-      hostname: localhost
-      secure: false
+      hostname: matrix.example.org
+      secure: true
     token: superSecretToken

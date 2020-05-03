@@ -1,4 +1,4 @@
-package net.folivo.matrix.bot
+package net.folivo.matrix.bot.client
 
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
@@ -18,7 +18,7 @@ import reactor.core.publisher.Flux
 import reactor.test.publisher.TestPublisher
 
 @ExtendWith(MockKExtension::class)
-class MatrixBotTest {
+class MatrixClientBotTest {
 
     @RelaxedMockK
     lateinit var matrixClientMock: MatrixClient
@@ -31,7 +31,14 @@ class MatrixBotTest {
 
     @Test
     fun `should start and call handler`() {
-        val cut = MatrixBot(matrixClientMock, listOf(eventHandlerMock1, eventHandlerMock2), MatrixBotProperties())
+        val cut = MatrixClientBot(
+                matrixClientMock,
+                listOf(
+                        eventHandlerMock1,
+                        eventHandlerMock2
+                ),
+                MatrixBotProperties()
+        )
 
         val event1 = mockk<MessageEvent<TextMessageEventContent>>()
         val event2 = mockk<MessageEvent<TextMessageEventContent>>()
@@ -81,7 +88,11 @@ class MatrixBotTest {
 
     @Test
     fun `should join rooms`() {
-        val cut = MatrixBot(matrixClientMock, listOf(), MatrixBotProperties(autojoin = true))
+        val cut = MatrixClientBot(
+                matrixClientMock,
+                listOf(),
+                MatrixBotProperties(autojoin = true)
+        )
 
         val response1 = mockk<SyncResponse>(relaxed = true) {
             every { room.invite } returns mapOf(
@@ -104,7 +115,11 @@ class MatrixBotTest {
 
     @Test
     fun `should not join rooms`() {
-        val cut = MatrixBot(matrixClientMock, listOf(), MatrixBotProperties(autojoin = false))
+        val cut = MatrixClientBot(
+                matrixClientMock,
+                listOf(),
+                MatrixBotProperties(autojoin = false)
+        )
 
         val response1 = mockk<SyncResponse>(relaxed = true) {
             every { room.invite } returns mapOf(
@@ -126,7 +141,11 @@ class MatrixBotTest {
 
     @Test
     fun `should deal with multiple starts`() {
-        val cut = MatrixBot(matrixClientMock, listOf(eventHandlerMock1), MatrixBotProperties())
+        val cut = MatrixClientBot(
+                matrixClientMock,
+                listOf(eventHandlerMock1),
+                MatrixBotProperties()
+        )
 
         val response = mockk<SyncResponse>(relaxed = true) {
             every { room.join } returns mapOf(
@@ -153,7 +172,11 @@ class MatrixBotTest {
 
     @Test
     fun `should stop`() {
-        val cut = MatrixBot(matrixClientMock, listOf(eventHandlerMock1), MatrixBotProperties())
+        val cut = MatrixClientBot(
+                matrixClientMock,
+                listOf(eventHandlerMock1),
+                MatrixBotProperties()
+        )
 
         val response = mockk<SyncResponse>(relaxed = true) {
             every { room.join } returns mapOf(

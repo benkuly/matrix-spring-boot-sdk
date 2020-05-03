@@ -5,6 +5,7 @@ import net.folivo.matrix.appservice.api.*
 import net.folivo.matrix.core.api.ErrorResponse
 import net.folivo.matrix.restclient.MatrixClient
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -25,6 +26,7 @@ import reactor.core.publisher.Mono
 
 
 @Configuration
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
 @EnableWebFluxSecurity
 @EnableWebFlux
 @EnableConfigurationProperties(MatrixAppserviceProperties::class)

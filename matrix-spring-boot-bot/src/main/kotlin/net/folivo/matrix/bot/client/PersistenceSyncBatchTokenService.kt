@@ -1,4 +1,4 @@
-package net.folivo.matrix.bot.sync
+package net.folivo.matrix.bot.client
 
 import net.folivo.matrix.restclient.api.sync.SyncBatchTokenService
 import org.springframework.data.repository.findByIdOrNull

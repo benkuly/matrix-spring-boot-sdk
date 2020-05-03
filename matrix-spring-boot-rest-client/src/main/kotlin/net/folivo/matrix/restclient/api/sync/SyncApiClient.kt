@@ -15,8 +15,8 @@ class SyncApiClient(private val webClient: WebClient, private val syncBatchToken
             since: String? = null,
             fullState: Boolean = false,
             setPresence: Presence? = null,
-            timeout: Long = 0,
-            asUserId: String? = null
+            timeout: Long = 0
+//            asUserId: String? = null // TODO currently not supported due to limit of syncBatchTokenService to only store one token
     ): Mono<SyncResponse> {
         return webClient
                 .get().uri {
@@ -27,7 +27,7 @@ class SyncApiClient(private val webClient: WebClient, private val syncBatchToken
                         if (setPresence != null) queryParam("set_presence", setPresence.value)
                         if (since != null) queryParam("since", since)
                         queryParam("timeout", timeout)
-                        if (asUserId != null) queryParam("user_id", asUserId)
+//                        if (asUserId != null) queryParam("user_id", asUserId) // TODO see TODO in syncOnce parameter
                     }.build()
                 }
                 .retrieve()
@@ -36,19 +36,19 @@ class SyncApiClient(private val webClient: WebClient, private val syncBatchToken
 
     fun syncLoop(
             filter: String? = null,
-            setPresence: Presence? = null,
-            asUserId: String? = null
+            setPresence: Presence? = null
+//            asUserId: String? = null // TODO see TODO in syncOnce parameter
     ): Flux<SyncResponse> {
         return Flux.generate(
                 { syncBatchTokenService.batchToken },
-                { state: String?, sink: SynchronousSink<SyncResponse> -> // TODO maybe asynchronous sink?
+                { state: String?, sink: SynchronousSink<SyncResponse> ->
                     val syncResponse = syncOnce(
                             filter = filter,
                             setPresence = setPresence,
                             fullState = false,
                             since = state,
-                            timeout = 30000,
-                            asUserId = asUserId
+                            timeout = 30000
+//                            asUserId = asUserId // TODO see TODO in syncOnce parameter
                     ).block()
                     logger.debug("synced (token: $state)")
                     if (syncResponse != null) {

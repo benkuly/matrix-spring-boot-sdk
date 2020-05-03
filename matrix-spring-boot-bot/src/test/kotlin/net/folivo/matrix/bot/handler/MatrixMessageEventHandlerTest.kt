@@ -1,12 +1,10 @@
-package net.folivo.matrix.bot
+package net.folivo.matrix.bot.handler
 
 import io.mockk.Called
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
-import net.folivo.matrix.bot.handler.MatrixMessageContentHandler
-import net.folivo.matrix.bot.handler.MatrixMessageEventHandler
 import net.folivo.matrix.core.model.events.RoomEvent
 import net.folivo.matrix.core.model.events.StateEvent
 import net.folivo.matrix.core.model.events.m.room.AliasesEvent
