@@ -5,9 +5,12 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.verify
 import net.folivo.matrix.core.api.ErrorResponse
 import net.folivo.matrix.core.api.MatrixServerException
+import net.folivo.matrix.core.model.events.UnknownEvent
+import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.restclient.MatrixClient
 import net.folivo.matrix.restclient.api.rooms.Visibility
 import net.folivo.matrix.restclient.api.user.RegisterResponse
@@ -15,6 +18,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.http.HttpStatus
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
@@ -24,14 +28,69 @@ class DefaultAppserviceHandlerTest {
     @MockK
     lateinit var matrixClientMock: MatrixClient
 
-    @MockK
+    @MockK(relaxed = true)
+    lateinit var matrixAppserviceEventServiceMock: MatrixAppserviceEventService
+
+    @MockK(relaxed = true)
     lateinit var matrixAppserviceUserServiceMock: MatrixAppserviceUserService
 
-    @MockK
-    lateinit var matrixAppserviceRoomrServiceMock: MatrixAppserviceRoomService
+    @MockK(relaxed = true)
+    lateinit var matrixAppserviceRoomServiceMock: MatrixAppserviceRoomService
 
     @InjectMockKs
     lateinit var cut: DefaultAppserviceHandler
+
+    @Test
+    fun `should process one event and ignore other`() {
+        every { matrixAppserviceEventServiceMock.eventProcessingState("someTnxId", "someEventId1") }
+                .returns(MatrixAppserviceEventService.EventProcessingState.NOT_PROCESSED)
+        every { matrixAppserviceEventServiceMock.eventProcessingState("someTnxId", "someTypeId2") }
+                .returns(MatrixAppserviceEventService.EventProcessingState.PROCESSED)
+
+        val events = arrayOf(
+                mockk<MessageEvent<*>> {
+                    every { id } returns "someEventId1"
+                },
+                mockk<UnknownEvent> {
+                    every { type } returns "someTypeId2"
+                }
+        )
+
+        val result = cut.addTransactions("someTnxId", Flux.fromArray(events))
+
+        StepVerifier.create(result).verifyComplete()
+
+        verify(exactly = 1) { matrixAppserviceEventServiceMock.processEvent(events[0]) }
+        verify(exactly = 1) { matrixAppserviceEventServiceMock.saveEventProcessed("someTnxId", "someEventId1") }
+        verify { matrixAppserviceEventServiceMock.eventProcessingState("someTnxId", "someEventId1") }
+        verify { matrixAppserviceEventServiceMock.eventProcessingState("someTnxId", "someTypeId2") }
+    }
+
+    @Test
+    fun `should not process other events on error`() {
+        val event1 = mockk<MessageEvent<*>> {
+            every { id } returns "someEventId1"
+        }
+        val event2 = mockk<UnknownEvent> {
+            every { type } returns "someTypeId2"
+        }
+
+        every { matrixAppserviceEventServiceMock.eventProcessingState(any(), any()) }
+                .returns(MatrixAppserviceEventService.EventProcessingState.NOT_PROCESSED)
+        every { matrixAppserviceEventServiceMock.eventProcessingState(any(), any()) }
+                .returns(MatrixAppserviceEventService.EventProcessingState.NOT_PROCESSED)
+        every { matrixAppserviceEventServiceMock.processEvent(event1) } throws RuntimeException()
+
+        val result = cut.addTransactions("someTnxId", Flux.fromArray(arrayOf(event1, event2)))
+
+        StepVerifier.create(result).verifyError(RuntimeException::class.java)
+
+        verify(exactly = 1) { matrixAppserviceEventServiceMock.processEvent(event1) }
+        verify(exactly = 0) { matrixAppserviceEventServiceMock.processEvent(event2) }
+        verify(exactly = 0) { matrixAppserviceEventServiceMock.saveEventProcessed("someTnxId", "someTypeId2") }
+        verify(exactly = 0) { matrixAppserviceEventServiceMock.saveEventProcessed("someTnxId", "someEventId1") }
+    }
+
 
     @Test
     fun `should hasUser when delegated service says it exists`() {
@@ -46,7 +105,6 @@ class DefaultAppserviceHandlerTest {
     fun `should hasUser and create it when delegated service want to`() {
         every { matrixAppserviceUserServiceMock.userExistingState("@someUserId:example.com") }
                 .returns(MatrixAppserviceUserService.UserExistingState.CAN_BE_CREATED)
-        every { matrixAppserviceUserServiceMock.saveUser("@someUserId:example.com") } returns Unit
 
         every {
             matrixClientMock.userApi.register(allAny())
@@ -114,7 +172,7 @@ class DefaultAppserviceHandlerTest {
 
     @Test
     fun `should hasRoomAlias when delegated service says it exists`() {
-        every { matrixAppserviceRoomrServiceMock.roomExistingState("#someRoomAlias:example.com") }
+        every { matrixAppserviceRoomServiceMock.roomExistingState("#someRoomAlias:example.com") }
                 .returns(MatrixAppserviceRoomService.RoomExistingState.EXISTS)
 
         val result = cut.hasRoomAlias("#someRoomAlias:example.com").block()
@@ -123,10 +181,9 @@ class DefaultAppserviceHandlerTest {
 
     @Test
     fun `should hasRoomAlias and create it when delegated service want to`() {
-        every { matrixAppserviceRoomrServiceMock.roomExistingState("#someRoomAlias:example.com") }
+        every { matrixAppserviceRoomServiceMock.roomExistingState("#someRoomAlias:example.com") }
                 .returns(MatrixAppserviceRoomService.RoomExistingState.CAN_BE_CREATED)
-        every { matrixAppserviceRoomrServiceMock.saveRoom("#someRoomAlias:example.com", "someRoomId") } returns Unit
-        every { matrixAppserviceRoomrServiceMock.getCreateRoomParameter("#someRoomAlias:example.com") }
+        every { matrixAppserviceRoomServiceMock.getCreateRoomParameter("#someRoomAlias:example.com") }
                 .returns(CreateRoomParameter(name = "someName"))
 
         every {
@@ -143,15 +200,13 @@ class DefaultAppserviceHandlerTest {
                     name = "someName"
             )
         }
-        verify { matrixAppserviceRoomrServiceMock.saveRoom("#someRoomAlias:example.com", "someRoomId") }
+        verify { matrixAppserviceRoomServiceMock.saveRoom("#someRoomAlias:example.com", "someRoomId") }
     }
 
     @Test
     fun `should not hasRoomAlias when creation fails`() {
-        every { matrixAppserviceRoomrServiceMock.roomExistingState("#someRoomAlias:example.com") }
+        every { matrixAppserviceRoomServiceMock.roomExistingState("#someRoomAlias:example.com") }
                 .returns(MatrixAppserviceRoomService.RoomExistingState.CAN_BE_CREATED)
-        every { matrixAppserviceRoomrServiceMock.getCreateRoomParameter("#someRoomAlias:example.com") }
-                .returns(CreateRoomParameter(name = "someName"))
 
         every {
             matrixClientMock.roomsApi.createRoom(allAny())
@@ -171,12 +226,10 @@ class DefaultAppserviceHandlerTest {
 
     @Test
     fun `should not hasRoomAlias when saving by service fails`() {
-        every { matrixAppserviceRoomrServiceMock.roomExistingState("#someRoomAlias:example.com") }
+        every { matrixAppserviceRoomServiceMock.roomExistingState("#someRoomAlias:example.com") }
                 .returns(MatrixAppserviceRoomService.RoomExistingState.CAN_BE_CREATED)
-        every { matrixAppserviceRoomrServiceMock.getCreateRoomParameter("#someRoomAlias:example.com") }
-                .returns(CreateRoomParameter(name = "someName"))
         every {
-            matrixAppserviceRoomrServiceMock.saveRoom(
+            matrixAppserviceRoomServiceMock.saveRoom(
                     "#someRoomAlias:example.com",
                     "someRoomId"
             )
@@ -193,7 +246,7 @@ class DefaultAppserviceHandlerTest {
 
     @Test
     fun `should not hasRoomAlias when delegated service says it does not exists and should not be created`() {
-        every { matrixAppserviceRoomrServiceMock.roomExistingState("#someRoomAlias:example.com") }
+        every { matrixAppserviceRoomServiceMock.roomExistingState("#someRoomAlias:example.com") }
                 .returns(MatrixAppserviceRoomService.RoomExistingState.DOES_NOT_EXISTS)
 
         val result = cut.hasRoomAlias("#someRoomAlias:example.com").block()

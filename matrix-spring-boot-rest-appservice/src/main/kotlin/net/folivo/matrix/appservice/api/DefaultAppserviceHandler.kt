@@ -20,22 +20,22 @@ class DefaultAppserviceHandler(
     private val logger = LoggerFactory.getLogger(AppserviceHandler::class.java)
 
     override fun addTransactions(tnxId: String, events: Flux<Event<*>>): Mono<Void> {
-        events.subscribe {
-            val eventIdOrType = when (it) {
-                is RoomEvent<*, *>  -> it.id
-                is StateEvent<*, *> -> it.id
-                else                -> it.type
+        return events.map { event ->
+            val eventIdOrType = when (event) {
+                is RoomEvent<*, *>  -> event.id
+                is StateEvent<*, *> -> event.id
+                else                -> event.type
             }
             when (matrixAppserviceEventService.eventProcessingState(tnxId, eventIdOrType)) {
                 MatrixAppserviceEventService.EventProcessingState.NOT_PROCESSED -> {
-                    
+                    matrixAppserviceEventService.processEvent(event)
+                    matrixAppserviceEventService.saveEventProcessed(tnxId, eventIdOrType)
                 }
                 MatrixAppserviceEventService.EventProcessingState.PROCESSED     -> {
                     logger.info("event $eventIdOrType already processed")
                 }
             }
-        }
-        TODO("Not yet implemented")
+        }.then()
     }
 
     override fun hasUser(userId: String): Mono<Boolean> {

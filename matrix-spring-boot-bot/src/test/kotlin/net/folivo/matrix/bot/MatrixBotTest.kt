@@ -7,7 +7,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
 import net.folivo.matrix.bot.config.MatrixBotProperties
-import net.folivo.matrix.bot.handler.MatrixEventHandler
+import net.folivo.matrix.core.handler.MatrixEventHandler
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
 import net.folivo.matrix.restclient.MatrixClient

@@ -34,10 +34,22 @@ class MatrixAppserviceAutoconfiguration(private val matrixAppserviceProperties: 
     @ConditionalOnMissingBean
     fun defaultAppserviceHandler(
             matrixClient: MatrixClient,
+            matrixAppserviceEventService: MatrixAppserviceEventService,
             matrixAppserviceUserService: MatrixAppserviceUserService,
             matrixAppserviceRoomService: MatrixAppserviceRoomService
     ): AppserviceHandler {
-        return DefaultAppserviceHandler(matrixClient, matrixAppserviceUserService, matrixAppserviceRoomService)
+        return DefaultAppserviceHandler(
+                matrixClient,
+                matrixAppserviceEventService,
+                matrixAppserviceUserService,
+                matrixAppserviceRoomService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun noOpMatrixAppserviceEventService(): MatrixAppserviceEventService {
+        return NoOpMatrixAppserviceEventService()
     }
 
     @Bean

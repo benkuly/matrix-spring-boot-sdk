@@ -1,8 +1,8 @@
 package net.folivo.matrix.bot
 
 import net.folivo.matrix.bot.config.MatrixBotProperties
-import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.bot.handler.MatrixMessageEventHandler
+import net.folivo.matrix.core.handler.MatrixEventHandler
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory

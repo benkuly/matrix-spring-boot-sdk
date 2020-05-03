@@ -1,11 +1,11 @@
 package net.folivo.matrix.bot.config
 
 import net.folivo.matrix.bot.MatrixBot
-import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.bot.handler.MatrixMessageContentHandler
 import net.folivo.matrix.bot.handler.MatrixMessageEventHandler
 import net.folivo.matrix.bot.sync.PersistenceSyncBatchTokenService
 import net.folivo.matrix.bot.sync.SyncBatchTokenRepository
+import net.folivo.matrix.core.handler.MatrixEventHandler
 import net.folivo.matrix.restclient.MatrixClient
 import net.folivo.matrix.restclient.api.sync.SyncBatchTokenService
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
