@@ -42,18 +42,18 @@ class DefaultAppserviceHandler(
     }
 
     override fun hasUser(userId: String): Mono<Boolean> {
-        return when (matrixAppserviceUserService.userExistingState(userId)) {
+        val username = userId.trimStart('@').substringBefore(":")
+        return when (matrixAppserviceUserService.userExistingState(username)) {
             UserExistingState.EXISTS          -> Mono.just(true)
             UserExistingState.DOES_NOT_EXISTS -> Mono.just(false)
             UserExistingState.CAN_BE_CREATED  -> {
-                val username = userId.trimStart('@').substringBefore(":")
                 matrixClient.userApi
                         .register(authenticationType = "m.login.application_service", username = username)
                         .doOnSuccess { response ->
                             try {
-                                matrixAppserviceUserService.saveUser(response.userId)
-                                val createUserParameter = matrixAppserviceUserService.getCreateUserParameter(userId)
-                                matrixClient.userApi.setDisplayName(response.userId, createUserParameter.displayName)
+                                matrixAppserviceUserService.saveUser(username)
+                                val createUserParameter = matrixAppserviceUserService.getCreateUserParameter(username)
+                                matrixClient.userApi.setDisplayName(userId, createUserParameter.displayName)
                                         .block()
                             } catch (error: Throwable) {
                                 logger.error("an error occurred in after user registration tasks: $error")
@@ -65,12 +65,12 @@ class DefaultAppserviceHandler(
     }
 
     override fun hasRoomAlias(roomAlias: String): Mono<Boolean> {
-        return when (matrixAppserviceRoomService.roomExistingState(roomAlias)) {
+        val roomAliasName = roomAlias.trimStart('#').substringBefore(":")
+        return when (matrixAppserviceRoomService.roomExistingState(roomAliasName)) {
             RoomExistingState.EXISTS          -> Mono.just(true)
             RoomExistingState.DOES_NOT_EXISTS -> Mono.just(false)
             RoomExistingState.CAN_BE_CREATED  -> {
-                val roomAliasName = roomAlias.trimStart('#').substringBefore(":")
-                val createRoomParameter = matrixAppserviceRoomService.getCreateRoomParameter(roomAlias)
+                val createRoomParameter = matrixAppserviceRoomService.getCreateRoomParameter(roomAliasName)
                 matrixClient.roomsApi
                         .createRoom(
                                 roomAliasName = roomAliasName,
@@ -89,7 +89,7 @@ class DefaultAppserviceHandler(
                         )
                         .doOnSuccess {
                             try {
-                                matrixAppserviceRoomService.saveRoom(roomAlias, it)
+                                matrixAppserviceRoomService.saveRoom(roomAliasName)
                             } catch (error: Throwable) {
                                 logger.error("an error occurred in after room creation tasks: $error")
                             }

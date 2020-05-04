@@ -99,7 +99,7 @@ class DefaultAppserviceHandlerTest {
 
     @Test
     fun `should hasUser when delegated service says it exists`() {
-        every { matrixAppserviceUserServiceMock.userExistingState("@someUserId:example.com") }
+        every { matrixAppserviceUserServiceMock.userExistingState("someUserId") }
                 .returns(MatrixAppserviceUserService.UserExistingState.EXISTS)
 
         val result = cut.hasUser("@someUserId:example.com").block()
@@ -108,9 +108,9 @@ class DefaultAppserviceHandlerTest {
 
     @Test
     fun `should hasUser and create it when delegated service want to`() {
-        every { matrixAppserviceUserServiceMock.userExistingState("@someUserId:example.com") }
+        every { matrixAppserviceUserServiceMock.userExistingState("someUserId") }
                 .returns(MatrixAppserviceUserService.UserExistingState.CAN_BE_CREATED)
-        every { matrixAppserviceUserServiceMock.getCreateUserParameter("@someUserId:example.com") }
+        every { matrixAppserviceUserServiceMock.getCreateUserParameter("someUserId") }
                 .returns(CreateUserParameter("someDisplayName"))
         every {
             matrixClientMock.userApi.register(allAny())
@@ -129,12 +129,12 @@ class DefaultAppserviceHandlerTest {
             )
         }
         verify { matrixClientMock.userApi.setDisplayName("@someUserId:example.com", "someDisplayName") }
-        verify { matrixAppserviceUserServiceMock.saveUser("@someUserId:example.com") }
+        verify { matrixAppserviceUserServiceMock.saveUser("someUserId") }
     }
 
     @Test
     fun `should not hasUser when register fails`() {
-        every { matrixAppserviceUserServiceMock.userExistingState("@someUserId:example.com") }
+        every { matrixAppserviceUserServiceMock.userExistingState("someUserId") }
                 .returns(MatrixAppserviceUserService.UserExistingState.CAN_BE_CREATED)
 
         every {
@@ -155,9 +155,9 @@ class DefaultAppserviceHandlerTest {
 
     @Test
     fun `should hasUser when saving by service fails`() {
-        every { matrixAppserviceUserServiceMock.userExistingState("@someUserId:example.com") }
+        every { matrixAppserviceUserServiceMock.userExistingState("someUserId") }
                 .returns(MatrixAppserviceUserService.UserExistingState.CAN_BE_CREATED)
-        every { matrixAppserviceUserServiceMock.saveUser("@someUserId:example.com") } throws RuntimeException()
+        every { matrixAppserviceUserServiceMock.saveUser("someUserId") } throws RuntimeException()
 
         every {
             matrixClientMock.userApi.setDisplayName(allAny())
@@ -172,7 +172,7 @@ class DefaultAppserviceHandlerTest {
 
     @Test
     fun `should hasUser when setting displayName fails`() {
-        every { matrixAppserviceUserServiceMock.userExistingState("@someUserId:example.com") }
+        every { matrixAppserviceUserServiceMock.userExistingState("someUserId") }
                 .returns(MatrixAppserviceUserService.UserExistingState.CAN_BE_CREATED)
 
         every {
@@ -188,7 +188,7 @@ class DefaultAppserviceHandlerTest {
 
     @Test
     fun `should not hasUser when delegated service says it does not exists and should not be created`() {
-        every { matrixAppserviceUserServiceMock.userExistingState("@someUserId:example.com") }
+        every { matrixAppserviceUserServiceMock.userExistingState("someUserId") }
                 .returns(MatrixAppserviceUserService.UserExistingState.DOES_NOT_EXISTS)
 
         val result = cut.hasUser("@someUserId:example.com").block()
@@ -200,7 +200,7 @@ class DefaultAppserviceHandlerTest {
 
     @Test
     fun `should hasRoomAlias when delegated service says it exists`() {
-        every { matrixAppserviceRoomServiceMock.roomExistingState("#someRoomAlias:example.com") }
+        every { matrixAppserviceRoomServiceMock.roomExistingState("someRoomAlias") }
                 .returns(MatrixAppserviceRoomService.RoomExistingState.EXISTS)
 
         val result = cut.hasRoomAlias("#someRoomAlias:example.com").block()
@@ -209,9 +209,9 @@ class DefaultAppserviceHandlerTest {
 
     @Test
     fun `should hasRoomAlias and create it when delegated service want to`() {
-        every { matrixAppserviceRoomServiceMock.roomExistingState("#someRoomAlias:example.com") }
+        every { matrixAppserviceRoomServiceMock.roomExistingState("someRoomAlias") }
                 .returns(MatrixAppserviceRoomService.RoomExistingState.CAN_BE_CREATED)
-        every { matrixAppserviceRoomServiceMock.getCreateRoomParameter("#someRoomAlias:example.com") }
+        every { matrixAppserviceRoomServiceMock.getCreateRoomParameter("someRoomAlias") }
                 .returns(CreateRoomParameter(name = "someName"))
 
         every {
@@ -228,12 +228,12 @@ class DefaultAppserviceHandlerTest {
                     name = "someName"
             )
         }
-        verify { matrixAppserviceRoomServiceMock.saveRoom("#someRoomAlias:example.com", "someRoomId") }
+        verify { matrixAppserviceRoomServiceMock.saveRoom("someRoomAlias") }
     }
 
     @Test
     fun `should not hasRoomAlias when creation fails`() {
-        every { matrixAppserviceRoomServiceMock.roomExistingState("#someRoomAlias:example.com") }
+        every { matrixAppserviceRoomServiceMock.roomExistingState("someRoomAlias") }
                 .returns(MatrixAppserviceRoomService.RoomExistingState.CAN_BE_CREATED)
 
         every {
@@ -249,19 +249,14 @@ class DefaultAppserviceHandlerTest {
         StepVerifier.create(result)
                 .verifyError()
 
-        verify(exactly = 0) { matrixAppserviceRoomServiceMock.saveRoom(any(), any()) }
+        verify(exactly = 0) { matrixAppserviceRoomServiceMock.saveRoom(any()) }
     }
 
     @Test
     fun `should hasRoomAlias when saving by service fails`() {
-        every { matrixAppserviceRoomServiceMock.roomExistingState("#someRoomAlias:example.com") }
+        every { matrixAppserviceRoomServiceMock.roomExistingState("someRoomAlias") }
                 .returns(MatrixAppserviceRoomService.RoomExistingState.CAN_BE_CREATED)
-        every {
-            matrixAppserviceRoomServiceMock.saveRoom(
-                    "#someRoomAlias:example.com",
-                    "someRoomId"
-            )
-        } throws RuntimeException()
+        every { matrixAppserviceRoomServiceMock.saveRoom("someRoomAlias") } throws RuntimeException()
 
         every {
             matrixClientMock.roomsApi.createRoom(allAny())
@@ -270,18 +265,18 @@ class DefaultAppserviceHandlerTest {
         val result = cut.hasRoomAlias("#someRoomAlias:example.com").block()
         assertThat(result).isTrue()
 
-        verify { matrixAppserviceRoomServiceMock.saveRoom(any(), any()) }
+        verify { matrixAppserviceRoomServiceMock.saveRoom(any()) }
     }
 
     @Test
     fun `should not hasRoomAlias when delegated service says it does not exists and should not be created`() {
-        every { matrixAppserviceRoomServiceMock.roomExistingState("#someRoomAlias:example.com") }
+        every { matrixAppserviceRoomServiceMock.roomExistingState("someRoomAlias") }
                 .returns(MatrixAppserviceRoomService.RoomExistingState.DOES_NOT_EXISTS)
 
         val result = cut.hasRoomAlias("#someRoomAlias:example.com").block()
         assertThat(result).isFalse()
 
         verify(exactly = 0) { matrixClientMock.roomsApi wasNot Called }
-        verify(exactly = 0) { matrixAppserviceRoomServiceMock.saveRoom(any(), any()) }
+        verify(exactly = 0) { matrixAppserviceRoomServiceMock.saveRoom(any()) }
     }
 }

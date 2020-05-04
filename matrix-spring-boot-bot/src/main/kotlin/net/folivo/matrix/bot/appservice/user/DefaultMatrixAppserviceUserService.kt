@@ -10,23 +10,21 @@ class DefaultMatrixAppserviceUserService(
         private val appserviceUserRepository: AppserviceUserRepository
 ) : MatrixAppserviceUserService {
 
-    override fun userExistingState(userId: String): MatrixAppserviceUserService.UserExistingState {
-        val matrixUsername = userId.trimStart('@').substringBefore(":")
-        return if (appserviceUserRepository.findByMatrixUsername(matrixUsername) != null) {
+    override fun userExistingState(username: String): MatrixAppserviceUserService.UserExistingState {
+        return if (appserviceUserRepository.findByMatrixUsername(username) != null) {
             MatrixAppserviceUserService.UserExistingState.EXISTS
-        } else if (appserviceBotManager.shouldCreateUser(matrixUsername)) {
+        } else if (appserviceBotManager.shouldCreateUser(username)) {
             MatrixAppserviceUserService.UserExistingState.CAN_BE_CREATED
         } else {
             MatrixAppserviceUserService.UserExistingState.DOES_NOT_EXISTS
         }
     }
 
-    override fun getCreateUserParameter(userId: String): CreateUserParameter {
-        TODO("Not yet implemented")
+    override fun getCreateUserParameter(username: String): CreateUserParameter {
+        return appserviceBotManager.getCreateUserParameter(username)
     }
 
-    override fun saveUser(userId: String) {
-        val matrixUsername = userId.trimStart('@').substringBefore(":")
-        appserviceUserRepository.save(AppserviceUser(matrixUsername))
+    override fun saveUser(username: String) {
+        appserviceUserRepository.save(AppserviceUser(username))
     }
 }

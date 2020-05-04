@@ -6,7 +6,7 @@ interface MatrixAppserviceRoomService {
         EXISTS, DOES_NOT_EXISTS, CAN_BE_CREATED
     }
 
-    fun roomExistingState(roomAlias: String): RoomExistingState
-    fun getCreateRoomParameter(roomAlias: String): CreateRoomParameter
-    fun saveRoom(roomAlias: String, roomId: String)
+    fun roomExistingState(roomAliasName: String): RoomExistingState
+    fun getCreateRoomParameter(roomAliasName: String): CreateRoomParameter
+    fun saveRoom(roomAliasName: String)
 }

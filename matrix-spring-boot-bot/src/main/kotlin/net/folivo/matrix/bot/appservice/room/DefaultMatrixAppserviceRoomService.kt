@@ -10,10 +10,9 @@ class DefaultMatrixAppserviceRoomService(
         private val appserviceRoomRepository: AppserviceRoomRepository
 ) : MatrixAppserviceRoomService {
 
-    override fun roomExistingState(roomAlias: String): MatrixAppserviceRoomService.RoomExistingState {
-        val matrixRoomAlias = roomAlias.trimStart('#').substringBefore(":")
-        return if (appserviceRoomRepository.findByMatrixRoomAlias(matrixRoomAlias) == null
-                   && appserviceBotManager.shouldCreateRoom(matrixRoomAlias)
+    override fun roomExistingState(roomAliasName: String): MatrixAppserviceRoomService.RoomExistingState {
+        return if (appserviceRoomRepository.findByMatrixRoomAlias(roomAliasName) == null
+                   && appserviceBotManager.shouldCreateRoom(roomAliasName)
         ) {
             MatrixAppserviceRoomService.RoomExistingState.CAN_BE_CREATED
         } else {
@@ -21,11 +20,11 @@ class DefaultMatrixAppserviceRoomService(
         }
     }
 
-    override fun getCreateRoomParameter(roomAlias: String): CreateRoomParameter {
-        TODO("Not yet implemented")
+    override fun getCreateRoomParameter(roomAliasName: String): CreateRoomParameter {
+        return appserviceBotManager.getCreateRoomParameter(roomAliasName)
     }
 
-    override fun saveRoom(roomAlias: String, roomId: String) {
-        TODO("Not yet implemented")
+    override fun saveRoom(roomAliasName: String) {
+        appserviceRoomRepository.save(AppserviceRoom(roomAliasName))
     }
 }

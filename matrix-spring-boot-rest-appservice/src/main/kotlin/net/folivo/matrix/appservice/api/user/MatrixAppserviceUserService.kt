@@ -6,7 +6,7 @@ interface MatrixAppserviceUserService {
         EXISTS, DOES_NOT_EXISTS, CAN_BE_CREATED
     }
 
-    fun userExistingState(userId: String): UserExistingState
-    fun getCreateUserParameter(userId: String): CreateUserParameter
-    fun saveUser(userId: String)
+    fun userExistingState(username: String): UserExistingState
+    fun getCreateUserParameter(username: String): CreateUserParameter
+    fun saveUser(username: String)
 }
