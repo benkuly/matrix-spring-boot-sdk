@@ -1,8 +1,8 @@
 package net.folivo.matrix.bot.config
 
-import net.folivo.matrix.appservice.api.MatrixAppserviceEventService
-import net.folivo.matrix.bot.appservice.DefaultMatrixAppserviceEventService
-import net.folivo.matrix.bot.appservice.EventTransactionRepository
+import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
+import net.folivo.matrix.bot.appservice.event.DefaultMatrixAppserviceEventService
+import net.folivo.matrix.bot.appservice.event.EventTransactionRepository
 import net.folivo.matrix.core.handler.MatrixEventHandler
 import net.folivo.matrix.restclient.config.MatrixClientConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
@@ -27,7 +27,10 @@ class MatrixAppserviceBotAutoconfiguration(private val botProperties: MatrixBotP
             eventTransactionRepository: EventTransactionRepository,
             matrixEventHandler: List<MatrixEventHandler>
     ): MatrixAppserviceEventService {
-        return DefaultMatrixAppserviceEventService(eventTransactionRepository, matrixEventHandler)
+        return DefaultMatrixAppserviceEventService(
+                eventTransactionRepository,
+                matrixEventHandler
+        )
     }
 
 //    @Bean

@@ -1,7 +1,15 @@
 package net.folivo.matrix.appservice.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import net.folivo.matrix.appservice.api.*
+import net.folivo.matrix.appservice.api.AppserviceController
+import net.folivo.matrix.appservice.api.AppserviceHandler
+import net.folivo.matrix.appservice.api.DefaultAppserviceHandler
+import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
+import net.folivo.matrix.appservice.api.event.NoOpMatrixAppserviceEventService
+import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
+import net.folivo.matrix.appservice.api.room.NoOpMatrixAppserviceRoomService
+import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
+import net.folivo.matrix.appservice.api.user.NoOpMatrixAppserviceUserService
 import net.folivo.matrix.core.api.ErrorResponse
 import net.folivo.matrix.restclient.MatrixClient
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean

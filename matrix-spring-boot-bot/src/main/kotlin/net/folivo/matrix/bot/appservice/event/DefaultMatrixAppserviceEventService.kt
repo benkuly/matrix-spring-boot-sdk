@@ -1,6 +1,6 @@
-package net.folivo.matrix.bot.appservice
+package net.folivo.matrix.bot.appservice.event
 
-import net.folivo.matrix.appservice.api.MatrixAppserviceEventService
+import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
 import net.folivo.matrix.core.handler.MatrixEventHandler
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.StateEvent
@@ -23,7 +23,12 @@ class DefaultMatrixAppserviceEventService(
     }
 
     override fun saveEventProcessed(tnxId: String, eventIdOrType: String) {
-        eventTransactionRepository.save(EventTransaction(tnxId, eventIdOrType))
+        eventTransactionRepository.save(
+                EventTransaction(
+                        tnxId,
+                        eventIdOrType
+                )
+        )
     }
 
     override fun processEvent(event: Event<*>) {

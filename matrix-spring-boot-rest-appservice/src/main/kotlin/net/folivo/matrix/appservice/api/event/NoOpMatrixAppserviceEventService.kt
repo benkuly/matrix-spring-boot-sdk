@@ -1,4 +1,4 @@
-package net.folivo.matrix.appservice.api
+package net.folivo.matrix.appservice.api.event
 
 import net.folivo.matrix.core.model.events.Event
 
@@ -15,6 +15,6 @@ class NoOpMatrixAppserviceEventService : MatrixAppserviceEventService {
     }
 
     override fun processEvent(event: Event<*>) {
-        
+
     }
 }

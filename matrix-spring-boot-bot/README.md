@@ -31,12 +31,14 @@ spring:
 ```
 
 ### Appservice mode
-To use the more advanced appservice mode, you must change and add some properties:
+To use the more advanced appservice mode, you must add some properties:
 
 ```yaml
 matrix:
   bot:
     mode: APPSERVICE
+  appservice:
+    hsToken: superSecretToken
 ```
 
 ### Handle messages

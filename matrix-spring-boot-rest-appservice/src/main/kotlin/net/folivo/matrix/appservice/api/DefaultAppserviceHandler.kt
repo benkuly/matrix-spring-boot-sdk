@@ -1,7 +1,10 @@
 package net.folivo.matrix.appservice.api
 
-import net.folivo.matrix.appservice.api.MatrixAppserviceRoomService.RoomExistingState
-import net.folivo.matrix.appservice.api.MatrixAppserviceUserService.UserExistingState
+import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
+import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
+import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService.RoomExistingState
+import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
+import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService.UserExistingState
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.RoomEvent
 import net.folivo.matrix.core.model.events.StateEvent

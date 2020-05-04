@@ -1,4 +1,4 @@
-package net.folivo.matrix.appservice.api
+package net.folivo.matrix.appservice.api.user
 
 interface MatrixAppserviceUserService {
 

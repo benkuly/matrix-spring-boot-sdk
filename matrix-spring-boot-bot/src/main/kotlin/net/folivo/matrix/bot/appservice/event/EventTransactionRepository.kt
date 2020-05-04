@@ -1,5 +1,6 @@
-package net.folivo.matrix.bot.appservice
+package net.folivo.matrix.bot.appservice.event
 
+import net.folivo.matrix.bot.appservice.event.EventTransaction
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 

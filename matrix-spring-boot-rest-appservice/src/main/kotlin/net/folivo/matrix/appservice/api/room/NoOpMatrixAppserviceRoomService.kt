@@ -1,4 +1,4 @@
-package net.folivo.matrix.appservice.api
+package net.folivo.matrix.appservice.api.room
 
 class NoOpMatrixAppserviceRoomService : MatrixAppserviceRoomService {
     override fun roomExistingState(roomAlias: String): MatrixAppserviceRoomService.RoomExistingState {

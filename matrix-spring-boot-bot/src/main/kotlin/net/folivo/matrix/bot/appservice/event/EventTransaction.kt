@@ -1,4 +1,4 @@
-package net.folivo.matrix.bot.appservice
+package net.folivo.matrix.bot.appservice.event
 
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue

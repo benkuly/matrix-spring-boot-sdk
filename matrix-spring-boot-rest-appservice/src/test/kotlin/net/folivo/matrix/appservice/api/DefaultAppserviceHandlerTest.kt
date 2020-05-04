@@ -7,6 +7,10 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.verify
+import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
+import net.folivo.matrix.appservice.api.room.CreateRoomParameter
+import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
+import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
 import net.folivo.matrix.core.api.ErrorResponse
 import net.folivo.matrix.core.api.MatrixServerException
 import net.folivo.matrix.core.model.events.UnknownEvent

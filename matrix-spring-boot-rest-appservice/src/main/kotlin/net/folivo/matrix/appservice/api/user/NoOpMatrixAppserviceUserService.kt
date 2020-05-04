@@ -1,4 +1,4 @@
-package net.folivo.matrix.appservice.api
+package net.folivo.matrix.appservice.api.user
 
 class NoOpMatrixAppserviceUserService : MatrixAppserviceUserService {
     override fun userExistingState(userId: String): MatrixAppserviceUserService.UserExistingState {

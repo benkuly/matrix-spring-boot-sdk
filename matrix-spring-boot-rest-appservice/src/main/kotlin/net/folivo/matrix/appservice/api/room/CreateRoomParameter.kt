@@ -1,4 +1,4 @@
-package net.folivo.matrix.appservice.api
+package net.folivo.matrix.appservice.api.room
 
 import net.folivo.matrix.core.model.events.StateEvent
 import net.folivo.matrix.core.model.events.m.room.CreateEvent
