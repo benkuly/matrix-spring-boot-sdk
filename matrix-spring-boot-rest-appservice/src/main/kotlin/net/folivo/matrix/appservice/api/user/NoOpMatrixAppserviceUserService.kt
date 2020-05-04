@@ -5,6 +5,10 @@ class NoOpMatrixAppserviceUserService : MatrixAppserviceUserService {
         return MatrixAppserviceUserService.UserExistingState.DOES_NOT_EXISTS
     }
 
+    override fun getCreateUserParameter(userId: String): CreateUserParameter {
+        return CreateUserParameter()
+    }
+
     override fun saveUser(userId: String) {
     }
 }

@@ -20,7 +20,7 @@ class DefaultAppserviceHandler(
         private val matrixAppserviceRoomService: MatrixAppserviceRoomService
 ) : AppserviceHandler {
 
-    private val logger = LoggerFactory.getLogger(AppserviceHandler::class.java)
+    private val logger = LoggerFactory.getLogger(DefaultAppserviceHandler::class.java)
 
     override fun addTransactions(tnxId: String, events: Flux<Event<*>>): Mono<Void> {
         return events.map { event ->
@@ -49,10 +49,17 @@ class DefaultAppserviceHandler(
                 val username = userId.trimStart('@').substringBefore(":")
                 matrixClient.userApi
                         .register(authenticationType = "m.login.application_service", username = username)
-                        .doOnSuccess {
-                            matrixAppserviceUserService.saveUser(it.userId)
+                        .doOnSuccess { response ->
+                            try {
+                                matrixAppserviceUserService.saveUser(response.userId)
+                                val createUserParameter = matrixAppserviceUserService.getCreateUserParameter(userId)
+                                matrixClient.userApi.setDisplayName(response.userId, createUserParameter.displayName)
+                                        .block()
+                            } catch (error: Throwable) {
+                                logger.error("an error occurred in after user registration tasks: $error")
+                            }
                         }
-                        .flatMap { Mono.just(true) }
+                        .map { true }
             }
         }
     }
@@ -81,9 +88,13 @@ class DefaultAppserviceHandler(
                                 preset = createRoomParameter.preset
                         )
                         .doOnSuccess {
-                            matrixAppserviceRoomService.saveRoom(roomAlias, it)
+                            try {
+                                matrixAppserviceRoomService.saveRoom(roomAlias, it)
+                            } catch (error: Throwable) {
+                                logger.error("an error occurred in after room creation tasks: $error")
+                            }
                         }
-                        .flatMap { Mono.just(true) }
+                        .map { true }
             }
         }
     }

@@ -42,7 +42,6 @@ class MatrixClientBotAutoconfigurationContextTest {
 
         @Bean
         fun syncBatchTokenRepository(): SyncBatchTokenRepository {
-            println("############")
             return mockk(relaxed = true)
         }
     }

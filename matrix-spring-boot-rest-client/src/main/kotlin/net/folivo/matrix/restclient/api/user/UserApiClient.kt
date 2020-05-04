@@ -17,14 +17,12 @@ class UserApiClient(private val webClient: WebClient) {
             accountType: AccountType? = null,
             deviceId: String? = null,
             initialDeviceDisplayName: String? = null,
-            inhibitLogin: Boolean? = null,
-            asUserId: String? = null
+            inhibitLogin: Boolean? = null
     ): Mono<RegisterResponse> {
         return webClient
                 .post().uri {
                     it.apply {
                         path("/r0/register")
-                        if (asUserId != null) queryParam("user_id", asUserId)
                         if (accountType != null) queryParam("kind", accountType.value)
                     }.build()
                 }
@@ -41,6 +39,23 @@ class UserApiClient(private val webClient: WebClient) {
                                 "inhibit_login" to inhibitLogin
                         )
                 )
+                .retrieve()
+                .bodyToMono()
+    }
+
+    fun setDisplayName(
+            userId: String,
+            displayName: String? = null,
+            asUserId: String? = null
+    ): Mono<Void> {
+        return webClient
+                .put().uri {
+                    it.apply {
+                        path("/r0/profile/{userId}/displayname")
+                        if (asUserId != null) queryParam("user_id", asUserId)
+                    }.build(userId)
+                }
+                .bodyValue(mapOf("displayname" to displayName))
                 .retrieve()
                 .bodyToMono()
     }

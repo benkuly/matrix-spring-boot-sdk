@@ -10,6 +10,7 @@ import io.mockk.verify
 import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
 import net.folivo.matrix.appservice.api.room.CreateRoomParameter
 import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
+import net.folivo.matrix.appservice.api.user.CreateUserParameter
 import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
 import net.folivo.matrix.core.api.ErrorResponse
 import net.folivo.matrix.core.api.MatrixServerException
@@ -109,10 +110,14 @@ class DefaultAppserviceHandlerTest {
     fun `should hasUser and create it when delegated service want to`() {
         every { matrixAppserviceUserServiceMock.userExistingState("@someUserId:example.com") }
                 .returns(MatrixAppserviceUserService.UserExistingState.CAN_BE_CREATED)
-
+        every { matrixAppserviceUserServiceMock.getCreateUserParameter("@someUserId:example.com") }
+                .returns(CreateUserParameter("someDisplayName"))
         every {
             matrixClientMock.userApi.register(allAny())
         } returns Mono.just(RegisterResponse("@someUserId:example.com"))
+        every {
+            matrixClientMock.userApi.setDisplayName(allAny())
+        } returns Mono.empty()
 
         val result = cut.hasUser("@someUserId:example.com").block()
         assertThat(result).isTrue()
@@ -123,6 +128,7 @@ class DefaultAppserviceHandlerTest {
                     username = "someUserId"
             )
         }
+        verify { matrixClientMock.userApi.setDisplayName("@someUserId:example.com", "someDisplayName") }
         verify { matrixAppserviceUserServiceMock.saveUser("@someUserId:example.com") }
     }
 
@@ -148,18 +154,36 @@ class DefaultAppserviceHandlerTest {
     }
 
     @Test
-    fun `should not hasUser when saving by service fails`() {
+    fun `should hasUser when saving by service fails`() {
         every { matrixAppserviceUserServiceMock.userExistingState("@someUserId:example.com") }
                 .returns(MatrixAppserviceUserService.UserExistingState.CAN_BE_CREATED)
         every { matrixAppserviceUserServiceMock.saveUser("@someUserId:example.com") } throws RuntimeException()
 
         every {
+            matrixClientMock.userApi.setDisplayName(allAny())
+        } returns Mono.empty()
+        every {
             matrixClientMock.userApi.register(allAny())
         } returns Mono.just(RegisterResponse("@someUserId:example.com"))
 
-        val result = cut.hasUser("@someUserId:example.com")
-        StepVerifier.create(result)
-                .verifyError()
+        val result = cut.hasUser("@someUserId:example.com").block()
+        assertThat(result).isTrue()
+    }
+
+    @Test
+    fun `should hasUser when setting displayName fails`() {
+        every { matrixAppserviceUserServiceMock.userExistingState("@someUserId:example.com") }
+                .returns(MatrixAppserviceUserService.UserExistingState.CAN_BE_CREATED)
+
+        every {
+            matrixClientMock.userApi.setDisplayName(allAny())
+        } returns Mono.error(MatrixServerException(HttpStatus.BAD_REQUEST, ErrorResponse("M_UNKNOWN")))
+        every {
+            matrixClientMock.userApi.register(allAny())
+        } returns Mono.just(RegisterResponse("@someUserId:example.com"))
+
+        val result = cut.hasUser("@someUserId:example.com").block()
+        assertThat(result).isTrue()
     }
 
     @Test
@@ -225,11 +249,11 @@ class DefaultAppserviceHandlerTest {
         StepVerifier.create(result)
                 .verifyError()
 
-        verify(exactly = 0) { matrixAppserviceUserServiceMock.saveUser(any()) }
+        verify(exactly = 0) { matrixAppserviceRoomServiceMock.saveRoom(any(), any()) }
     }
 
     @Test
-    fun `should not hasRoomAlias when saving by service fails`() {
+    fun `should hasRoomAlias when saving by service fails`() {
         every { matrixAppserviceRoomServiceMock.roomExistingState("#someRoomAlias:example.com") }
                 .returns(MatrixAppserviceRoomService.RoomExistingState.CAN_BE_CREATED)
         every {
@@ -243,9 +267,10 @@ class DefaultAppserviceHandlerTest {
             matrixClientMock.roomsApi.createRoom(allAny())
         } returns Mono.just("someRoomId")
 
-        val result = cut.hasRoomAlias("#someRoomAlias:example.com")
-        StepVerifier.create(result)
-                .verifyError()
+        val result = cut.hasRoomAlias("#someRoomAlias:example.com").block()
+        assertThat(result).isTrue()
+
+        verify { matrixAppserviceRoomServiceMock.saveRoom(any(), any()) }
     }
 
     @Test
@@ -257,6 +282,6 @@ class DefaultAppserviceHandlerTest {
         assertThat(result).isFalse()
 
         verify(exactly = 0) { matrixClientMock.roomsApi wasNot Called }
-        verify(exactly = 0) { matrixAppserviceUserServiceMock.saveUser(any()) }
+        verify(exactly = 0) { matrixAppserviceRoomServiceMock.saveRoom(any(), any()) }
     }
 }

@@ -1,3 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   net.folivo.matrix.bot.config.MatrixBotAutoconfiguration,\
-  net.folivo.matrix.bot.config.MatrixClientBotAutoconfiguration
+  net.folivo.matrix.bot.config.MatrixClientBotAutoconfiguration,\
+  net.folivo.matrix.bot.config.MatrixAppserviceBotAutoconfiguration
