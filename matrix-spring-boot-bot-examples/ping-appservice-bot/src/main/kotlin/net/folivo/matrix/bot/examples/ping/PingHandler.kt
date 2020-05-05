@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 class PingHandler : MatrixMessageContentHandler {
     private val logger = LoggerFactory.getLogger(PingHandler::class.java)
 
-    override fun handleMessage(content: MessageEvent.MessageEventContent, context: MessageContext) {
+    override fun handleMessage(content: MessageEvent.MessageEventContent, context: MessageContext): Mono<Void> {
         if (content is TextMessageEventContent) {
             if (content.body.contains("ping")) {
                 val id = context.answer(NoticeMessageEventContent("pong")).block()

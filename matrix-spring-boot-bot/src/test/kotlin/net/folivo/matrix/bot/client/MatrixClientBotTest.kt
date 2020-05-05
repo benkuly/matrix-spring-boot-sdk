@@ -37,7 +37,7 @@ class MatrixClientBotTest {
                         eventHandlerMock1,
                         eventHandlerMock2
                 ),
-                MatrixBotProperties()
+                MatrixBotProperties(serverName = "someServerName")
         )
 
         val event1 = mockk<MessageEvent<TextMessageEventContent>>()
@@ -91,7 +91,7 @@ class MatrixClientBotTest {
         val cut = MatrixClientBot(
                 matrixClientMock,
                 listOf(),
-                MatrixBotProperties(autoJoin = true)
+                MatrixBotProperties(autoJoin = true, serverName = "someServerName")
         )
 
         val response1 = mockk<SyncResponse>(relaxed = true) {
@@ -118,7 +118,7 @@ class MatrixClientBotTest {
         val cut = MatrixClientBot(
                 matrixClientMock,
                 listOf(),
-                MatrixBotProperties(autoJoin = false)
+                MatrixBotProperties(autoJoin = false, serverName = "someServerName")
         )
 
         val response1 = mockk<SyncResponse>(relaxed = true) {
@@ -144,7 +144,7 @@ class MatrixClientBotTest {
         val cut = MatrixClientBot(
                 matrixClientMock,
                 listOf(eventHandlerMock1),
-                MatrixBotProperties()
+                MatrixBotProperties(serverName = "someServerName")
         )
 
         val response = mockk<SyncResponse>(relaxed = true) {
@@ -175,7 +175,7 @@ class MatrixClientBotTest {
         val cut = MatrixClientBot(
                 matrixClientMock,
                 listOf(eventHandlerMock1),
-                MatrixBotProperties()
+                MatrixBotProperties(serverName = "someServerName")
         )
 
         val response = mockk<SyncResponse>(relaxed = true) {

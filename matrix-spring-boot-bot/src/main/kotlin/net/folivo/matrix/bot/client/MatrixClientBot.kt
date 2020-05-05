@@ -7,6 +7,7 @@ import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
 import reactor.core.Disposable
+import reactor.core.publisher.Flux
 
 class MatrixClientBot(
         private val matrixClient: MatrixClient,
@@ -22,10 +23,10 @@ class MatrixClientBot(
         stop() // TODO or an exception?
         disposable = matrixClient.syncApi
                 .syncLoop()
-                .subscribe { syncResponse -> // TODO logic could be separated in something like a SyncResponseHandler
+                .subscribe { syncResponse -> // TODO logic could be separated in something like a SyncResponseHandler, also flatMap would be cool
                     syncResponse.room.join.forEach { (roomId, joinedRoom) ->
-                        joinedRoom.timeline.events.forEach { handleEvent(it, roomId) }
-                        joinedRoom.state.events.forEach { handleEvent(it, roomId) }
+                        joinedRoom.timeline.events.forEach { handleEvent(it, roomId).subscribe() }
+                        joinedRoom.state.events.forEach { handleEvent(it, roomId).subscribe() }
                     }
                     if (botProperties.autoJoin) {
                         syncResponse.room.invite.keys.forEach { roomId ->
@@ -43,9 +44,9 @@ class MatrixClientBot(
         disposable?.dispose()
     }
 
-    private fun handleEvent(event: Event<*>, roomId: String) {
-        eventHandler
+    private fun handleEvent(event: Event<*>, roomId: String): Flux<Void> {
+        return Flux.fromIterable(eventHandler)
                 .filter { it.supports(event::class.java) }
-                .forEach { it.handleEvent(event, roomId) }
+                .flatMap { it.handleEvent(event, roomId) }
     }
 }

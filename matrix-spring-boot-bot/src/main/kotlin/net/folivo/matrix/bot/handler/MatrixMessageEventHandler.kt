@@ -4,6 +4,8 @@ import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 class MatrixMessageEventHandler(
         private val messageContentHandler: List<MatrixMessageContentHandler>,
@@ -17,11 +19,11 @@ class MatrixMessageEventHandler(
         return clazz == MessageEvent::class.java
     }
 
-    override fun handleEvent(event: Event<*>, roomId: String?) {
+    override fun handleEvent(event: Event<*>, roomId: String?): Mono<Void> {
         if (event is MessageEvent<*>) {
             if (roomId == null) {
                 logger.info("could not handle event due to missing roomId")
-                return
+                return Mono.empty()
             }
             val messageContext = MessageContext(
                     matrixClient,
@@ -29,7 +31,10 @@ class MatrixMessageEventHandler(
                     roomId
             )
             logger.debug("handle message event")
-            messageContentHandler.forEach { it.handleMessage(event.content, messageContext) }
+            return Flux.fromIterable(messageContentHandler)
+                    .flatMap { it.handleMessage(event.content, messageContext) }
+                    .then()
         }
+        return Mono.empty()
     }
 }

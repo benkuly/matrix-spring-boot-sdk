@@ -51,7 +51,7 @@ class MatrixMessageEventHandlerTest {
                         originTimestamp = 1234,
                         unsigned = RoomEvent.UnsignedData()
                 ), "roomId"
-        )
+        ).subscribe()
         verify { messageContentHandler1.handleMessage(content, any()) }
         verify { messageContentHandler1.handleMessage(content, any()) }
     }
@@ -74,7 +74,7 @@ class MatrixMessageEventHandlerTest {
                         stateKey = "",
                         unsigned = StateEvent.UnsignedData()
                 ), "roomId"
-        )
+        ).subscribe()
         verify { messageContentHandler1 wasNot Called }
         verify { messageContentHandler2 wasNot Called }
     }

@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.server.RequestPredicates.accept
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import org.springframework.web.reactive.function.server.ServerResponse
+import reactor.core.publisher.Mono
 
 
 @SpringBootConfiguration
@@ -35,14 +36,16 @@ class TestApplication {
             override fun eventProcessingState(
                     tnxId: String,
                     eventIdOrType: String
-            ): MatrixAppserviceEventService.EventProcessingState {
-                return MatrixAppserviceEventService.EventProcessingState.PROCESSED
+            ): Mono<MatrixAppserviceEventService.EventProcessingState> {
+                return Mono.just(MatrixAppserviceEventService.EventProcessingState.PROCESSED)
             }
 
-            override fun saveEventProcessed(tnxId: String, eventIdOrType: String) {
+            override fun saveEventProcessed(tnxId: String, eventIdOrType: String): Mono<Void> {
+                return Mono.empty()
             }
 
-            override fun processEvent(event: Event<*>) {
+            override fun processEvent(event: Event<*>): Mono<Void> {
+                return Mono.empty()
             }
         }
     }
@@ -50,15 +53,16 @@ class TestApplication {
     @Bean
     fun noOpMatrixAppserviceRoomService(): MatrixAppserviceRoomService {
         return object : MatrixAppserviceRoomService {
-            override fun roomExistingState(roomAlias: String): MatrixAppserviceRoomService.RoomExistingState {
-                return MatrixAppserviceRoomService.RoomExistingState.DOES_NOT_EXISTS
+            override fun roomExistingState(roomAlias: String): Mono<MatrixAppserviceRoomService.RoomExistingState> {
+                return Mono.just(MatrixAppserviceRoomService.RoomExistingState.DOES_NOT_EXISTS)
             }
 
-            override fun getCreateRoomParameter(roomAlias: String): CreateRoomParameter {
-                return CreateRoomParameter()
+            override fun getCreateRoomParameter(roomAlias: String): Mono<CreateRoomParameter> {
+                return Mono.just(CreateRoomParameter())
             }
 
-            override fun saveRoom(roomAlias: String) {
+            override fun saveRoom(roomAlias: String, roomId: String): Mono<Void> {
+                return Mono.empty()
             }
         }
     }
@@ -66,15 +70,16 @@ class TestApplication {
     @Bean
     fun noOpMatrixAppserviceUserService(): MatrixAppserviceUserService {
         return object : MatrixAppserviceUserService {
-            override fun userExistingState(userId: String): MatrixAppserviceUserService.UserExistingState {
-                return MatrixAppserviceUserService.UserExistingState.DOES_NOT_EXISTS
+            override fun userExistingState(userId: String): Mono<MatrixAppserviceUserService.UserExistingState> {
+                return Mono.just(MatrixAppserviceUserService.UserExistingState.DOES_NOT_EXISTS)
             }
 
-            override fun getCreateUserParameter(userId: String): CreateUserParameter {
-                return CreateUserParameter()
+            override fun getCreateUserParameter(userId: String): Mono<CreateUserParameter> {
+                return Mono.just(CreateUserParameter())
             }
 
-            override fun saveUser(userId: String) {
+            override fun saveUser(userId: String): Mono<Void> {
+                return Mono.empty()
             }
         }
     }
