@@ -4,6 +4,6 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface AppserviceRoomRepository : CrudRepository<AppserviceRoom, Long> {
-    fun findByMatrixRoomAlias(matrixRoomAlias: String): AppserviceRoom?
+interface AppserviceRoomRepository : CrudRepository<AppserviceRoom, String> {
+    fun findByRoomAlias(roomAlias: String): AppserviceRoom?
 }

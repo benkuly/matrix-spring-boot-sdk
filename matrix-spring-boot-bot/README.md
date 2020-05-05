@@ -8,10 +8,11 @@ Just add the maven/gradle dependency `net.folivo.matrix:matrix-spring-boot-bot` 
 ```yaml
 matrix:
   bot:
+    serverName: example.org #needed to identify the domain part of e. g. @alice:example.org
     mode: CLIENT
   client:
     homeServer:
-      hostname: example.org
+      hostname: matrix.example.org
     token: superSecretMatrixToken
 ```
 
@@ -39,10 +40,26 @@ matrix:
     mode: APPSERVICE
   appservice:
     hsToken: superSecretToken
+    asUsername: superAppservice
+    namespaces:
+      users:
+        - exclusive: true
+          regex: "@_superAppservice_.*"
+      aliases:
+        - exclusive: false
+          regex: "#_superAppservice_.*"
+      rooms: []
 ```
 
+You also may implement [AppserviceBotManager](./src/main/kotlin/net/folivo/matrix/bot/appservice/AppserviceBotManager.kt) or extend/override [DefaultAppserviceBotManager](./src/main/kotlin/net/folivo/matrix/bot/appservice/DefaultAppserviceBotManager.kt) and make it available as bean (annotate it with `@Component`).
+
 ### Handle messages
-Simple implement [MatrixMessageEventHandler](./src/main/kotlin/net/folivo/matrix/bot/handler/MatrixMessageEventHandler.kt) and make it available as bean (annotate it with `@Component`).
+Just implement [MatrixMessageEventHandler](./src/main/kotlin/net/folivo/matrix/bot/handler/MatrixMessageEventHandler.kt) and make it available as bean (annotate it with `@Component`).
+
+## Advanced usage
+
+### Handle all incoming events
+Implement [MatrixEventHandler](./src/main/kotlin/net/folivo/matrix/bot/handler/MatrixEventHandler.kt) and make it available as bean (annotate it with `@Component`).
 
 ## Examples
 Examples can be found [here](../matrix-spring-boot-bot-examples).

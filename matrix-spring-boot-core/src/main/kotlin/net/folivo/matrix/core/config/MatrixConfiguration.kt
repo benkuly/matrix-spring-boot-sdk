@@ -26,7 +26,7 @@ class MatrixConfiguration {
                 return
             }
             registeredEvents[eventType.type] = it
-            logger.info("registered event type ${eventType.type}")
+            logger.debug("registered event type ${eventType.type}")
         }
     }
 

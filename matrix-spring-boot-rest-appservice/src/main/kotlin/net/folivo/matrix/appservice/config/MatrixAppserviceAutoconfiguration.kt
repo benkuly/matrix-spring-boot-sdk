@@ -5,11 +5,8 @@ import net.folivo.matrix.appservice.api.AppserviceController
 import net.folivo.matrix.appservice.api.AppserviceHandler
 import net.folivo.matrix.appservice.api.DefaultAppserviceHandler
 import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
-import net.folivo.matrix.appservice.api.event.NoOpMatrixAppserviceEventService
 import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
-import net.folivo.matrix.appservice.api.room.NoOpMatrixAppserviceRoomService
 import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
-import net.folivo.matrix.appservice.api.user.NoOpMatrixAppserviceUserService
 import net.folivo.matrix.core.api.ErrorResponse
 import net.folivo.matrix.restclient.MatrixClient
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -57,24 +54,6 @@ class MatrixAppserviceAutoconfiguration(private val matrixAppserviceProperties: 
     }
 
     @Bean
-    @ConditionalOnMissingBean
-    fun noOpMatrixAppserviceEventService(): MatrixAppserviceEventService {
-        return NoOpMatrixAppserviceEventService()
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun noopMatrixAppserviceUserService(): MatrixAppserviceUserService {
-        return NoOpMatrixAppserviceUserService()
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun noOpMatrixAppserviceRoomService(): MatrixAppserviceRoomService {
-        return NoOpMatrixAppserviceRoomService()
-    }
-
-    @Bean
     fun appserviceController(appserviceHandler: AppserviceHandler): AppserviceController {
         return AppserviceController(appserviceHandler)
     }
@@ -108,7 +87,7 @@ class MatrixAppserviceAutoconfiguration(private val matrixAppserviceProperties: 
         }
 
         http.authorizeExchange()
-                .pathMatchers("/_matrix/**").authenticated()
+                .pathMatchers("/**").authenticated()
                 .and()
                 .csrf().disable()
                 .requestCache().disable()

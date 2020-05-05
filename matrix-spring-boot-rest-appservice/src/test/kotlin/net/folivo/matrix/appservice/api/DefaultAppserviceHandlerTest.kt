@@ -171,6 +171,23 @@ class DefaultAppserviceHandlerTest {
     }
 
     @Test
+    fun `hasUser should not set displayName if null`() {
+        every { matrixAppserviceUserServiceMock.userExistingState("someUserId") }
+                .returns(MatrixAppserviceUserService.UserExistingState.CAN_BE_CREATED)
+        every { matrixAppserviceUserServiceMock.getCreateUserParameter("someUserId") }
+                .returns(CreateUserParameter())
+        every {
+            matrixClientMock.userApi.register(allAny())
+        } returns Mono.just(RegisterResponse("@someUserId:example.com"))
+
+        val result = cut.hasUser("@someUserId:example.com").block()
+        assertThat(result).isTrue()
+
+        val userApi = matrixClientMock.userApi
+        verify(exactly = 0) { userApi.setDisplayName(allAny()) }
+    }
+
+    @Test
     fun `should hasUser when setting displayName fails`() {
         every { matrixAppserviceUserServiceMock.userExistingState("someUserId") }
                 .returns(MatrixAppserviceUserService.UserExistingState.CAN_BE_CREATED)

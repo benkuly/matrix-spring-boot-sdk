@@ -45,7 +45,7 @@ class MatrixClientAutoconfiguration {
     @Bean
     @ConditionalOnMissingBean
     fun inMemorySyncBatchTokenService(): SyncBatchTokenService {
-        logger.warn("you should implement a persistent SyncBatchTokenService. Currently used: InMemorySyncBatchTokenService")
+        logger.info("you should implement a persistent SyncBatchTokenService if you use the sync api. Currently used: InMemorySyncBatchTokenService")
         return InMemorySyncBatchTokenService()
     }
 

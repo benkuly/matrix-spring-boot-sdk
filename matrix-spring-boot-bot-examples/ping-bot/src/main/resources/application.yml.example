@@ -1,0 +1,22 @@
+spring:
+  main:
+    web-application-type: NONE
+  datasource:
+    driver-class-name: org.hsqldb.jdbc.JDBCDriver
+    url: jdbc:hsqldb:file:db/db
+    username: matrixbot
+    password: matrixbot
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+logging:
+  level:
+    net.folivo.matrix: DEBUG
+
+matrix:
+  client:
+    homeServer:
+      hostname: matrix.example.org
+      secure: true
+    token: superSecretToken

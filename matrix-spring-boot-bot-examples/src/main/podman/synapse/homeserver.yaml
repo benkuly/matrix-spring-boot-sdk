@@ -13,7 +13,7 @@
 # e.g. matrix.org, localhost:8080, etc.
 # This is also the last part of your UserID.
 #
-server_name: "matrix-kotlin-sdk-it-synapse"
+server_name: "matrix-local"
 
 # When running as a daemon, the file to store the pid in
 #
@@ -343,56 +343,56 @@ listeners:
 # purged are ignored and not stored again.
 #
 retention:
-  # The message retention policies feature is disabled by default. Uncomment the
-  # following line to enable it.
-  #
-  #enabled: true
+# The message retention policies feature is disabled by default. Uncomment the
+# following line to enable it.
+#
+#enabled: true
 
-  # Default retention policy. If set, Synapse will apply it to rooms that lack the
-  # 'm.room.retention' state event. Currently, the value of 'min_lifetime' doesn't
-  # matter much because Synapse doesn't take it into account yet.
-  #
-  #default_policy:
-  #  min_lifetime: 1d
-  #  max_lifetime: 1y
+# Default retention policy. If set, Synapse will apply it to rooms that lack the
+# 'm.room.retention' state event. Currently, the value of 'min_lifetime' doesn't
+# matter much because Synapse doesn't take it into account yet.
+#
+#default_policy:
+#  min_lifetime: 1d
+#  max_lifetime: 1y
 
-  # Retention policy limits. If set, a user won't be able to send a
-  # 'm.room.retention' event which features a 'min_lifetime' or a 'max_lifetime'
-  # that's not within this range. This is especially useful in closed federations,
-  # in which server admins can make sure every federating server applies the same
-  # rules.
-  #
-  #allowed_lifetime_min: 1d
-  #allowed_lifetime_max: 1y
+# Retention policy limits. If set, a user won't be able to send a
+# 'm.room.retention' event which features a 'min_lifetime' or a 'max_lifetime'
+# that's not within this range. This is especially useful in closed federations,
+# in which server admins can make sure every federating server applies the same
+# rules.
+#
+#allowed_lifetime_min: 1d
+#allowed_lifetime_max: 1y
 
-  # Server admins can define the settings of the background jobs purging the
-  # events which lifetime has expired under the 'purge_jobs' section.
-  #
-  # If no configuration is provided, a single job will be set up to delete expired
-  # events in every room daily.
-  #
-  # Each job's configuration defines which range of message lifetimes the job
-  # takes care of. For example, if 'shortest_max_lifetime' is '2d' and
-  # 'longest_max_lifetime' is '3d', the job will handle purging expired events in
-  # rooms whose state defines a 'max_lifetime' that's both higher than 2 days, and
-  # lower than or equal to 3 days. Both the minimum and the maximum value of a
-  # range are optional, e.g. a job with no 'shortest_max_lifetime' and a
-  # 'longest_max_lifetime' of '3d' will handle every room with a retention policy
-  # which 'max_lifetime' is lower than or equal to three days.
-  #
-  # The rationale for this per-job configuration is that some rooms might have a
-  # retention policy with a low 'max_lifetime', where history needs to be purged
-  # of outdated messages on a more frequent basis than for the rest of the rooms
-  # (e.g. every 12h), but not want that purge to be performed by a job that's
-  # iterating over every room it knows, which could be heavy on the server.
-  #
-  #purge_jobs:
-  #  - shortest_max_lifetime: 1d
-  #    longest_max_lifetime: 3d
-  #    interval: 12h
-  #  - shortest_max_lifetime: 3d
-  #    longest_max_lifetime: 1y
-  #    interval: 1d
+# Server admins can define the settings of the background jobs purging the
+# events which lifetime has expired under the 'purge_jobs' section.
+#
+# If no configuration is provided, a single job will be set up to delete expired
+# events in every room daily.
+#
+# Each job's configuration defines which range of message lifetimes the job
+# takes care of. For example, if 'shortest_max_lifetime' is '2d' and
+# 'longest_max_lifetime' is '3d', the job will handle purging expired events in
+# rooms whose state defines a 'max_lifetime' that's both higher than 2 days, and
+# lower than or equal to 3 days. Both the minimum and the maximum value of a
+# range are optional, e.g. a job with no 'shortest_max_lifetime' and a
+# 'longest_max_lifetime' of '3d' will handle every room with a retention policy
+# which 'max_lifetime' is lower than or equal to three days.
+#
+# The rationale for this per-job configuration is that some rooms might have a
+# retention policy with a low 'max_lifetime', where history needs to be purged
+# of outdated messages on a more frequent basis than for the rest of the rooms
+# (e.g. every 12h), but not want that purge to be performed by a job that's
+# iterating over every room it knows, which could be heavy on the server.
+#
+#purge_jobs:
+#  - shortest_max_lifetime: 1d
+#    longest_max_lifetime: 3d
+#    interval: 12h
+#  - shortest_max_lifetime: 3d
+#    longest_max_lifetime: 1y
+#    interval: 1d
 
 
 ## TLS ##
@@ -485,52 +485,52 @@ retention:
 #    permission to listen on port 80.
 #
 acme:
-    # ACME support is disabled by default. Set this to `true` and uncomment
-    # tls_certificate_path and tls_private_key_path above to enable it.
-    #
-    enabled: false
+  # ACME support is disabled by default. Set this to `true` and uncomment
+  # tls_certificate_path and tls_private_key_path above to enable it.
+  #
+  enabled: false
 
-    # Endpoint to use to request certificates. If you only want to test,
-    # use Let's Encrypt's staging url:
-    #     https://acme-staging.api.letsencrypt.org/directory
-    #
-    #url: https://acme-v01.api.letsencrypt.org/directory
+  # Endpoint to use to request certificates. If you only want to test,
+  # use Let's Encrypt's staging url:
+  #     https://acme-staging.api.letsencrypt.org/directory
+  #
+  #url: https://acme-v01.api.letsencrypt.org/directory
 
-    # Port number to listen on for the HTTP-01 challenge. Change this if
-    # you are forwarding connections through Apache/Nginx/etc.
-    #
-    port: 80
+  # Port number to listen on for the HTTP-01 challenge. Change this if
+  # you are forwarding connections through Apache/Nginx/etc.
+  #
+  port: 80
 
-    # Local addresses to listen on for incoming connections.
-    # Again, you may want to change this if you are forwarding connections
-    # through Apache/Nginx/etc.
-    #
-    bind_addresses: ['::', '0.0.0.0']
+  # Local addresses to listen on for incoming connections.
+  # Again, you may want to change this if you are forwarding connections
+  # through Apache/Nginx/etc.
+  #
+  bind_addresses: ['::', '0.0.0.0']
 
-    # How many days remaining on a certificate before it is renewed.
-    #
-    reprovision_threshold: 30
+  # How many days remaining on a certificate before it is renewed.
+  #
+  reprovision_threshold: 30
 
-    # The domain that the certificate should be for. Normally this
-    # should be the same as your Matrix domain (i.e., 'server_name'), but,
-    # by putting a file at 'https://<server_name>/.well-known/matrix/server',
-    # you can delegate incoming traffic to another server. If you do that,
-    # you should give the target of the delegation here.
-    #
-    # For example: if your 'server_name' is 'example.com', but
-    # 'https://example.com/.well-known/matrix/server' delegates to
-    # 'matrix.example.com', you should put 'matrix.example.com' here.
-    #
-    # If not set, defaults to your 'server_name'.
-    #
-    domain: matrix.example.com
+  # The domain that the certificate should be for. Normally this
+  # should be the same as your Matrix domain (i.e., 'server_name'), but,
+  # by putting a file at 'https://<server_name>/.well-known/matrix/server',
+  # you can delegate incoming traffic to another server. If you do that,
+  # you should give the target of the delegation here.
+  #
+  # For example: if your 'server_name' is 'example.com', but
+  # 'https://example.com/.well-known/matrix/server' delegates to
+  # 'matrix.example.com', you should put 'matrix.example.com' here.
+  #
+  # If not set, defaults to your 'server_name'.
+  #
+  domain: matrix.example.com
 
-    # file to use for the account key. This will be generated if it doesn't
-    # exist.
-    #
-    # If unspecified, we will use CONFDIR/client.key.
-    #
-    account_key_file: /data/acme_account.key
+  # file to use for the account key. This will be generated if it doesn't
+  # exist.
+  #
+  # If unspecified, we will use CONFDIR/client.key.
+  #
+  account_key_file: /data/acme_account.key
 
 # List of allowed TLS fingerprints for this server to publish along
 # with the signing keys for this server. Other matrix servers that
@@ -869,7 +869,7 @@ media_store_path: "/data/media_store"
 
 # Enable registration for new users.
 #
-#enable_registration: false
+enable_registration: true
 
 # Optional account validity configuration. This allows for accounts to be denied
 # any request after a given period.
@@ -885,54 +885,54 @@ media_store_path: "/data/media_store"
 # where d is equal to 10% of the validity period.
 #
 account_validity:
-  # The account validity feature is disabled by default. Uncomment the
-  # following line to enable it.
-  #
-  #enabled: true
+# The account validity feature is disabled by default. Uncomment the
+# following line to enable it.
+#
+#enabled: true
 
-  # The period after which an account is valid after its registration. When
-  # renewing the account, its validity period will be extended by this amount
-  # of time. This parameter is required when using the account validity
-  # feature.
-  #
-  #period: 6w
+# The period after which an account is valid after its registration. When
+# renewing the account, its validity period will be extended by this amount
+# of time. This parameter is required when using the account validity
+# feature.
+#
+#period: 6w
 
-  # The amount of time before an account's expiry date at which Synapse will
-  # send an email to the account's email address with a renewal link. By
-  # default, no such emails are sent.
-  #
-  # If you enable this setting, you will also need to fill out the 'email' and
-  # 'public_baseurl' configuration sections.
-  #
-  #renew_at: 1w
+# The amount of time before an account's expiry date at which Synapse will
+# send an email to the account's email address with a renewal link. By
+# default, no such emails are sent.
+#
+# If you enable this setting, you will also need to fill out the 'email' and
+# 'public_baseurl' configuration sections.
+#
+#renew_at: 1w
 
-  # The subject of the email sent out with the renewal link. '%(app)s' can be
-  # used as a placeholder for the 'app_name' parameter from the 'email'
-  # section.
-  #
-  # Note that the placeholder must be written '%(app)s', including the
-  # trailing 's'.
-  #
-  # If this is not set, a default value is used.
-  #
-  #renew_email_subject: "Renew your %(app)s account"
+# The subject of the email sent out with the renewal link. '%(app)s' can be
+# used as a placeholder for the 'app_name' parameter from the 'email'
+# section.
+#
+# Note that the placeholder must be written '%(app)s', including the
+# trailing 's'.
+#
+# If this is not set, a default value is used.
+#
+#renew_email_subject: "Renew your %(app)s account"
 
-  # Directory in which Synapse will try to find templates for the HTML files to
-  # serve to the user when trying to renew an account. If not set, default
-  # templates from within the Synapse package will be used.
-  #
-  #template_dir: "res/templates"
+# Directory in which Synapse will try to find templates for the HTML files to
+# serve to the user when trying to renew an account. If not set, default
+# templates from within the Synapse package will be used.
+#
+#template_dir: "res/templates"
 
-  # File within 'template_dir' giving the HTML to be displayed to the user after
-  # they successfully renewed their account. If not set, default text is used.
-  #
-  #account_renewed_html_path: "account_renewed.html"
+# File within 'template_dir' giving the HTML to be displayed to the user after
+# they successfully renewed their account. If not set, default text is used.
+#
+#account_renewed_html_path: "account_renewed.html"
 
-  # File within 'template_dir' giving the HTML to be displayed when the user
-  # tries to renew an account with an invalid renewal token. If not set,
-  # default text is used.
-  #
-  #invalid_token_html_path: "invalid_token.html"
+# File within 'template_dir' giving the HTML to be displayed when the user
+# tries to renew an account with an invalid renewal token. If not set,
+# default text is used.
+#
+#invalid_token_html_path: "invalid_token.html"
 
 # Time that a user's session remains valid for, after they log in.
 #
@@ -1039,8 +1039,8 @@ registration_shared_secret: "-.AN&Xt=-H6_Fc=62IyR^Hp9GY#N6U&;7DvGtAq9II@.X#SBh."
 # If a delegate is specified, the config option public_baseurl must also be filled out.
 #
 account_threepid_delegates:
-    #email: https://example.com     # Delegate email sending to example.com
-    #msisdn: http://localhost:8090  # Delegate SMS sending to this local process
+#email: https://example.com     # Delegate email sending to example.com
+#msisdn: http://localhost:8090  # Delegate SMS sending to this local process
 
 # Users who register on this homeserver will automatically be joined
 # to these rooms
@@ -1077,11 +1077,11 @@ account_threepid_delegates:
 # enabled by default, either for performance reasons or limited use.
 #
 metrics_flags:
-    # Publish synapse_federation_known_servers, a g auge of the number of
-    # servers this homeserver knows about, including itself. May cause
-    # performance problems on large homeservers.
-    #
-    #known_servers: true
+# Publish synapse_federation_known_servers, a g auge of the number of
+# servers this homeserver knows about, including itself. May cause
+# performance problems on large homeservers.
+#
+#known_servers: true
 
 # Whether or not to report anonymized homeserver usage statistics.
 report_stats: false
@@ -1106,8 +1106,8 @@ report_stats: false
 
 # A list of application service config files to use
 #
-#app_service_config_files:
-#  - app_service_1.yaml
+app_service_config_files:
+  - /data/ping-bot-appservice.yaml
 #  - app_service_2.yaml
 
 # Uncomment to enable tracking of application service IP addresses. Implicitly
@@ -1138,16 +1138,16 @@ signing_key_path: "/data/matrix-kotlin-sdk-it-synapse.signing.key"
 # to sign new messages.
 #
 old_signing_keys:
-  # For each key, `key` should be the base64-encoded public key, and
-  # `expired_ts`should be the time (in milliseconds since the unix epoch) that
-  # it was last used.
-  #
-  # It is possible to build an entry from an old signing.key file using the
-  # `export_signing_key` script which is provided with synapse.
-  #
-  # For example:
-  #
-  #"ed25519:id": { key: "base64string", expired_ts: 123456789123 }
+# For each key, `key` should be the base64-encoded public key, and
+# `expired_ts`should be the time (in milliseconds since the unix epoch) that
+# it was last used.
+#
+# It is possible to build an entry from an old signing.key file using the
+# `export_signing_key` script which is provided with synapse.
+#
+# For example:
+#
+#"ed25519:id": { key: "base64string", expired_ts: 123456789123 }
 
 # How long key response published by this server is valid for.
 # Used to set the valid_until_ts in /key/v2 APIs.
@@ -1295,29 +1295,29 @@ saml2_config:
     # dictionary to the module's `parse_config` method.
     #
     config:
-      # The SAML attribute (after mapping via the attribute maps) to use
-      # to derive the Matrix ID from. 'uid' by default.
-      #
-      # Note: This used to be configured by the
-      # saml2_config.mxid_source_attribute option. If that is still
-      # defined, its value will be used instead.
-      #
-      #mxid_source_attribute: displayName
+    # The SAML attribute (after mapping via the attribute maps) to use
+    # to derive the Matrix ID from. 'uid' by default.
+    #
+    # Note: This used to be configured by the
+    # saml2_config.mxid_source_attribute option. If that is still
+    # defined, its value will be used instead.
+    #
+    #mxid_source_attribute: displayName
 
-      # The mapping system to use for mapping the saml attribute onto a
-      # matrix ID.
-      #
-      # Options include:
-      #  * 'hexencode' (which maps unpermitted characters to '=xx')
-      #  * 'dotreplace' (which replaces unpermitted characters with
-      #     '.').
-      # The default is 'hexencode'.
-      #
-      # Note: This used to be configured by the
-      # saml2_config.mxid_mapping option. If that is still defined, its
-      # value will be used instead.
-      #
-      #mxid_mapping: dotreplace
+    # The mapping system to use for mapping the saml attribute onto a
+    # matrix ID.
+    #
+    # Options include:
+    #  * 'hexencode' (which maps unpermitted characters to '=xx')
+    #  * 'dotreplace' (which replaces unpermitted characters with
+    #     '.').
+    # The default is 'hexencode'.
+    #
+    # Note: This used to be configured by the
+    # saml2_config.mxid_mapping option. If that is still defined, its
+    # value will be used instead.
+    #
+    #mxid_mapping: dotreplace
 
   # In previous versions of synapse, the mapping from SAML attribute to
   # MXID was always calculated dynamically rather than stored in a
@@ -1367,55 +1367,55 @@ saml2_config:
 # Additional settings to use with single-sign on systems such as SAML2 and CAS.
 #
 sso:
-    # A list of client URLs which are whitelisted so that the user does not
-    # have to confirm giving access to their account to the URL. Any client
-    # whose URL starts with an entry in the following list will not be subject
-    # to an additional confirmation step after the SSO login is completed.
-    #
-    # WARNING: An entry such as "https://my.client" is insecure, because it
-    # will also match "https://my.client.evil.site", exposing your users to
-    # phishing attacks from evil.site. To avoid this, include a slash after the
-    # hostname: "https://my.client/".
-    #
-    # If public_baseurl is set, then the login fallback page (used by clients
-    # that don't natively support the required login flows) is whitelisted in
-    # addition to any URLs in this list.
-    #
-    # By default, this list is empty.
-    #
-    #client_whitelist:
-    #  - https://riot.im/develop
-    #  - https://my.custom.client/
+# A list of client URLs which are whitelisted so that the user does not
+# have to confirm giving access to their account to the URL. Any client
+# whose URL starts with an entry in the following list will not be subject
+# to an additional confirmation step after the SSO login is completed.
+#
+# WARNING: An entry such as "https://my.client" is insecure, because it
+# will also match "https://my.client.evil.site", exposing your users to
+# phishing attacks from evil.site. To avoid this, include a slash after the
+# hostname: "https://my.client/".
+#
+# If public_baseurl is set, then the login fallback page (used by clients
+# that don't natively support the required login flows) is whitelisted in
+# addition to any URLs in this list.
+#
+# By default, this list is empty.
+#
+#client_whitelist:
+#  - https://riot.im/develop
+#  - https://my.custom.client/
 
-    # Directory in which Synapse will try to find the template files below.
-    # If not set, default templates from within the Synapse package will be used.
-    #
-    # DO NOT UNCOMMENT THIS SETTING unless you want to customise the templates.
-    # If you *do* uncomment it, you will need to make sure that all the templates
-    # below are in the directory.
-    #
-    # Synapse will look for the following templates in this directory:
-    #
-    # * HTML page for a confirmation step before redirecting back to the client
-    #   with the login token: 'sso_redirect_confirm.html'.
-    #
-    #   When rendering, this template is given three variables:
-    #     * redirect_url: the URL the user is about to be redirected to. Needs
-    #                     manual escaping (see
-    #                     https://jinja.palletsprojects.com/en/2.11.x/templates/#html-escaping).
-    #
-    #     * display_url: the same as `redirect_url`, but with the query
-    #                    parameters stripped. The intention is to have a
-    #                    human-readable URL to show to users, not to use it as
-    #                    the final address to redirect to. Needs manual escaping
-    #                    (see https://jinja.palletsprojects.com/en/2.11.x/templates/#html-escaping).
-    #
-    #     * server_name: the homeserver's name.
-    #
-    # You can see the default templates at:
-    # https://github.com/matrix-org/synapse/tree/master/synapse/res/templates
-    #
-    #template_dir: "res/templates"
+# Directory in which Synapse will try to find the template files below.
+# If not set, default templates from within the Synapse package will be used.
+#
+# DO NOT UNCOMMENT THIS SETTING unless you want to customise the templates.
+# If you *do* uncomment it, you will need to make sure that all the templates
+# below are in the directory.
+#
+# Synapse will look for the following templates in this directory:
+#
+# * HTML page for a confirmation step before redirecting back to the client
+#   with the login token: 'sso_redirect_confirm.html'.
+#
+#   When rendering, this template is given three variables:
+#     * redirect_url: the URL the user is about to be redirected to. Needs
+#                     manual escaping (see
+#                     https://jinja.palletsprojects.com/en/2.11.x/templates/#html-escaping).
+#
+#     * display_url: the same as `redirect_url`, but with the query
+#                    parameters stripped. The intention is to have a
+#                    human-readable URL to show to users, not to use it as
+#                    the final address to redirect to. Needs manual escaping
+#                    (see https://jinja.palletsprojects.com/en/2.11.x/templates/#html-escaping).
+#
+#     * server_name: the homeserver's name.
+#
+# You can see the default templates at:
+# https://github.com/matrix-org/synapse/tree/master/synapse/res/templates
+#
+#template_dir: "res/templates"
 
 
 # The JWT needs to contain a globally unique "sub" (subject) claim.
@@ -1427,127 +1427,127 @@ sso:
 
 
 password_config:
-   # Uncomment to disable password login
-   #
-   #enabled: false
+# Uncomment to disable password login
+#
+#enabled: false
 
-   # Uncomment to disable authentication against the local password
-   # database. This is ignored if `enabled` is false, and is only useful
-   # if you have other password_providers.
-   #
-   #localdb_enabled: false
+# Uncomment to disable authentication against the local password
+# database. This is ignored if `enabled` is false, and is only useful
+# if you have other password_providers.
+#
+#localdb_enabled: false
 
-   # Uncomment and change to a secret random string for extra security.
-   # DO NOT CHANGE THIS AFTER INITIAL SETUP!
-   #
-   #pepper: "EVEN_MORE_SECRET"
+# Uncomment and change to a secret random string for extra security.
+# DO NOT CHANGE THIS AFTER INITIAL SETUP!
+#
+#pepper: "EVEN_MORE_SECRET"
 
 
 # Configuration for sending emails from Synapse.
 #
 email:
-  # The hostname of the outgoing SMTP server to use. Defaults to 'localhost'.
-  #
-  #smtp_host: mail.server
+# The hostname of the outgoing SMTP server to use. Defaults to 'localhost'.
+#
+#smtp_host: mail.server
 
-  # The port on the mail server for outgoing SMTP. Defaults to 25.
-  #
-  #smtp_port: 587
+# The port on the mail server for outgoing SMTP. Defaults to 25.
+#
+#smtp_port: 587
 
-  # Username/password for authentication to the SMTP server. By default, no
-  # authentication is attempted.
-  #
-  # smtp_user: "exampleusername"
-  # smtp_pass: "examplepassword"
+# Username/password for authentication to the SMTP server. By default, no
+# authentication is attempted.
+#
+# smtp_user: "exampleusername"
+# smtp_pass: "examplepassword"
 
-  # Uncomment the following to require TLS transport security for SMTP.
-  # By default, Synapse will connect over plain text, and will then switch to
-  # TLS via STARTTLS *if the SMTP server supports it*. If this option is set,
-  # Synapse will refuse to connect unless the server supports STARTTLS.
-  #
-  #require_transport_security: true
+# Uncomment the following to require TLS transport security for SMTP.
+# By default, Synapse will connect over plain text, and will then switch to
+# TLS via STARTTLS *if the SMTP server supports it*. If this option is set,
+# Synapse will refuse to connect unless the server supports STARTTLS.
+#
+#require_transport_security: true
 
-  # notif_from defines the "From" address to use when sending emails.
-  # It must be set if email sending is enabled.
-  #
-  # The placeholder '%(app)s' will be replaced by the application name,
-  # which is normally 'app_name' (below), but may be overridden by the
-  # Matrix client application.
-  #
-  # Note that the placeholder must be written '%(app)s', including the
-  # trailing 's'.
-  #
-  #notif_from: "Your Friendly %(app)s homeserver <noreply@example.com>"
+# notif_from defines the "From" address to use when sending emails.
+# It must be set if email sending is enabled.
+#
+# The placeholder '%(app)s' will be replaced by the application name,
+# which is normally 'app_name' (below), but may be overridden by the
+# Matrix client application.
+#
+# Note that the placeholder must be written '%(app)s', including the
+# trailing 's'.
+#
+#notif_from: "Your Friendly %(app)s homeserver <noreply@example.com>"
 
-  # app_name defines the default value for '%(app)s' in notif_from. It
-  # defaults to 'Matrix'.
-  #
-  #app_name: my_branded_matrix_server
+# app_name defines the default value for '%(app)s' in notif_from. It
+# defaults to 'Matrix'.
+#
+#app_name: my_branded_matrix_server
 
-  # Uncomment the following to enable sending emails for messages that the user
-  # has missed. Disabled by default.
-  #
-  #enable_notifs: true
+# Uncomment the following to enable sending emails for messages that the user
+# has missed. Disabled by default.
+#
+#enable_notifs: true
 
-  # Uncomment the following to disable automatic subscription to email
-  # notifications for new users. Enabled by default.
-  #
-  #notif_for_new_users: false
+# Uncomment the following to disable automatic subscription to email
+# notifications for new users. Enabled by default.
+#
+#notif_for_new_users: false
 
-  # Custom URL for client links within the email notifications. By default
-  # links will be based on "https://matrix.to".
-  #
-  # (This setting used to be called riot_base_url; the old name is still
-  # supported for backwards-compatibility but is now deprecated.)
-  #
-  #client_base_url: "http://localhost/riot"
+# Custom URL for client links within the email notifications. By default
+# links will be based on "https://matrix.to".
+#
+# (This setting used to be called riot_base_url; the old name is still
+# supported for backwards-compatibility but is now deprecated.)
+#
+#client_base_url: "http://localhost/riot"
 
-  # Configure the time that a validation email will expire after sending.
-  # Defaults to 1h.
-  #
-  #validation_token_lifetime: 15m
+# Configure the time that a validation email will expire after sending.
+# Defaults to 1h.
+#
+#validation_token_lifetime: 15m
 
-  # Directory in which Synapse will try to find the template files below.
-  # If not set, default templates from within the Synapse package will be used.
-  #
-  # DO NOT UNCOMMENT THIS SETTING unless you want to customise the templates.
-  # If you *do* uncomment it, you will need to make sure that all the templates
-  # below are in the directory.
-  #
-  # Synapse will look for the following templates in this directory:
-  #
-  # * The contents of email notifications of missed events: 'notif_mail.html' and
-  #   'notif_mail.txt'.
-  #
-  # * The contents of account expiry notice emails: 'notice_expiry.html' and
-  #   'notice_expiry.txt'.
-  #
-  # * The contents of password reset emails sent by the homeserver:
-  #   'password_reset.html' and 'password_reset.txt'
-  #
-  # * HTML pages for success and failure that a user will see when they follow
-  #   the link in the password reset email: 'password_reset_success.html' and
-  #   'password_reset_failure.html'
-  #
-  # * The contents of address verification emails sent during registration:
-  #   'registration.html' and 'registration.txt'
-  #
-  # * HTML pages for success and failure that a user will see when they follow
-  #   the link in an address verification email sent during registration:
-  #   'registration_success.html' and 'registration_failure.html'
-  #
-  # * The contents of address verification emails sent when an address is added
-  #   to a Matrix account: 'add_threepid.html' and 'add_threepid.txt'
-  #
-  # * HTML pages for success and failure that a user will see when they follow
-  #   the link in an address verification email sent when an address is added
-  #   to a Matrix account: 'add_threepid_success.html' and
-  #   'add_threepid_failure.html'
-  #
-  # You can see the default templates at:
-  # https://github.com/matrix-org/synapse/tree/master/synapse/res/templates
-  #
-  #template_dir: "res/templates"
+# Directory in which Synapse will try to find the template files below.
+# If not set, default templates from within the Synapse package will be used.
+#
+# DO NOT UNCOMMENT THIS SETTING unless you want to customise the templates.
+# If you *do* uncomment it, you will need to make sure that all the templates
+# below are in the directory.
+#
+# Synapse will look for the following templates in this directory:
+#
+# * The contents of email notifications of missed events: 'notif_mail.html' and
+#   'notif_mail.txt'.
+#
+# * The contents of account expiry notice emails: 'notice_expiry.html' and
+#   'notice_expiry.txt'.
+#
+# * The contents of password reset emails sent by the homeserver:
+#   'password_reset.html' and 'password_reset.txt'
+#
+# * HTML pages for success and failure that a user will see when they follow
+#   the link in the password reset email: 'password_reset_success.html' and
+#   'password_reset_failure.html'
+#
+# * The contents of address verification emails sent during registration:
+#   'registration.html' and 'registration.txt'
+#
+# * HTML pages for success and failure that a user will see when they follow
+#   the link in an address verification email sent during registration:
+#   'registration_success.html' and 'registration_failure.html'
+#
+# * The contents of address verification emails sent when an address is added
+#   to a Matrix account: 'add_threepid.html' and 'add_threepid.txt'
+#
+# * HTML pages for success and failure that a user will see when they follow
+#   the link in an address verification email sent when an address is added
+#   to a Matrix account: 'add_threepid_success.html' and
+#   'add_threepid_failure.html'
+#
+# You can see the default templates at:
+# https://github.com/matrix-org/synapse/tree/master/synapse/res/templates
+#
+#template_dir: "res/templates"
 
 
 #password_providers:
@@ -1791,35 +1791,35 @@ email:
 # (specifically those implemented with Jaeger).
 #
 opentracing:
-    # tracing is disabled by default. Uncomment the following line to enable it.
-    #
-    #enabled: true
+# tracing is disabled by default. Uncomment the following line to enable it.
+#
+#enabled: true
 
-    # The list of homeservers we wish to send and receive span contexts and span baggage.
-    # See docs/opentracing.rst
-    # This is a list of regexes which are matched against the server_name of the
-    # homeserver.
-    #
-    # By defult, it is empty, so no servers are matched.
-    #
-    #homeserver_whitelist:
-    #  - ".*"
+# The list of homeservers we wish to send and receive span contexts and span baggage.
+# See docs/opentracing.rst
+# This is a list of regexes which are matched against the server_name of the
+# homeserver.
+#
+# By defult, it is empty, so no servers are matched.
+#
+#homeserver_whitelist:
+#  - ".*"
 
-    # Jaeger can be configured to sample traces at different rates.
-    # All configuration options provided by Jaeger can be set here.
-    # Jaeger's configuration mostly related to trace sampling which
-    # is documented here:
-    # https://www.jaegertracing.io/docs/1.13/sampling/.
-    #
-    #jaeger_config:
-    #  sampler:
-    #    type: const
-    #    param: 1
+# Jaeger can be configured to sample traces at different rates.
+# All configuration options provided by Jaeger can be set here.
+# Jaeger's configuration mostly related to trace sampling which
+# is documented here:
+# https://www.jaegertracing.io/docs/1.13/sampling/.
+#
+#jaeger_config:
+#  sampler:
+#    type: const
+#    param: 1
 
-    #  Logging whether spans were started and reported
-    #
-    #  logging:
-    #    false
+#  Logging whether spans were started and reported
+#
+#  logging:
+#    false
 
 
 # vim:ft=yaml

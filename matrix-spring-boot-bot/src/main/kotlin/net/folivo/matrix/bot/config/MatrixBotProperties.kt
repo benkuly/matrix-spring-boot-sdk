@@ -8,7 +8,10 @@ import org.springframework.boot.context.properties.bind.DefaultValue
 @ConstructorBinding
 data class MatrixBotProperties(
         @DefaultValue("true")
-        val autojoin: Boolean = true,
+        val autoJoin: Boolean = true,
+        @DefaultValue("false")
+        val allowFederation: Boolean = false,
+        val serverName: String,
         @DefaultValue("CLIENT")
         val mode: BotMode = BotMode.CLIENT
 ) {

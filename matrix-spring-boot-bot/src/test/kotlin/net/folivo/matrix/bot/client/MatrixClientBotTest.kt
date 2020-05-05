@@ -7,7 +7,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
 import net.folivo.matrix.bot.config.MatrixBotProperties
-import net.folivo.matrix.core.handler.MatrixEventHandler
+import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
 import net.folivo.matrix.restclient.MatrixClient
@@ -91,7 +91,7 @@ class MatrixClientBotTest {
         val cut = MatrixClientBot(
                 matrixClientMock,
                 listOf(),
-                MatrixBotProperties(autojoin = true)
+                MatrixBotProperties(autoJoin = true)
         )
 
         val response1 = mockk<SyncResponse>(relaxed = true) {
@@ -118,7 +118,7 @@ class MatrixClientBotTest {
         val cut = MatrixClientBot(
                 matrixClientMock,
                 listOf(),
-                MatrixBotProperties(autojoin = false)
+                MatrixBotProperties(autoJoin = false)
         )
 
         val response1 = mockk<SyncResponse>(relaxed = true) {

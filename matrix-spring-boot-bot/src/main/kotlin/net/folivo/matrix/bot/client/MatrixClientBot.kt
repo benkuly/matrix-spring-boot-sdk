@@ -1,8 +1,8 @@
 package net.folivo.matrix.bot.client
 
 import net.folivo.matrix.bot.config.MatrixBotProperties
+import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.bot.handler.MatrixMessageEventHandler
-import net.folivo.matrix.core.handler.MatrixEventHandler
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
@@ -20,7 +20,6 @@ class MatrixClientBot(
 
     fun start() {
         stop() // TODO or an exception?
-        val autojoin = botProperties.autojoin
         disposable = matrixClient.syncApi
                 .syncLoop()
                 .subscribe { syncResponse -> // TODO logic could be separated in something like a SyncResponseHandler
@@ -28,7 +27,7 @@ class MatrixClientBot(
                         joinedRoom.timeline.events.forEach { handleEvent(it, roomId) }
                         joinedRoom.state.events.forEach { handleEvent(it, roomId) }
                     }
-                    if (autojoin) {
+                    if (botProperties.autoJoin) {
                         syncResponse.room.invite.keys.forEach { roomId ->
                             matrixClient.roomsApi.joinRoom(roomId).doOnSuccess {
                                 logger.info("joined invitation to roomId: $it")

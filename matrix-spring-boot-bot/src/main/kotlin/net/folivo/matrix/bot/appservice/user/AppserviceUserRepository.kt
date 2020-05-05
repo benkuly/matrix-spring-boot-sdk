@@ -4,6 +4,5 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface AppserviceUserRepository : CrudRepository<AppserviceUser, Long> {
-    fun findByMatrixUsername(matrixUsername: String): AppserviceUser?
+interface AppserviceUserRepository : CrudRepository<AppserviceUser, String> {
 }

@@ -547,4 +547,21 @@ class RoomsApiClientTest {
         )
         assertThat(request.method).isEqualTo(HttpMethod.POST.toString())
     }
+
+    @Test
+    fun `should leave room`() {
+        mockWebServer.enqueue(
+                MockResponse()
+                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                        .setBody("{}")
+        )
+
+        val result = matrixClient.roomsApi.leaveRoom("someRoomId").block()
+
+        assertThat(result).isNull()
+
+        val request = mockWebServer.takeRequest()
+        assertThat(request.path).isEqualTo("/_matrix/client/r0/rooms/someRoomId/leave")
+        assertThat(request.method).isEqualTo(HttpMethod.POST.toString())
+    }
 }

@@ -1,16 +1,19 @@
 package net.folivo.matrix.bot.appservice.room
 
+import net.folivo.matrix.bot.appservice.user.AppserviceUser
 import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
 import javax.persistence.Id
+import javax.persistence.JoinTable
+import javax.persistence.ManyToMany
 
 @Entity
 class AppserviceRoom(
-        val matrixRoomAlias: String
-) {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null
-        private set
-}
+        @Id
+        val roomId: String,
+
+        val roomAlias: String? = null,
+
+        @ManyToMany
+        @JoinTable(name = "appserviceRoom_appserviceUser")
+        val members: MutableSet<AppserviceUser> = HashSet()
+)

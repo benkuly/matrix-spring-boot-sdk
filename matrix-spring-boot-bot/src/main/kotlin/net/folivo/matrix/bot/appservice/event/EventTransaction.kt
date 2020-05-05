@@ -8,7 +8,7 @@ import javax.persistence.Id
 @Entity
 class EventTransaction(
         var tnxId: String,
-        var eventIdOrType: String
+        var eventIdType: String
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -94,10 +94,7 @@ class MatrixAutoconfigurationJsonTest {
         val content = """
         {
             "content": {
-                "body": "This is an example text message",
-                "format": "org.matrix.custom.html",
-                "formatted_body": "<b>This is an example text message</b>",
-                "msgtype": "m.unknown"
+                "something": "unicorn"
             },
             "event_id": "$143273582443PhrSn:example.org",
             "origin_server_ts": 1432735824653,

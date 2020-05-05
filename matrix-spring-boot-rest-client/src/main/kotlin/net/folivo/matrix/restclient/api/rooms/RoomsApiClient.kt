@@ -414,12 +414,23 @@ class RoomsApiClient(
                 .map { it.roomId }
     }
 
-//    /**
-//     * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#post-matrix-client-r0-rooms-roomid-leave">matrix spec</a>
-//     */
-//    fun leaveRoom() {
-//        // TODO implement
-//    }
+    /**
+     * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#post-matrix-client-r0-rooms-roomid-leave">matrix spec</a>
+     */
+    fun leaveRoom(
+            roomId: String,
+            asUserId: String? = null
+    ): Mono<Void> {
+        return webClient
+                .post().uri {
+                    it.apply {
+                        path("/r0/rooms/{roomId}/leave")
+                        if (asUserId != null) queryParam("user_id", asUserId)
+                    }.build(roomId)
+                }
+                .retrieve()
+                .bodyToMono()
+    }
 
 //    /**
 //     * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#post-matrix-client-r0-rooms-roomid-forget">matrix spec</a>

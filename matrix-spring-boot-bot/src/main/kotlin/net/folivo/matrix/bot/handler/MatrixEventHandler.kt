@@ -1,4 +1,4 @@
-package net.folivo.matrix.core.handler
+package net.folivo.matrix.bot.handler
 
 import net.folivo.matrix.core.model.events.Event
 
