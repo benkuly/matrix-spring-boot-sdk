@@ -13,7 +13,7 @@ class DefaultMatrixAppserviceUserService(
 ) : MatrixAppserviceUserService {
 
     override fun userExistingState(userId: String): Mono<MatrixAppserviceUserService.UserExistingState> {
-        return Mono.fromCallable { appserviceUserRepository.findById(userId).isPresent }
+        return Mono.fromCallable { appserviceUserRepository.existsById(userId) }
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMap { isInDatabase ->
                     if (isInDatabase) {

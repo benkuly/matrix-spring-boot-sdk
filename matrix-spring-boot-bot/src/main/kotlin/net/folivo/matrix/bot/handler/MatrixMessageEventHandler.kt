@@ -33,6 +33,7 @@ class MatrixMessageEventHandler(
             logger.debug("handle message event")
             return Flux.fromIterable(messageContentHandler)
                     .flatMap { it.handleMessage(event.content, messageContext) }
+                    .onErrorContinue { throwable, _ -> logger.warn("could not handle message due to $throwable") }
                     .then()
         }
         return Mono.empty()

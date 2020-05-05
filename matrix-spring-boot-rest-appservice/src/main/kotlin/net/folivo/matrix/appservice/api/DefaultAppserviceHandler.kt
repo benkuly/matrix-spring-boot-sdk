@@ -29,6 +29,7 @@ class DefaultAppserviceHandler(
                 is StateEvent<*, *> -> event.id
                 else                -> event.type
             }
+            logger.debug("incoming event $eventIdOrType in transaction $tnxId")
             matrixAppserviceEventService.eventProcessingState(tnxId, eventIdOrType)
                     .flatMap { eventProcessingState ->
                         when (eventProcessingState) {

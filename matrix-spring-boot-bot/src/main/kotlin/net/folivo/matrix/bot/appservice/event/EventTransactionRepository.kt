@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface EventTransactionRepository : CrudRepository<EventTransaction, Long> {
     fun findByTnxIdAndEventIdType(tnxId: String, eventIdOrType: String): EventTransaction?
+    fun existsByTnxIdAndEventIdType(tnxId: String, eventIdOrType: String): Boolean
 }

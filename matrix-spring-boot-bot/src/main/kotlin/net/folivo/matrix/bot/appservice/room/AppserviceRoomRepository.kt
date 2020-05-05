@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface AppserviceRoomRepository : CrudRepository<AppserviceRoom, String> {
     fun findByRoomAlias(roomAlias: String): AppserviceRoom?
+    fun existsByRoomAlias(roomAlias: String): Boolean
 }

@@ -11,11 +11,13 @@ class MessageContext(
 ) {
 
     fun answer(
-            content: MessageEvent.MessageEventContent
+            content: MessageEvent.MessageEventContent,
+            asUserId: String? = null
     ): Mono<String> {
         return matrixClient.roomsApi.sendRoomEvent(
                 roomId = roomId,
-                eventContent = content
+                eventContent = content,
+                asUserId = asUserId
         )
     }
 

@@ -2,6 +2,7 @@ package net.folivo.matrix.bot.appservice.room
 
 import net.folivo.matrix.appservice.api.room.CreateRoomParameter
 import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
+import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService.RoomExistingState
 import net.folivo.matrix.bot.appservice.AppserviceBotManager
 import net.folivo.matrix.bot.appservice.user.AppserviceUser
 import net.folivo.matrix.bot.appservice.user.AppserviceUserRepository
@@ -16,17 +17,13 @@ class DefaultMatrixAppserviceRoomService(
         private val appserviceUserRepository: AppserviceUserRepository
 ) : MatrixAppserviceRoomService {
 
-    override fun roomExistingState(roomAlias: String): Mono<MatrixAppserviceRoomService.RoomExistingState> {
-        return Mono.fromCallable { appserviceRoomRepository.findByRoomAlias(roomAlias) == null }
+    override fun roomExistingState(roomAlias: String): Mono<RoomExistingState> {
+        return Mono.fromCallable { !appserviceRoomRepository.existsByRoomAlias(roomAlias) }
                 .subscribeOn(Schedulers.boundedElastic())
                 .concatWith { appserviceBotManager.shouldCreateRoom(roomAlias) }
                 .all { it }
                 .map {
-                    if (it) {
-                        MatrixAppserviceRoomService.RoomExistingState.CAN_BE_CREATED
-                    } else {
-                        MatrixAppserviceRoomService.RoomExistingState.DOES_NOT_EXISTS
-                    }
+                    if (it) RoomExistingState.CAN_BE_CREATED else RoomExistingState.DOES_NOT_EXISTS
                 }
     }
 
@@ -48,9 +45,7 @@ class DefaultMatrixAppserviceRoomService(
             val user = appserviceUserRepository.findByIdOrNull(userId)
                        ?: appserviceUserRepository.save(AppserviceUser(userId))
             room.members.add(user)
-            user.rooms.add(room)
             appserviceRoomRepository.save(room)
-            appserviceUserRepository.save(user)
         }.subscribeOn(Schedulers.boundedElastic())
                 .then()
     }

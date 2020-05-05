@@ -1,10 +1,7 @@
 package net.folivo.matrix.bot.appservice.room
 
 import net.folivo.matrix.bot.appservice.user.AppserviceUser
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.JoinTable
-import javax.persistence.ManyToMany
+import javax.persistence.*
 
 @Entity
 class AppserviceRoom(
@@ -13,7 +10,7 @@ class AppserviceRoom(
 
         val roomAlias: String? = null,
 
-        @ManyToMany
+        @ManyToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
         @JoinTable(name = "appserviceRoom_appserviceUser")
         val members: MutableSet<AppserviceUser> = HashSet()
 )

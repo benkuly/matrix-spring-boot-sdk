@@ -1,7 +1,6 @@
 package net.folivo.matrix.bot.config
 
 import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
-import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
 import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
 import net.folivo.matrix.appservice.config.MatrixAppserviceProperties
 import net.folivo.matrix.bot.appservice.AppserviceBotManager
@@ -15,7 +14,6 @@ import net.folivo.matrix.bot.appservice.user.AppserviceUserRepository
 import net.folivo.matrix.bot.appservice.user.DefaultMatrixAppserviceUserService
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.restclient.MatrixClient
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.domain.EntityScan
@@ -53,7 +51,6 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
     }
 
     @Bean
-    @ConditionalOnBean(DefaultMatrixAppserviceRoomService::class)
     @ConditionalOnProperty(prefix = "matrix.bot", name = ["autoJoin"], havingValue = "true", matchIfMissing = true)
     fun autoJoinEventHandler(
             matrixClient: MatrixClient,
@@ -83,7 +80,7 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
             appserviceRoomRepository: AppserviceRoomRepository,
             appserviceUserRepository: AppserviceUserRepository,
             appserviceBotManager: AppserviceBotManager
-    ): MatrixAppserviceRoomService {
+    ): DefaultMatrixAppserviceRoomService {
         return DefaultMatrixAppserviceRoomService(
                 appserviceBotManager,
                 appserviceRoomRepository,

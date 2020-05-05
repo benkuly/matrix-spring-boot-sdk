@@ -29,10 +29,10 @@ class DefaultMatrixAppserviceEventService(
             eventIdOrType: String
     ): Mono<EventProcessingState> {
         return Mono.fromCallable {
-            eventTransactionRepository.findByTnxIdAndEventIdType(tnxId, eventIdOrType)
+            eventTransactionRepository.existsByTnxIdAndEventIdType(tnxId, eventIdOrType)
         }.subscribeOn(Schedulers.boundedElastic())
                 .map {
-                    if (it == null) EventProcessingState.NOT_PROCESSED else EventProcessingState.PROCESSED
+                    if (it) EventProcessingState.PROCESSED else EventProcessingState.NOT_PROCESSED
                 }
     }
 
@@ -51,31 +51,43 @@ class DefaultMatrixAppserviceEventService(
     override fun processEvent(event: Event<*>): Mono<Void> {
         return when (event) {
             is MemberEvent      -> {
-                if (!allowFederation && event.content.membership == MemberEvent.MemberEventContent.Membership.INVITE) {
+                if (!allowFederation
+                    && event.content.membership == MemberEvent.MemberEventContent.Membership.INVITE
+                    && event.sender.substringAfter(":") != serverName
+                ) {
                     logger.warn("reject room invite to ${event.roomId} because federation with user ${event.sender} was denied")
-                    event.roomId?.let { matrixClient.roomsApi.leaveRoom(it, event.stateKey) } ?: Mono.empty()
+                    val roomId = event.roomId
+                    if (roomId != null) {
+                        matrixClient.roomsApi.leaveRoom(roomId, event.stateKey)
+                    } else {
+                        Mono.empty()
+                    }
+                } else {
+                    delegateEventHandling(event, event.roomId)
                 }
-                handleEvent(event, event.roomId)
             }
             is MessageEvent<*>  -> {
                 if (!allowFederation && event.sender.substringAfter(":") != serverName) {
                     logger.warn("didn't handle message event because federation with user ${event.sender} was denied")
                     Mono.empty<Void>()
+                } else {
+                    delegateEventHandling(event, event.roomId)
                 }
-                handleEvent(event, event.roomId)
             }
             is StateEvent<*, *> -> {
                 if (!allowFederation && event.sender.substringAfter(":") != serverName) {
                     logger.warn("didn't state message event because federation with user ${event.sender} was denied")
                     Mono.empty<Void>()
+                } else {
+                    delegateEventHandling(event, event.roomId)
                 }
-                handleEvent(event, event.roomId)
             }
-            else                -> handleEvent(event)
+            else                -> delegateEventHandling(event)
         }
     }
 
-    private fun handleEvent(event: Event<*>, roomId: String? = null): Mono<Void> {
+    private fun delegateEventHandling(event: Event<*>, roomId: String? = null): Mono<Void> {
+        logger.debug("delegate event $event to event handlers")
         return Flux.fromIterable(eventHandler)
                 .filter { it.supports(event::class.java) }
                 .flatMap {
