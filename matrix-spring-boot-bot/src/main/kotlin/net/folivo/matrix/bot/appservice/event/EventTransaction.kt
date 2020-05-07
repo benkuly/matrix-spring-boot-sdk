@@ -1,17 +1,17 @@
 package net.folivo.matrix.bot.appservice.event
 
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
+import org.neo4j.springframework.data.core.schema.GeneratedValue
+import org.neo4j.springframework.data.core.schema.Id
+import org.neo4j.springframework.data.core.schema.Node
+import org.neo4j.springframework.data.core.schema.Property
 
-@Entity
-class EventTransaction(
+@Node("EventTransaction")
+data class EventTransaction(
+        @Property("tnxId")
         var tnxId: String,
-        var eventIdType: String
-) {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null
-        private set
-}
+        @Property("eventIdElseType")
+        var eventIdElseType: String,
+        @Id
+        @GeneratedValue
+        val id: Long? = null // TODO maybe not in constructor to prevent duplicated keys due to wrong usage
+)

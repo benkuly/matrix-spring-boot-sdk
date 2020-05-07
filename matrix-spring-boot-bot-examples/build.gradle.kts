@@ -1,8 +1,6 @@
 subprojects {
     dependencies {
         implementation(project(":matrix-spring-boot-bot"))
-
-        implementation("org.hsqldb:hsqldb")
     }
 
     tasks.getByName<Jar>("jar") {
@@ -15,12 +13,12 @@ subprojects {
 }
 
 tasks {
-    register<Exec>("createITInfra") {
+    register<Exec>("createLocalInfra") {
         workingDir = File("src/main/podman/")
         group = "infrastructure"
         commandLine("podman", "play", "kube", "localinfra.yaml")
     }
-    register<Exec>("restartITInfra") {
+    register<Exec>("restartLocalInfra") {
         workingDir = File("src/main/podman/")
         group = "infrastructure"
         doFirst {
@@ -35,11 +33,11 @@ tasks {
         }
         commandLine("podman", "play", "kube", "localinfra.yaml")
     }
-    register<Exec>("startITInfra") {
+    register<Exec>("startLocalInfra") {
         group = "infrastructure"
         commandLine("podman", "pod", "start", "matrix-spring-boot-bot-examples")
     }
-    register<Exec>("stopITInfra") {
+    register<Exec>("stopLocalInfra") {
         group = "infrastructure"
         commandLine("podman", "pod", "stop", "matrix-spring-boot-bot-examples")
     }

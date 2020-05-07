@@ -1,16 +1,20 @@
 package net.folivo.matrix.bot.appservice.room
 
 import net.folivo.matrix.bot.appservice.user.AppserviceUser
-import javax.persistence.*
+import org.neo4j.springframework.data.core.schema.Id
+import org.neo4j.springframework.data.core.schema.Node
+import org.neo4j.springframework.data.core.schema.Property
+import org.neo4j.springframework.data.core.schema.Relationship
+import org.neo4j.springframework.data.core.schema.Relationship.Direction.INCOMING
 
-@Entity
-class AppserviceRoom(
+@Node("AppserviceRoom")
+data class AppserviceRoom(
         @Id
         val roomId: String,
 
+        @Property("roomAlias")
         val roomAlias: String? = null,
 
-        @ManyToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
-        @JoinTable(name = "appserviceRoom_appserviceUser")
+        @Relationship(type = "MEMBER_OF", direction = INCOMING)
         val members: MutableSet<AppserviceUser> = HashSet()
 )

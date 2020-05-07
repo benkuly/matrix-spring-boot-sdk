@@ -1,4 +1,4 @@
-package net.folivo.matrix.bot.examples.ping
+package net.folivo.matrix.bot.examples.ping.appservice
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

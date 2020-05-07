@@ -1,8 +1,8 @@
 package net.folivo.matrix.bot.appservice.user
 
-import org.springframework.data.repository.CrudRepository
+import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface AppserviceUserRepository : CrudRepository<AppserviceUser, String> {
+interface AppserviceUserRepository : ReactiveCrudRepository<AppserviceUser, String> {
 }

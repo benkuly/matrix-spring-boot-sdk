@@ -1,4 +1,4 @@
-package net.folivo.matrix.bot.examples.ping
+package net.folivo.matrix.bot.examples.ping.appservice
 
 import io.mockk.MockKMatcherScope
 import io.mockk.every
@@ -24,8 +24,8 @@ class PingHandlerText {
 
         every { context.answer(any()) } returns Mono.just("eventId")
 
-        cut.handleMessage(TextMessageEventContent("ping"), context)
-        cut.handleMessage(TextMessageEventContent("some ping message"), context)
+        cut.handleMessage(TextMessageEventContent("ping"), context).subscribe()
+        cut.handleMessage(TextMessageEventContent("some ping message"), context).subscribe()
 
         verify(exactly = 2) { context.answer(messageBody("pong")) }
     }

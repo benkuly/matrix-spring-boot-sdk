@@ -10,6 +10,10 @@ spec:
       hostPath:
         path: ./synapse
         type: DirectoryOrCreate
+    - name: matrix-spring-boot-bot-examples-neo4j-volume
+      hostPath:
+        path: ./neo4j
+        type: DirectoryOrCreate
   containers:
     - name: matrix-spring-boot-bot-examples-synapse
       env:
@@ -26,5 +30,21 @@ spec:
           protocol: TCP
       volumeMounts:
         - name: matrix-spring-boot-bot-examples-synapse-volume
+          mountPath: /data
+      workingDir: /
+    - name: matrix-spring-boot-bot-examples-neo4j
+      env:
+        - name: NEO4J_AUTH
+          value: neo4j/secret
+      image: neo4j:latest
+      ports:
+        - containerPort: 7474
+          hostPort: 7474
+          protocol: TCP
+        - containerPort: 7687
+          hostPort: 7687
+          protocol: TCP
+      volumeMounts:
+        - name: matrix-spring-boot-bot-examples-neo4j-volume
           mountPath: /data
       workingDir: /

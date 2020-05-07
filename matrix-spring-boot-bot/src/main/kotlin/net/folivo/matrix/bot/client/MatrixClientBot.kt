@@ -2,7 +2,6 @@ package net.folivo.matrix.bot.client
 
 import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.handler.MatrixEventHandler
-import net.folivo.matrix.bot.handler.MatrixMessageEventHandler
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
@@ -15,14 +14,16 @@ class MatrixClientBot(
         private val botProperties: MatrixBotProperties
 ) {
 
-    private val logger = LoggerFactory.getLogger(MatrixMessageEventHandler::class.java)
+    private val logger = LoggerFactory.getLogger(MatrixClientBot::class.java)
 
     private var disposable: Disposable? = null
 
     fun start() {
         stop() // TODO or an exception?
+        logger.info("started syncLoop")
         disposable = matrixClient.syncApi
                 .syncLoop()
+                .doOnError { logger.error("error in syncLoop", it) }
                 .subscribe { syncResponse -> // TODO logic could be separated in something like a SyncResponseHandler, also flatMap would be cool
                     syncResponse.room.join.forEach { (roomId, joinedRoom) ->
                         joinedRoom.timeline.events.forEach { handleEvent(it, roomId).subscribe() }
@@ -41,6 +42,7 @@ class MatrixClientBot(
     }
 
     fun stop() {
+        logger.info("stopped syncLoop")
         disposable?.dispose()
     }
 

@@ -4,7 +4,6 @@ import net.folivo.matrix.appservice.api.user.CreateUserParameter
 import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
 import net.folivo.matrix.bot.appservice.AppserviceBotManager
 import reactor.core.publisher.Mono
-import reactor.core.scheduler.Schedulers
 
 // FIXME test
 class DefaultMatrixAppserviceUserService(
@@ -13,15 +12,14 @@ class DefaultMatrixAppserviceUserService(
 ) : MatrixAppserviceUserService {
 
     override fun userExistingState(userId: String): Mono<MatrixAppserviceUserService.UserExistingState> {
-        return Mono.fromCallable { appserviceUserRepository.existsById(userId) }
-                .subscribeOn(Schedulers.boundedElastic())
+        return appserviceUserRepository.existsById(userId)
                 .flatMap { isInDatabase ->
                     if (isInDatabase) {
                         Mono.just(MatrixAppserviceUserService.UserExistingState.EXISTS)
                     } else {
                         appserviceBotManager.shouldCreateUser(userId)
-                                .map {
-                                    if (it) {
+                                .map { shouldCreateUser ->
+                                    if (shouldCreateUser) {
                                         MatrixAppserviceUserService.UserExistingState.CAN_BE_CREATED
                                     } else {
                                         MatrixAppserviceUserService.UserExistingState.DOES_NOT_EXISTS
@@ -36,9 +34,7 @@ class DefaultMatrixAppserviceUserService(
     }
 
     override fun saveUser(userId: String): Mono<Void> {
-        return Mono.fromCallable {
-            appserviceUserRepository.save(AppserviceUser(userId))
-        }.subscribeOn(Schedulers.boundedElastic())
+        return appserviceUserRepository.save(AppserviceUser(userId))
                 .then()
     }
 }

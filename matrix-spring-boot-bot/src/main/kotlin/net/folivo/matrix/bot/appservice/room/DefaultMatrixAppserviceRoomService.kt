@@ -6,9 +6,7 @@ import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService.RoomExi
 import net.folivo.matrix.bot.appservice.AppserviceBotManager
 import net.folivo.matrix.bot.appservice.user.AppserviceUser
 import net.folivo.matrix.bot.appservice.user.AppserviceUserRepository
-import org.springframework.data.repository.findByIdOrNull
 import reactor.core.publisher.Mono
-import reactor.core.scheduler.Schedulers
 
 // FIXME test
 class DefaultMatrixAppserviceRoomService(
@@ -18,12 +16,20 @@ class DefaultMatrixAppserviceRoomService(
 ) : MatrixAppserviceRoomService {
 
     override fun roomExistingState(roomAlias: String): Mono<RoomExistingState> {
-        return Mono.fromCallable { !appserviceRoomRepository.existsByRoomAlias(roomAlias) }
-                .subscribeOn(Schedulers.boundedElastic())
-                .concatWith { appserviceBotManager.shouldCreateRoom(roomAlias) }
-                .all { it }
-                .map {
-                    if (it) RoomExistingState.CAN_BE_CREATED else RoomExistingState.DOES_NOT_EXISTS
+        return appserviceRoomRepository.existsByRoomAlias(roomAlias)
+                .flatMap { doesRoomExists ->
+                    if (doesRoomExists) {
+                        Mono.just(RoomExistingState.EXISTS)
+                    } else {
+                        appserviceBotManager.shouldCreateRoom(roomAlias)
+                                .map { shouldCreateRoom ->
+                                    if (shouldCreateRoom) {
+                                        RoomExistingState.CAN_BE_CREATED
+                                    } else {
+                                        RoomExistingState.DOES_NOT_EXISTS
+                                    }
+                                }
+                    }
                 }
     }
 
@@ -32,21 +38,21 @@ class DefaultMatrixAppserviceRoomService(
     }
 
     override fun saveRoom(roomAlias: String, roomId: String): Mono<Void> {
-        return Mono.fromCallable {
-            appserviceRoomRepository.save(AppserviceRoom(roomId, roomAlias))
-        }.subscribeOn(Schedulers.boundedElastic())
+        return appserviceRoomRepository.save(AppserviceRoom(roomId, roomAlias))
                 .then()
     }
 
     fun saveRoomJoin(roomId: String, userId: String): Mono<Void> {
-        return Mono.fromCallable {
-            val room = appserviceRoomRepository.findByIdOrNull(roomId)
-                       ?: appserviceRoomRepository.save(AppserviceRoom(roomId))
-            val user = appserviceUserRepository.findByIdOrNull(userId)
-                       ?: appserviceUserRepository.save(AppserviceUser(userId))
-            room.members.add(user)
-            appserviceRoomRepository.save(room)
-        }.subscribeOn(Schedulers.boundedElastic())
-                .then()
+        return appserviceRoomRepository.findById(roomId)
+                .switchIfEmpty(appserviceRoomRepository.save(AppserviceRoom(roomId)))
+                .zipWith(
+                        appserviceUserRepository.findById(roomId)
+                                .switchIfEmpty(appserviceUserRepository.save(AppserviceUser(userId)))
+                ).flatMap {
+                    val room = it.t1
+                    val user = it.t2
+                    user.rooms.add(room)
+                    appserviceUserRepository.save(user)
+                }.then()
     }
 }

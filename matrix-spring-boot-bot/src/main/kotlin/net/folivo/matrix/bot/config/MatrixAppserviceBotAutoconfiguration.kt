@@ -14,17 +14,17 @@ import net.folivo.matrix.bot.appservice.user.AppserviceUserRepository
 import net.folivo.matrix.bot.appservice.user.DefaultMatrixAppserviceUserService
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.restclient.MatrixClient
+import org.neo4j.springframework.data.repository.config.EnableReactiveNeo4jRepositories
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 
 @Configuration
 @ConditionalOnProperty(prefix = "matrix.bot", name = ["mode"], havingValue = "APPSERVICE")
-@EnableJpaRepositories("net.folivo.matrix.bot.appservice")
+@EnableReactiveNeo4jRepositories("net.folivo.matrix.bot.appservice")
 @EntityScan("net.folivo.matrix.bot.appservice")
 class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: MatrixBotProperties) {
 

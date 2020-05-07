@@ -9,7 +9,6 @@ plugins {
     kotlin("jvm") version "1.3.71"
     kotlin("kapt") version "1.3.71"
     kotlin("plugin.spring") version "1.3.71" apply false
-    kotlin("plugin.jpa") version "1.3.71" apply false
 }
 
 allprojects {
@@ -30,7 +29,6 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.jetbrains.kotlin.kapt")
     apply(plugin = "org.jetbrains.kotlin.plugin.spring")
-    apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
 
     dependencies {
         implementation("org.jetbrains.kotlin:kotlin-reflect")

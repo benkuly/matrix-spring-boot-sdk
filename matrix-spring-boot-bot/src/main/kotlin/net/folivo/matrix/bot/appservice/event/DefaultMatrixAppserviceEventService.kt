@@ -11,7 +11,6 @@ import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.scheduler.Schedulers
 
 // FIXME test
 class DefaultMatrixAppserviceEventService(
@@ -28,23 +27,14 @@ class DefaultMatrixAppserviceEventService(
             tnxId: String,
             eventIdOrType: String
     ): Mono<EventProcessingState> {
-        return Mono.fromCallable {
-            eventTransactionRepository.existsByTnxIdAndEventIdType(tnxId, eventIdOrType)
-        }.subscribeOn(Schedulers.boundedElastic())
+        return eventTransactionRepository.existsByTnxIdAndEventIdOrType(tnxId, eventIdOrType)
                 .map {
                     if (it) EventProcessingState.PROCESSED else EventProcessingState.NOT_PROCESSED
                 }
     }
 
     override fun saveEventProcessed(tnxId: String, eventIdOrType: String): Mono<Void> {
-        return Mono.fromCallable {
-            eventTransactionRepository.save(
-                    EventTransaction(
-                            tnxId,
-                            eventIdOrType
-                    )
-            )
-        }.subscribeOn(Schedulers.boundedElastic())
+        return eventTransactionRepository.save(EventTransaction(tnxId, eventIdOrType))
                 .then()
     }
 

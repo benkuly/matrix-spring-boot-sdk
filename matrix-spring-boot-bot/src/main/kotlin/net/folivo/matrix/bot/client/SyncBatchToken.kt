@@ -1,11 +1,13 @@
 package net.folivo.matrix.bot.client
 
-import javax.persistence.Entity
-import javax.persistence.Id
+import org.neo4j.springframework.data.core.schema.Id
+import org.neo4j.springframework.data.core.schema.Node
+import org.neo4j.springframework.data.core.schema.Property
 
-@Entity
-class SyncBatchToken(
+@Node("SyncBatchToken")
+data class SyncBatchToken(
         @Id
-        val id: Int,
-        var value: String? = null
+        val id: String,
+        @Property("value")
+        val value: String? = null
 )
