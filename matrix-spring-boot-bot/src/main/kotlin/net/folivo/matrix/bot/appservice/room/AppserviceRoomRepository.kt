@@ -7,5 +7,4 @@ import reactor.core.publisher.Mono
 @Repository
 interface AppserviceRoomRepository : ReactiveCrudRepository<AppserviceRoom, String> {
     fun findByRoomAlias(roomAlias: String): Mono<AppserviceRoom>
-    fun existsByRoomAlias(roomAlias: String): Mono<Boolean>
 }

@@ -16,11 +16,9 @@ class DefaultMatrixAppserviceRoomService(
 ) : MatrixAppserviceRoomService {
 
     override fun roomExistingState(roomAlias: String): Mono<RoomExistingState> {
-        return appserviceRoomRepository.existsByRoomAlias(roomAlias)
-                .flatMap { doesRoomExists ->
-                    if (doesRoomExists) {
-                        Mono.just(RoomExistingState.EXISTS)
-                    } else {
+        return appserviceRoomRepository.findByRoomAlias(roomAlias)
+                .map { RoomExistingState.EXISTS }
+                .switchIfEmpty(
                         appserviceBotManager.shouldCreateRoom(roomAlias)
                                 .map { shouldCreateRoom ->
                                     if (shouldCreateRoom) {
@@ -29,8 +27,7 @@ class DefaultMatrixAppserviceRoomService(
                                         RoomExistingState.DOES_NOT_EXISTS
                                     }
                                 }
-                    }
-                }
+                )
     }
 
     override fun getCreateRoomParameter(roomAlias: String): Mono<CreateRoomParameter> {

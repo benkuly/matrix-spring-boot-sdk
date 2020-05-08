@@ -5,4 +5,4 @@ import org.springframework.http.HttpStatus
 open class MatrixServerException(
         val statusCode: HttpStatus,
         val errorResponse: ErrorResponse
-) : Exception(errorResponse.errorMessage)
+) : Exception("status: $statusCode; errorCode: ${errorResponse.errorCode}; errorMessage: ${errorResponse.errorMessage}")

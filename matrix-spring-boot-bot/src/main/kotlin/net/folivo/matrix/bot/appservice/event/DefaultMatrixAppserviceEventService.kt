@@ -27,10 +27,9 @@ class DefaultMatrixAppserviceEventService(
             tnxId: String,
             eventIdOrType: String
     ): Mono<EventProcessingState> {
-        return eventTransactionRepository.existsByTnxIdAndEventIdOrType(tnxId, eventIdOrType)
-                .map {
-                    if (it) EventProcessingState.PROCESSED else EventProcessingState.NOT_PROCESSED
-                }
+        return eventTransactionRepository.findByTnxIdAndEventIdElseType(tnxId, eventIdOrType)
+                .map { EventProcessingState.PROCESSED }
+                .switchIfEmpty(Mono.just(EventProcessingState.NOT_PROCESSED))
     }
 
     override fun saveEventProcessed(tnxId: String, eventIdOrType: String): Mono<Void> {

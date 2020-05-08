@@ -6,6 +6,5 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface EventTransactionRepository : ReactiveCrudRepository<EventTransaction, Long> {
-    fun findByTnxIdAndEventIdType(tnxId: String, eventIdOrType: String): Mono<EventTransaction>
-    fun existsByTnxIdAndEventIdOrType(tnxId: String, eventIdOrType: String): Mono<Boolean>
+    fun findByTnxIdAndEventIdElseType(tnxId: String, eventIdElseType: String): Mono<EventTransaction>
 }

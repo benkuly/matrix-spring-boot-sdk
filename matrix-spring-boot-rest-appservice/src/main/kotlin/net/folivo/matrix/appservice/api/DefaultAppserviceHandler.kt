@@ -53,7 +53,7 @@ class DefaultAppserviceHandler(
                             }
                         }
                     }
-        }.then()
+        }.doOnError { logger.error("something went wrong while processing events", it) }.then()
     }
 
     override fun hasUser(userId: String): Mono<Boolean> {
