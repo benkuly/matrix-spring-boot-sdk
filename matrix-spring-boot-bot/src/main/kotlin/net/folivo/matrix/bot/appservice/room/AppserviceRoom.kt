@@ -6,11 +6,11 @@ import org.neo4j.springframework.data.core.schema.Node
 import org.neo4j.springframework.data.core.schema.Property
 import org.neo4j.springframework.data.core.schema.Relationship
 import org.neo4j.springframework.data.core.schema.Relationship.Direction.INCOMING
-import org.springframework.data.annotation.Version
 
 @Node("AppserviceRoom")
 data class AppserviceRoom(
         @Id
+        @Property("roomId")
         val roomId: String,
 
         @Property("roomAlias")
@@ -18,7 +18,4 @@ data class AppserviceRoom(
 
         @Relationship(type = "MEMBER_OF", direction = INCOMING)
         val members: MutableSet<AppserviceUser> = HashSet()
-) {
-    @Version
-    val version: Long = 0
-}
+)

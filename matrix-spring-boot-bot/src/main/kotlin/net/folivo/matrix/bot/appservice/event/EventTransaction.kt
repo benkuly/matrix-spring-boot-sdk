@@ -11,11 +11,13 @@ data class EventTransaction(
         @Property("tnxId")
         var tnxId: String,
         @Property("eventIdElseType")
-        var eventIdElseType: String,
-        @Id
-        @GeneratedValue
-        val id: Long? = null // TODO maybe not in constructor to prevent duplicated keys due to wrong usage
+        var eventIdElseType: String
 ) {
+    @Id
+    @GeneratedValue
+    var id: Long? = null
+        private set
+
     @Version
-    val version: Long = 0
+    var version: Long = 0
 }

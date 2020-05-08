@@ -1,6 +1,5 @@
 package net.folivo.matrix.bot.config
 
-import net.folivo.matrix.appservice.api.AppserviceHandler
 import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
 import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
 import net.folivo.matrix.appservice.config.MatrixAppserviceProperties
@@ -56,13 +55,11 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
     fun autoJoinEventHandler(
             matrixClient: MatrixClient,
             defaultMatrixAppserviceRoomService: DefaultMatrixAppserviceRoomService,
-            appserviceHandler: AppserviceHandler,
             appserviceProperties: MatrixAppserviceProperties
     ): AutoJoinEventHandler {
         return AutoJoinEventHandler(
                 matrixClient,
                 defaultMatrixAppserviceRoomService,
-                appserviceHandler,
                 appserviceProperties.asUsername,
                 appserviceProperties.namespaces.users.map { it.regex }
         )
