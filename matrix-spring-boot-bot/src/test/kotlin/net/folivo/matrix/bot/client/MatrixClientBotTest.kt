@@ -7,6 +7,9 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
 import net.folivo.matrix.bot.config.MatrixBotProperties
+import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode
+import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.DISABLED
+import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.RESTRICTED
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
@@ -15,6 +18,7 @@ import net.folivo.matrix.restclient.api.sync.SyncResponse
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import reactor.test.publisher.TestPublisher
 
 @ExtendWith(MockKExtension::class)
@@ -91,7 +95,7 @@ class MatrixClientBotTest {
         val cut = MatrixClientBot(
                 matrixClientMock,
                 listOf(),
-                MatrixBotProperties(autoJoin = true, serverName = "someServerName")
+                MatrixBotProperties(autoJoin = AutoJoinMode.ENABLED, serverName = "someServerName")
         )
 
         val response1 = mockk<SyncResponse>(relaxed = true) {
@@ -107,10 +111,13 @@ class MatrixClientBotTest {
         cut.start()
         publisher.next(response1)
 
+        val roomsApiMock = matrixClientMock.roomsApi
+
         verifyOrder {
-            matrixClientMock.roomsApi.joinRoom("someRoomId1")
-            matrixClientMock.roomsApi.joinRoom("someRoomId2")
+            roomsApiMock.joinRoom("someRoomId1")
+            roomsApiMock.joinRoom("someRoomId2")
         }
+        verify(exactly = 0) { roomsApiMock.leaveRoom(any()) }
     }
 
     @Test
@@ -118,13 +125,12 @@ class MatrixClientBotTest {
         val cut = MatrixClientBot(
                 matrixClientMock,
                 listOf(),
-                MatrixBotProperties(autoJoin = false, serverName = "someServerName")
+                MatrixBotProperties(autoJoin = DISABLED, serverName = "someServerName")
         )
 
         val response1 = mockk<SyncResponse>(relaxed = true) {
             every { room.invite } returns mapOf(
-                    "someRoomId1" to mockk(relaxed = true),
-                    "someRoomId2" to mockk(relaxed = true)
+                    "someRoomId1" to mockk(relaxed = true)
             )
         }
 
@@ -134,8 +140,38 @@ class MatrixClientBotTest {
         cut.start()
         publisher.next(response1)
 
-        verify(exactly = 0) {
-            matrixClientMock.roomsApi.joinRoom(any())
+        val roomsApiMock = matrixClientMock.roomsApi
+
+        verify(exactly = 0) { roomsApiMock.joinRoom(any()) }
+        verify { roomsApiMock.leaveRoom("someRoomId1") }
+    }
+
+    @Test
+    fun `should not join from foreign servers`() {
+        val cut = MatrixClientBot(
+                matrixClientMock,
+                listOf(),
+                MatrixBotProperties(autoJoin = RESTRICTED, serverName = "someServerName")
+        )
+
+        val response1 = mockk<SyncResponse>(relaxed = true) {
+            every { room.invite } returns mapOf(
+                    "!someRoomId1:someOtherServer" to mockk(relaxed = true),
+                    "!someRoomId2:someServerName" to mockk(relaxed = true)
+            )
+        }
+
+        val publisher = TestPublisher.create<SyncResponse>()
+        every { matrixClientMock.syncApi.syncLoop() }.returns(Flux.from(publisher))
+
+        cut.start()
+        publisher.next(response1)
+
+        val roomsApiMock = matrixClientMock.roomsApi
+
+        verify(exactly = 1) {
+            roomsApiMock.joinRoom("!someRoomId2:someServerName")
+            roomsApiMock.leaveRoom("!someRoomId1:someOtherServer")
         }
     }
 
@@ -199,6 +235,47 @@ class MatrixClientBotTest {
         publisher.next(response)
 
         verify(exactly = 1) { eventHandlerMock1.handleEvent(any(), any()) }
+    }
+
+    @Test
+    fun `should ignore errors`() {
+        val cut = MatrixClientBot(
+                matrixClientMock,
+                listOf(
+                        eventHandlerMock1,
+                        eventHandlerMock2
+                ),
+                MatrixBotProperties(serverName = "someServerName")
+        )
+
+        val event1 = mockk<MessageEvent<TextMessageEventContent>>()
+        val event2 = mockk<MessageEvent<TextMessageEventContent>>()
+
+        val response1 = mockk<SyncResponse>(relaxed = true) {
+            every { room.join } returns mapOf(
+                    "someRoomId1" to mockk(relaxed = true) {
+                        every { timeline.events } returns listOf(
+                                event1,
+                                event2
+                        )
+                    }
+            )
+        }
+
+        every { eventHandlerMock1.supports(any()) } returns true
+        every { eventHandlerMock2.supports(any()) } returns true
+        every { eventHandlerMock1.handleEvent(any()) } returns Mono.error(RuntimeException())
+
+        val publisher = TestPublisher.create<SyncResponse>()
+        every { matrixClientMock.syncApi.syncLoop() }.returns(Flux.from(publisher))
+
+        cut.start()
+        publisher.next(response1)
+
+        verifyOrder {
+            eventHandlerMock1.handleEvent(event1, "someRoomId1")
+            eventHandlerMock1.handleEvent(event2, "someRoomId1")
+        }
     }
 
 }
