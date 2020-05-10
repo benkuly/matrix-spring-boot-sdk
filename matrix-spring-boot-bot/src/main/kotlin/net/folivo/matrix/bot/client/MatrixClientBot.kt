@@ -21,7 +21,7 @@ class MatrixClientBot(
     fun start() {
         stop() // TODO or an exception?
         logger.info("started syncLoop")
-        disposable = matrixClient.syncApi
+        disposable = matrixClient.syncApi // FIXME make reactive
                 .syncLoop()
                 .doOnError { logger.error("error in syncLoop", it) }
                 .subscribe { syncResponse -> // TODO logic could be separated in something like a SyncResponseHandler, also flatMap would be cool
@@ -29,13 +29,20 @@ class MatrixClientBot(
                         joinedRoom.timeline.events.forEach { handleEvent(it, roomId).subscribe() }
                         joinedRoom.state.events.forEach { handleEvent(it, roomId).subscribe() }
                     }
-                    if (botProperties.autoJoin) {
+                    if (botProperties.autoJoin == MatrixBotProperties.AutoJoinMode.DISABLED) {
                         syncResponse.room.invite.keys.forEach { roomId ->
-                            matrixClient.roomsApi.joinRoom(roomId).doOnSuccess {
-                                logger.info("joined invitation to roomId: $it")
-                            }.doOnError {
-                                logger.error("could not join invitation to roomId: $roomId due to ${it.message}")
-                            }.subscribe()
+                            if (botProperties.autoJoin == MatrixBotProperties.AutoJoinMode.RESTRICTED
+                                && roomId.substringAfter(":") != botProperties.serverName
+                            ) {
+                                logger.warn("reject room invite to $roomId because autoJoin is restricted to ${botProperties.serverName}")
+                                matrixClient.roomsApi.leaveRoom(roomId)
+                            } else {
+                                matrixClient.roomsApi.joinRoom(roomId).doOnSuccess {
+                                    logger.info("joined invitation to roomId: $it")
+                                }.doOnError {
+                                    logger.error("could not join invitation to roomId: $roomId due to ${it.message}")
+                                }.subscribe()
+                            }
                         }
                     }
                 }

@@ -7,15 +7,17 @@ import org.springframework.boot.context.properties.bind.DefaultValue
 @ConfigurationProperties("matrix.bot")
 @ConstructorBinding
 data class MatrixBotProperties(
-        @DefaultValue("true")
-        val autoJoin: Boolean = true,
-        @DefaultValue("false")
-        val allowFederation: Boolean = false,
+        @DefaultValue("RESTRICTED")
+        val autoJoin: AutoJoinMode = AutoJoinMode.RESTRICTED,
         val serverName: String,
         @DefaultValue("CLIENT")
         val mode: BotMode = BotMode.CLIENT
 ) {
     enum class BotMode {
         APPSERVICE, CLIENT
+    }
+
+    enum class AutoJoinMode {
+        ENABLED, DISABLED, RESTRICTED
     }
 }

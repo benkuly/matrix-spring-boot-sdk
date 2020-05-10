@@ -15,6 +15,7 @@ import net.folivo.matrix.bot.appservice.user.DefaultMatrixAppserviceUserService
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.restclient.MatrixClient
 import org.neo4j.springframework.data.repository.config.EnableReactiveNeo4jRepositories
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.domain.EntityScan
@@ -31,16 +32,12 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
     @Bean
     @ConditionalOnMissingBean
     fun defaultMatrixAppserviceEventService(
-            matrixClient: MatrixClient,
             eventTransactionRepository: EventTransactionRepository,
             matrixEventHandler: List<MatrixEventHandler>
     ): MatrixAppserviceEventService {
         return DefaultMatrixAppserviceEventService(
-                matrixClient,
                 eventTransactionRepository,
-                matrixEventHandler,
-                matrixBotProperties.allowFederation,
-                matrixBotProperties.serverName
+                matrixEventHandler
         )
     }
 
@@ -51,17 +48,19 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "matrix.bot", name = ["autoJoin"], havingValue = "true", matchIfMissing = true)
+    @ConditionalOnExpression("!(\${matrix.bot.autoJoin}=='DISABLED')")
     fun autoJoinEventHandler(
             matrixClient: MatrixClient,
             defaultMatrixAppserviceRoomService: DefaultMatrixAppserviceRoomService,
             appserviceProperties: MatrixAppserviceProperties
     ): AutoJoinEventHandler {
         return AutoJoinEventHandler(
-                matrixClient,
-                defaultMatrixAppserviceRoomService,
-                appserviceProperties.asUsername,
-                appserviceProperties.namespaces.users.map { it.regex }
+                matrixClient = matrixClient,
+                roomService = defaultMatrixAppserviceRoomService,
+                asUsername = appserviceProperties.asUsername,
+                usersRegex = appserviceProperties.namespaces.users.map { it.regex },
+                serverName = matrixBotProperties.serverName,
+                autoJoin = matrixBotProperties.autoJoin
         )
     }
 
