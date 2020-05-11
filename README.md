@@ -63,7 +63,7 @@ See also the [matrix application service spec](https://matrix.org/docs/spec/appl
 
 ### Persistence
 
-By default, this framework saves the sync token into a Neo4J database. Therefore, you must add the following properties:
+By default, this framework saves the sync token and other entities into a Neo4J database. Therefore, you must add the following properties:
 ```yaml
 org:
   neo4j:
