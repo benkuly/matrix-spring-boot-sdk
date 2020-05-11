@@ -18,9 +18,10 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
+import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
-@SpringBootTest(properties = ["matrix.homeServer.port=5003"])
+@SpringBootTest(properties = ["matrix.client.homeServer.port=5003"])
 @ExtendWith(MockKExtension::class)
 class SyncApiClientTest {
     @Autowired
@@ -29,7 +30,7 @@ class SyncApiClientTest {
     @Autowired
     lateinit var objectMapper: ObjectMapper
 
-    @MockkBean(relaxed = true)
+    @MockkBean
     lateinit var syncBatchTokenService: SyncBatchTokenService
 
     val mockWebServer = MockWebServer()
@@ -108,7 +109,10 @@ class SyncApiClientTest {
                         .setBody(objectMapper.writeValueAsString(response2))
         )
 
-        every { syncBatchTokenService.batchToken }.returns("nextBatch0")
+        every { syncBatchTokenService.getBatchToken() }
+                .returnsMany(Mono.empty(), Mono.just("nextBatch1"))
+        every { syncBatchTokenService.setBatchToken(any()) }
+                .returns(Mono.empty())
 
         val result = matrixClient.syncApi.syncLoop(
                 filter = "someFilter",
@@ -124,13 +128,13 @@ class SyncApiClientTest {
         val request1 = mockWebServer.takeRequest()
         val request2 = mockWebServer.takeRequest()
         assertThat(request1.path)
-                .isEqualTo("/_matrix/client/r0/sync?filter=someFilter&full_state=false&set_presence=online&since=nextBatch0&timeout=30000")
+                .isEqualTo("/_matrix/client/r0/sync?filter=someFilter&full_state=false&set_presence=online&timeout=30000")
         assertThat(request2.path)
                 .isEqualTo("/_matrix/client/r0/sync?filter=someFilter&full_state=false&set_presence=online&since=nextBatch1&timeout=30000")
 
         verifyOrder {
-            syncBatchTokenService.batchToken = "nextBatch1"
-            syncBatchTokenService.batchToken = "nextBatch2"
+            syncBatchTokenService.setBatchToken("nextBatch1")
+            syncBatchTokenService.setBatchToken("nextBatch2")
         }
     }
 }

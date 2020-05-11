@@ -1,8 +1,8 @@
 package net.folivo.matrix.restclient.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import net.folivo.matrix.restclient.api.ErrorResponse
-import net.folivo.matrix.restclient.api.MatrixServerException
+import net.folivo.matrix.core.api.ErrorResponse
+import net.folivo.matrix.core.api.MatrixServerException
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.assertj.core.api.Assertions.assertThat
@@ -19,7 +19,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.test.StepVerifier
 
 
-@SpringBootTest(properties = ["matrix.homeServer.port=5000"])
+@SpringBootTest(properties = ["matrix.client.homeServer.port=5000"])
 class MatrixClientAutoconfigurationTest {
 
     @Autowired

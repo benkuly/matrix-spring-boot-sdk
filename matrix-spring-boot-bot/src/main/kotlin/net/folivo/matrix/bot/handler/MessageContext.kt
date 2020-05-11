@@ -1,7 +1,7 @@
 package net.folivo.matrix.bot.handler
 
+import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.restclient.MatrixClient
-import net.folivo.matrix.restclient.model.events.m.room.message.MessageEvent
 import reactor.core.publisher.Mono
 
 class MessageContext(
@@ -11,11 +11,13 @@ class MessageContext(
 ) {
 
     fun answer(
-            content: MessageEvent.MessageEventContent
+            content: MessageEvent.MessageEventContent,
+            asUserId: String? = null
     ): Mono<String> {
         return matrixClient.roomsApi.sendRoomEvent(
                 roomId = roomId,
-                eventContent = content
+                eventContent = content,
+                asUserId = asUserId
         )
     }
 

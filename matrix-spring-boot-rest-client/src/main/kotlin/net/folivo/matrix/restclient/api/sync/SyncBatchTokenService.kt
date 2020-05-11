@@ -1,5 +1,8 @@
 package net.folivo.matrix.restclient.api.sync
 
+import reactor.core.publisher.Mono
+
 interface SyncBatchTokenService {
-    var batchToken: String?
+    fun getBatchToken(): Mono<String>
+    fun setBatchToken(value: String?): Mono<Void>
 }

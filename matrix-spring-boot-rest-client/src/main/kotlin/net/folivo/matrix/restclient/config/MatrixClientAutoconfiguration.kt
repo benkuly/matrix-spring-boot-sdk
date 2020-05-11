@@ -1,19 +1,13 @@
 package net.folivo.matrix.restclient.config
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.Module
+import net.folivo.matrix.core.api.ErrorResponse
+import net.folivo.matrix.core.api.MatrixServerException
 import net.folivo.matrix.restclient.MatrixClient
-import net.folivo.matrix.restclient.api.ErrorResponse
-import net.folivo.matrix.restclient.api.MatrixServerException
 import net.folivo.matrix.restclient.api.sync.InMemorySyncBatchTokenService
 import net.folivo.matrix.restclient.api.sync.SyncBatchTokenService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
-import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientAutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -28,24 +22,14 @@ import reactor.core.publisher.Mono
 
 @Configuration
 @EnableConfigurationProperties(MatrixClientProperties::class)
-@AutoConfigureAfter(value = [WebClientAutoConfiguration::class, JacksonAutoConfiguration::class])
-class MatrixClientAutoconfiguration() {
+class MatrixClientAutoconfiguration {
 
     private val logger = LoggerFactory.getLogger(MatrixClientAutoconfiguration::class.java)
 
     @Bean
     @ConditionalOnMissingBean
-    fun matrixClientConfiguration(configurer: List<MatrixClientConfigurer>): MatrixClientConfiguration {
-        val config = MatrixClientConfiguration()
-        configurer.forEach {
-            it.configure(config)
-        }
-        return config
-    }
-
-    @Bean
-    fun defaultMatrixClientConfigurer(): DefaultMatrixClientConfigurer {
-        return DefaultMatrixClientConfigurer()
+    fun matrixClientConfiguration(config: MatrixClientProperties): MatrixClientConfiguration {
+        return MatrixClientConfiguration(config)
     }
 
     @Bean
@@ -61,15 +45,21 @@ class MatrixClientAutoconfiguration() {
     @Bean
     @ConditionalOnMissingBean
     fun inMemorySyncBatchTokenService(): SyncBatchTokenService {
-        logger.warn("you should implement a persistent SyncBatchTokenService. Currently used: InMemorySyncBatchTokenService")
+        logger.info("you should implement a persistent SyncBatchTokenService if you use the sync api. Currently used: InMemorySyncBatchTokenService")
         return InMemorySyncBatchTokenService()
+    }
+
+    @Bean
+    fun webClientTokenAuthorizationFilter(matrixClientConfiguration: MatrixClientConfiguration): WebClientTokenAuthorizationFilter {
+        return WebClientTokenAuthorizationFilter(matrixClientConfiguration)
     }
 
     @Bean("matrixWebClient")
     @ConditionalOnMissingBean
     fun matrixWebClient(
             config: MatrixClientProperties,
-            webClientBuilder: WebClient.Builder
+            webClientBuilder: WebClient.Builder,
+            webClientTokenAuthorizationFilter: WebClientTokenAuthorizationFilter
     ): WebClient {
         return webClientBuilder
                 .baseUrl(
@@ -80,38 +70,17 @@ class MatrixClientAutoconfiguration() {
                                 .path("/_matrix/client").build().toASCIIString()
                 )
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer ${config.token}")
                 .filter(ExchangeFilterFunction.ofResponseProcessor { clientResponse ->
                     if (clientResponse.statusCode().isError) {
                         clientResponse.bodyToMono<ErrorResponse>()
                                 .flatMap {
-                                    Mono.error<ClientResponse>(
-                                            MatrixServerException(
-                                                    clientResponse.statusCode()
-                                                            .value(), it
-                                            )
-                                    )
+                                    Mono.error<ClientResponse>(MatrixServerException(clientResponse.statusCode(), it))
                                 }
                     } else {
                         Mono.just(clientResponse)
                     }
                 })
+                .filter(webClientTokenAuthorizationFilter)
                 .build();
     }
-
-    @Bean
-    fun matrixEventJacksonModule(config: MatrixClientConfiguration): Module {
-        return MatrixEventJacksonModule(
-                config.registeredEvents,
-                config.registeredMessageEventContent
-        )
-    }
-
-    @Bean
-    fun modifyBuilder(): Jackson2ObjectMapperBuilderCustomizer {
-        return Jackson2ObjectMapperBuilderCustomizer {
-            it.serializationInclusion(JsonInclude.Include.NON_NULL)
-        }
-    }
-
 }

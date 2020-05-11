@@ -1,11 +1,16 @@
 package net.folivo.matrix.bot.handler
 
+import net.folivo.matrix.core.model.events.Event
+import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.restclient.MatrixClient
-import net.folivo.matrix.restclient.model.events.Event
-import net.folivo.matrix.restclient.model.events.m.room.message.MessageEvent
 import org.slf4j.LoggerFactory
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
-class MatrixMessageEventHandler(private val messageContentHandler: List<MatrixMessageContentHandler>) : MatrixEventHandler {
+class MatrixMessageEventHandler(
+        private val messageContentHandler: List<MatrixMessageContentHandler>,
+        private val matrixClient: MatrixClient
+) : MatrixEventHandler {
 
     private val logger = LoggerFactory.getLogger(MatrixMessageEventHandler::class.java)
 
@@ -14,15 +19,23 @@ class MatrixMessageEventHandler(private val messageContentHandler: List<MatrixMe
         return clazz == MessageEvent::class.java
     }
 
-    override fun handleEvent(event: Event<*>, roomId: String, matrixClient: MatrixClient) {
+    override fun handleEvent(event: Event<*>, roomId: String?): Mono<Void> {
         if (event is MessageEvent<*>) {
-            logger.debug("handle message event")
+            if (roomId == null) {
+                logger.info("could not handle event due to missing roomId")
+                return Mono.empty()
+            }
             val messageContext = MessageContext(
                     matrixClient,
                     event,
                     roomId
             )
-            messageContentHandler.forEach { it.handleMessage(event.content, messageContext) }
+            logger.debug("handle message event")
+            return Flux.fromIterable(messageContentHandler)
+                    .flatMap { it.handleMessage(event.content, messageContext) }
+                    .onErrorContinue { throwable, _ -> logger.warn("could not handle message due to $throwable") }
+                    .then()
         }
+        return Mono.empty()
     }
 }

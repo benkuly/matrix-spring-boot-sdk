@@ -9,14 +9,13 @@ plugins {
     kotlin("jvm") version "1.3.71"
     kotlin("kapt") version "1.3.71"
     kotlin("plugin.spring") version "1.3.71" apply false
-    kotlin("plugin.jpa") version "1.3.71" apply false
 }
 
 allprojects {
     apply(plugin = "kotlin")
 
     group = "net.folivo"
-    version = "0.0.1.RELEASE"
+    version = "0.0.2.RELEASE"
     java.sourceCompatibility = JavaVersion.VERSION_11
 
     repositories {
@@ -30,7 +29,6 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.jetbrains.kotlin.kapt")
     apply(plugin = "org.jetbrains.kotlin.plugin.spring")
-    apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
 
     dependencies {
         implementation("org.jetbrains.kotlin:kotlin-reflect")

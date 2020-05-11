@@ -4,6 +4,7 @@ import net.folivo.matrix.restclient.api.rooms.RoomsApiClient
 import net.folivo.matrix.restclient.api.server.ServerApiClient
 import net.folivo.matrix.restclient.api.sync.SyncApiClient
 import net.folivo.matrix.restclient.api.sync.SyncBatchTokenService
+import net.folivo.matrix.restclient.api.user.UserApiClient
 import org.springframework.web.reactive.function.client.WebClient
 
 class MatrixClient(
@@ -11,5 +12,6 @@ class MatrixClient(
         private val syncBatchTokenService: SyncBatchTokenService,
         val serverApi: ServerApiClient = ServerApiClient(webClient),
         val syncApi: SyncApiClient = SyncApiClient(webClient, syncBatchTokenService),
-        val roomsApi: RoomsApiClient = RoomsApiClient(webClient)
+        val roomsApi: RoomsApiClient = RoomsApiClient(webClient),
+        val userApi: UserApiClient = UserApiClient(webClient)
 ) 

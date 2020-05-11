@@ -1,0 +1,13 @@
+matrix:
+  appservice:
+    hsToken: validToken
+    asUsername: superAppservice
+    namespaces:
+      users: []
+      aliases: []
+      rooms: []
+  client:
+    homeServer:
+      hostname: localhost
+      secure: false
+    token: superSecretToken
