@@ -66,7 +66,9 @@ class SyncApiClient(private val webClient: WebClient, private val syncBatchToken
                     } else {
                         Mono.just<SyncResponse>(response)
                     }
-                }.repeat()
+                }
+                .repeat()
+                .retry()
                 .doOnError { logger.error("error in syncLoop", it) }
     }
 

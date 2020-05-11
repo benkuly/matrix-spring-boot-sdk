@@ -1,14 +1,14 @@
 spring:
   main:
     web-application-type: NONE
-  datasource:
-    driver-class-name: org.hsqldb.jdbc.JDBCDriver
-    url: jdbc:hsqldb:file:db/db
-    username: matrixbot
-    password: matrixbot
-  jpa:
-    hibernate:
-      ddl-auto: update
+
+org:
+  neo4j:
+    driver:
+      uri: bolt://localhost:7687
+      authentication:
+        username: neo4j
+        password: secret
 
 logging:
   level:

@@ -39,7 +39,7 @@ class MatrixConfiguration {
                 return
             }
             registeredMessageEventContent[messageType.type] = it
-            logger.info("registered message event content type ${messageType.type}")
+            logger.debug("registered message event content type ${messageType.type}")
         }
     }
 }
