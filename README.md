@@ -92,10 +92,10 @@ Just implement [`MatrixMessageEventHandler`](./matrix-spring-boot-bot/src/main/k
 Implement [`MatrixEventHandler`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/handler/MatrixEventHandler.kt) and make it available as bean (annotate it with `@Component`). This allows you to react to every Event from any room, that you joined.
 
 #### Interact with Homeserver
-A Bean of type [`MatrixClient`](./matrix-spring-boot-rest-client/src/main/kotlin/net/folivo/matrix/restclient/MatrixClient.kt) is created, which can be autowired and used to interact with the matrix api. Currently not all endpoints of the [Client-Server API](https://matrix.org/docs/spec/client_server/r0.6.0) are implemented.
+A Bean of type [`MatrixClient`](./matrix-spring-boot-rest-client/src/main/kotlin/net/folivo/matrix/restclient/MatrixClient.kt) is created, which can be autowired and used to interact with the matrix API. Currently not all endpoints of the [Client-Server API](https://matrix.org/docs/spec/client_server/r0.6.0) are implemented.
 
 ## Examples
 
-The module [matrix-spring-boot-bot](./matrix-spring-boot-bot) contains some examples how to use this framework in practice.
+The module [matrix-spring-boot-bot-examples](./matrix-spring-boot-bot-examples) contains some examples how to use this framework in practice.
 
 Copy the `application.yml.example` file and save it at the same place as `application.yml`. You eventually need to modify the matrix-properties in that file.
