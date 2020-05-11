@@ -5,7 +5,7 @@ import net.folivo.matrix.appservice.api.user.CreateUserParameter
 import reactor.core.publisher.Mono
 
 open class DefaultAppserviceBotManager : AppserviceBotManager {
-    override fun shouldCreateUser(matrixUsername: String): Mono<Boolean> {
+    override fun shouldCreateUser(matrixUserId: String): Mono<Boolean> {
         return Mono.just(true)
     }
 
@@ -13,11 +13,11 @@ open class DefaultAppserviceBotManager : AppserviceBotManager {
         return Mono.just(false)
     }
 
-    override fun getCreateRoomParameter(roomAliasName: String): Mono<CreateRoomParameter> {
+    override fun getCreateRoomParameter(matrixRoomAlias: String): Mono<CreateRoomParameter> {
         return Mono.just(CreateRoomParameter())
     }
 
-    override fun getCreateUserParameter(username: String): Mono<CreateUserParameter> {
+    override fun getCreateUserParameter(matrixUserId: String): Mono<CreateUserParameter> {
         return Mono.just(CreateUserParameter())
     }
 }

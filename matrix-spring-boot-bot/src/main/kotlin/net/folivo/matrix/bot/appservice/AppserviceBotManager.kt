@@ -5,8 +5,10 @@ import net.folivo.matrix.appservice.api.user.CreateUserParameter
 import reactor.core.publisher.Mono
 
 interface AppserviceBotManager {
-    fun shouldCreateUser(matrixUsername: String): Mono<Boolean>
+    fun shouldCreateUser(matrixUserId: String): Mono<Boolean>
+    fun getCreateUserParameter(matrixUserId: String): Mono<CreateUserParameter>
+
     fun shouldCreateRoom(matrixRoomAlias: String): Mono<Boolean>
-    fun getCreateRoomParameter(roomAliasName: String): Mono<CreateRoomParameter>
-    fun getCreateUserParameter(username: String): Mono<CreateUserParameter>
+    fun getCreateRoomParameter(matrixRoomAlias: String): Mono<CreateRoomParameter>
+
 }
