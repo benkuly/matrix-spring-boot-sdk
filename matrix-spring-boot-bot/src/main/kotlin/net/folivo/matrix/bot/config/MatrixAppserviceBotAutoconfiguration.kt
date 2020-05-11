@@ -48,7 +48,7 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
     }
 
     @Bean
-    @ConditionalOnExpression("!(\${matrix.bot.autoJoin}=='DISABLED')")
+    @ConditionalOnExpression("'\${matrix.bot.autoJoin}' != 'DISABLED'")
     fun autoJoinEventHandler(
             matrixClient: MatrixClient,
             defaultMatrixAppserviceRoomService: DefaultMatrixAppserviceRoomService,
