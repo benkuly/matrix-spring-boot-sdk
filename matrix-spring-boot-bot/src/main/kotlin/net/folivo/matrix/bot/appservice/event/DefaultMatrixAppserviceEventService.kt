@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-// FIXME test
 class DefaultMatrixAppserviceEventService(
         private val eventTransactionRepository: EventTransactionRepository,
         private val eventHandler: List<MatrixEventHandler>

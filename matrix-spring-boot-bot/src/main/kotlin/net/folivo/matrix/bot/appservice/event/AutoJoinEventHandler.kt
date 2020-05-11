@@ -10,7 +10,6 @@ import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Mono
 
-// FIXME test
 class AutoJoinEventHandler(
         private val matrixClient: MatrixClient,
         private val roomService: DefaultMatrixAppserviceRoomService,
@@ -36,7 +35,7 @@ class AutoJoinEventHandler(
                 logger.warn("could not handle join event due to missing roomId")
                 return Mono.empty()
             }
-            
+
             val invitedUser = event.stateKey
             val isAsUser = invitedUser.trimStart('@').substringBefore(":") == asUsername
             val asUserId = if (isAsUser) null else invitedUser
