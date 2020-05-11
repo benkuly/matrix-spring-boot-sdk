@@ -13,7 +13,6 @@ class MatrixAppserviceExceptionHandler {
 
     private val logger = LoggerFactory.getLogger(MatrixAppserviceExceptionHandler::class.java)
 
-
     @ExceptionHandler(Exception::class)
     fun handleAllOtherExceptions(exception: Exception): ResponseEntity<ErrorResponse> {
         logger.error(exception.toString())

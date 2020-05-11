@@ -31,6 +31,11 @@ class TestApplication {
     }
 
     @Bean
+    fun testController(): TestRestController {
+        return TestRestController()
+    }
+
+    @Bean
     fun noOpMatrixAppserviceEventService(): MatrixAppserviceEventService {
         return object : MatrixAppserviceEventService {
             override fun eventProcessingState(

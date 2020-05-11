@@ -26,7 +26,6 @@ class AutoJoinEventHandler(
     }
 
     override fun handleEvent(event: Event<*>, roomId: String?): Mono<Void> {
-        // FIXME reject foreign server (instead of autojoin Boolean maybe TRUE/FALSE/RESTRICTED
         if (autoJoin != MatrixBotProperties.AutoJoinMode.DISABLED
             && event is MemberEvent
             && event.content.membership == INVITE
