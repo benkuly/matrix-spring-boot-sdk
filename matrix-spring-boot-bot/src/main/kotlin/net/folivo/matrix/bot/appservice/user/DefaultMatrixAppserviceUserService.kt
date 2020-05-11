@@ -5,7 +5,6 @@ import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
 import net.folivo.matrix.bot.appservice.AppserviceBotManager
 import reactor.core.publisher.Mono
 
-// FIXME test
 class DefaultMatrixAppserviceUserService(
         private val appserviceBotManager: AppserviceBotManager,
         private val appserviceUserRepository: AppserviceUserRepository

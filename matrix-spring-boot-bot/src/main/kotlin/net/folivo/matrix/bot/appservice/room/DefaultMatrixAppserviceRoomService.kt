@@ -8,7 +8,6 @@ import net.folivo.matrix.bot.appservice.user.AppserviceUser
 import net.folivo.matrix.bot.appservice.user.AppserviceUserRepository
 import reactor.core.publisher.Mono
 
-// FIXME test
 class DefaultMatrixAppserviceRoomService(
         private val appserviceBotManager: AppserviceBotManager,
         private val appserviceRoomRepository: AppserviceRoomRepository,
@@ -19,14 +18,16 @@ class DefaultMatrixAppserviceRoomService(
         return appserviceRoomRepository.findByRoomAlias(roomAlias)
                 .map { RoomExistingState.EXISTS }
                 .switchIfEmpty(
-                        appserviceBotManager.shouldCreateRoom(roomAlias)
-                                .map { shouldCreateRoom ->
-                                    if (shouldCreateRoom) {
-                                        RoomExistingState.CAN_BE_CREATED
-                                    } else {
-                                        RoomExistingState.DOES_NOT_EXISTS
+                        Mono.defer {
+                            appserviceBotManager.shouldCreateRoom(roomAlias)
+                                    .map { shouldCreateRoom ->
+                                        if (shouldCreateRoom) {
+                                            RoomExistingState.CAN_BE_CREATED
+                                        } else {
+                                            RoomExistingState.DOES_NOT_EXISTS
+                                        }
                                     }
-                                }
+                        }
                 )
     }
 
@@ -43,8 +44,8 @@ class DefaultMatrixAppserviceRoomService(
         return appserviceRoomRepository.findById(roomId)
                 .switchIfEmpty(appserviceRoomRepository.save(AppserviceRoom(roomId)))
                 .zipWith(
-                        appserviceUserRepository.findById(roomId)
-                                .switchIfEmpty(appserviceUserRepository.save(AppserviceUser(userId)))
+                        appserviceUserRepository.findById(userId)
+                                .switchIfEmpty(Mono.just(AppserviceUser(userId)))
                 ).flatMap {
                     val room = it.t1
                     val user = it.t2
