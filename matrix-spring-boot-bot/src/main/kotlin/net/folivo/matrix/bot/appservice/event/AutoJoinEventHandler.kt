@@ -36,23 +36,23 @@ class AutoJoinEventHandler(
                 logger.warn("could not handle join event due to missing roomId")
                 return Mono.empty()
             }
-            if (autoJoin == MatrixBotProperties.AutoJoinMode.RESTRICTED
-                && roomId.substringAfter(":") != serverName
-            ) {
-                logger.warn("reject room invite to ${event.roomId} because autoJoin is restricted to $serverName")
-                return matrixClient.roomsApi.leaveRoom(roomId, event.stateKey)
-            }
+            
             val invitedUser = event.stateKey
-            if (invitedUser.trimStart('@').substringBefore(":") == asUsername) {
+            val isAsUser = invitedUser.trimStart('@').substringBefore(":") == asUsername
+            val asUserId = if (isAsUser) null else invitedUser
+
+            return if (autoJoin == MatrixBotProperties.AutoJoinMode.RESTRICTED
+                       && roomId.substringAfter(":") != serverName
+            ) {
+                logger.warn("reject room invite of $invitedUser to $roomId because autoJoin is restricted to $serverName")
+                matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)
+            } else if (isAsUser || usersRegex.map { invitedUser.matches(Regex(it)) }.contains(true)) {
                 logger.debug("join room $roomId with $invitedUser")
-                return matrixClient.roomsApi.joinRoom(roomId)
-                        .flatMap { roomService.saveRoomJoin(roomId, invitedUser) }
-            } else if (usersRegex.map { invitedUser.matches(Regex(it)) }.contains(true)) {
-                logger.debug("join room $roomId with $invitedUser")
-                return matrixClient.roomsApi.joinRoom(roomIdOrAlias = roomId, asUserId = invitedUser)
-                        .flatMap { roomService.saveRoomJoin(roomId, invitedUser) }
+                matrixClient.roomsApi.joinRoom(roomIdOrAlias = roomId, asUserId = asUserId)
+                        .flatMap { roomService.saveRoomJoin(it, invitedUser) }
             } else {
                 logger.debug("invited user $invitedUser not managed by this application service")
+                Mono.empty()
             }
         }
         return Mono.empty()
