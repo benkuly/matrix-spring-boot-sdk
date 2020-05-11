@@ -12,13 +12,13 @@ dependencies {
 
 publishing {
     publications {
-        create<MavenPublication>("matrix-spring-boot-common") {
+        create<MavenPublication>("matrix-spring-boot-core") {
             pom {
-                artifactId = "matrix-spring-boot-common"
+                artifactId = "matrix-spring-boot-core"
 
                 from(components["java"])
 
-                name.set("matrix-spring-boot-common")
+                name.set("matrix-spring-boot-core")
                 description.set("Spring Boot Starter for matrix-protocol client.")
                 url.set("https://github.com/benkuly/matrix-spring-boot-sdk")
                 licenses {
@@ -57,5 +57,5 @@ signing {
             System.getenv("MAVEN_SIGN_KEY"),
             System.getenv("MAVEN_SIGN_PASSWORD")
     )
-    sign(publishing.publications["matrix-spring-boot-common"])
+    sign(publishing.publications["matrix-spring-boot-core"])
 }
