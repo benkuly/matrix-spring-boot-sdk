@@ -84,7 +84,7 @@ The `CLIENT` mode does sync endless to the Homeserver as soon as you start your 
 To customize the default behaviour of the `APPSERVICE` mode you may implement [`AppserviceBotManager`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/appservice/AppserviceBotManager.kt) or extend/override [`DefaultAppserviceBotManager`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/appservice/DefaultAppserviceBotManager.kt) and make it available as bean (annotate it with `@Component`). This allows you to control which and how users and rooms should be created.
 
 ### Handle messages
-Just implement [`MatrixMessageEventHandler`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/handler/MatrixMessageEventHandler.kt) and make it available as bean (annotate it with `@Component`). This allows you to react and answer to all Message Events from any room, that you joined.
+Just implement [`MatrixMessageContentHandler`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/handler/MatrixMessageContentHandler.kt) and make it available as bean (annotate it with `@Component`). This allows you to react and answer to all Message Events from any room, that you joined.
 
 ## Advanced usage
 
