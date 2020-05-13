@@ -4,18 +4,18 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     base
-    id("org.springframework.boot") version "2.2.6.RELEASE" apply false
-    id("io.spring.dependency-management") version "1.0.8.RELEASE" apply false
-    kotlin("jvm") version "1.3.71"
-    kotlin("kapt") version "1.3.71"
-    kotlin("plugin.spring") version "1.3.71" apply false
+    id("org.springframework.boot") version "2.2.7.RELEASE" apply false
+    id("io.spring.dependency-management") version "1.0.9.RELEASE" apply false
+    kotlin("jvm") version "1.3.72"
+    kotlin("kapt") version "1.3.72"
+    kotlin("plugin.spring") version "1.3.72" apply false
 }
 
 allprojects {
     apply(plugin = "kotlin")
 
     group = "net.folivo"
-    version = "0.1.1.RELEASE"
+    version = "0.1.2.RELEASE"
     java.sourceCompatibility = JavaVersion.VERSION_11
 
     repositories {
