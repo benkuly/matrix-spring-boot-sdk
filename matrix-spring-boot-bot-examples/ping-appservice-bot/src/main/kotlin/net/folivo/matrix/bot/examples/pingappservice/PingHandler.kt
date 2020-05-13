@@ -1,4 +1,4 @@
-package net.folivo.matrix.bot.examples.ping
+package net.folivo.matrix.bot.examples.pingappservice
 
 import net.folivo.matrix.bot.appservice.room.AppserviceRoomRepository
 import net.folivo.matrix.bot.handler.MatrixMessageContentHandler
