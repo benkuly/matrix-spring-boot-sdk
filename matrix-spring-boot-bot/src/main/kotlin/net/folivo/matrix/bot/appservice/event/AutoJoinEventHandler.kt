@@ -36,7 +36,8 @@ class AutoJoinEventHandler(
             }
 
             val invitedUser = event.stateKey
-            val isAsUser = invitedUser.trimStart('@').substringBefore(":") == asUsername
+            val invitedUsername = invitedUser.trimStart('@').substringBefore(":")
+            val isAsUser = invitedUsername == asUsername
             val asUserId = if (isAsUser) null else invitedUser
 
             return if (autoJoin == MatrixBotProperties.AutoJoinMode.RESTRICTED
@@ -44,12 +45,15 @@ class AutoJoinEventHandler(
             ) {
                 logger.warn("reject room invite of $invitedUser to $roomId because autoJoin is restricted to $serverName")
                 matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)
-            } else if (isAsUser || usersRegex.map { invitedUser.matches(Regex(it)) }.contains(true)) {
+            } else if (isAsUser || usersRegex.map { invitedUsername.matches(Regex(it)) }.contains(true)) {
                 logger.debug("join room $roomId with $invitedUser")
                 matrixClient.roomsApi.joinRoom(roomIdOrAlias = roomId, asUserId = asUserId)
                         .flatMap { roomService.saveRoomJoin(it, invitedUser) }
             } else {
-                logger.debug("invited user $invitedUser not managed by this application service")
+                logger.debug(
+                        "invited user $invitedUser to room $roomId not managed by this application service, " +
+                        "because room not primary hosted on $serverName"
+                )
                 Mono.empty()
             }
         }

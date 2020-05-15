@@ -26,8 +26,8 @@ matrix:
     namespaces:
       users:
         - exclusive: true
-          regex: "@ping_.*"
+          regex: "ping_.*"
       aliases:
         - exclusive: true
-          regex: "#ping_.*"
+          regex: "ping_.*"
       rooms: []

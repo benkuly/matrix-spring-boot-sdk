@@ -41,7 +41,7 @@ class AutoJoinEventHandlerTest {
                 roomService = roomServiceMock,
                 autoJoin = autoJoinMode,
                 serverName = "someServerName",
-                usersRegex = listOf("@unicorn_.*"),
+                usersRegex = listOf("unicorn_.*"),
                 asUsername = "someAsUsername"
         )
         val inviteEvent = mockk<MemberEvent>(relaxed = true) {

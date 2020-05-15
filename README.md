@@ -53,9 +53,11 @@ matrix:
             # has exclusive access to events within this namespace. Default is true.
           - exclusive: true
             # A regular expression defining which values this namespace includes.
-            regex: "@_superAppservice_.*"
+            # Note that this is not similar to the matrix homeserver appservice config,
+            # because this regex only regards the username and not user id.
+            regex: "_superAppservice_.*"
         aliases:
-          - regex: "#_superAppservice_.*"
+          - regex: "_superAppservice_.*"
         rooms: []
 ```
 

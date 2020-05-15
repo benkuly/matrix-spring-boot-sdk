@@ -20,4 +20,5 @@ data class EventTransaction(
 
     @Version
     var version: Long = 0
+        private set
 }
