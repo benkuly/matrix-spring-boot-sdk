@@ -13,6 +13,7 @@ logging:
 matrix:
   bot:
     serverName: matrix-local
+    username: "ping"
     mode: APPSERVICE
   client:
     homeServer:
@@ -22,7 +23,6 @@ matrix:
     token: 30c05ae90a248a4188e620216fa72e349803310ec83e2a77b34fe90be6081f46
   appservice:
     hsToken: 312df522183efd404ec1cd22d2ffa4bbc76a8c1ccf541dd692eef281356bb74e
-    asUsername: "ping"
     namespaces:
       users:
         - exclusive: true

@@ -1,6 +1,7 @@
 package net.folivo.matrix.bot.client
 
 import io.mockk.every
+import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
@@ -10,11 +11,13 @@ import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.DISABLED
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.RESTRICTED
+import net.folivo.matrix.bot.handler.AutoJoinService
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
 import net.folivo.matrix.restclient.MatrixClient
 import net.folivo.matrix.restclient.api.sync.SyncResponse
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import reactor.core.publisher.Flux
@@ -33,6 +36,14 @@ class MatrixClientBotTest {
     @RelaxedMockK
     lateinit var eventHandlerMock2: MatrixEventHandler
 
+    @MockK
+    lateinit var autoJoinServiceMock: AutoJoinService
+
+    @BeforeEach
+    fun beforeEach() {
+        every { autoJoinServiceMock.shouldJoin(any(), any(), any()) }.returns(Mono.just(true))
+    }
+
     @Test
     fun `should start and call handler`() {
         val cut = MatrixClientBot(
@@ -41,7 +52,8 @@ class MatrixClientBotTest {
                         eventHandlerMock1,
                         eventHandlerMock2
                 ),
-                MatrixBotProperties(serverName = "someServerName")
+                MatrixBotProperties(serverName = "someServerName"),
+                autoJoinServiceMock
         )
 
         val event1 = mockk<MessageEvent<TextMessageEventContent>>()
@@ -95,7 +107,8 @@ class MatrixClientBotTest {
         val cut = MatrixClientBot(
                 matrixClientMock,
                 listOf(),
-                MatrixBotProperties(autoJoin = AutoJoinMode.ENABLED, serverName = "someServerName")
+                MatrixBotProperties(autoJoin = AutoJoinMode.ENABLED, serverName = "someServerName"),
+                autoJoinServiceMock
         )
 
         val response1 = mockk<SyncResponse>(relaxed = true) {
@@ -125,7 +138,8 @@ class MatrixClientBotTest {
         val cut = MatrixClientBot(
                 matrixClientMock,
                 listOf(),
-                MatrixBotProperties(autoJoin = DISABLED, serverName = "someServerName")
+                MatrixBotProperties(autoJoin = DISABLED, serverName = "someServerName"),
+                autoJoinServiceMock
         )
 
         val response1 = mockk<SyncResponse>(relaxed = true) {
@@ -151,7 +165,8 @@ class MatrixClientBotTest {
         val cut = MatrixClientBot(
                 matrixClientMock,
                 listOf(),
-                MatrixBotProperties(autoJoin = RESTRICTED, serverName = "someServerName")
+                MatrixBotProperties(autoJoin = RESTRICTED, serverName = "someServerName"),
+                autoJoinServiceMock
         )
 
         val response1 = mockk<SyncResponse>(relaxed = true) {
@@ -176,11 +191,40 @@ class MatrixClientBotTest {
     }
 
     @Test
+    fun `should not join room when service don't want it`() {
+        val cut = MatrixClientBot(
+                matrixClientMock,
+                listOf(),
+                MatrixBotProperties(autoJoin = DISABLED, serverName = "someServerName"),
+                autoJoinServiceMock
+        )
+
+        val response1 = mockk<SyncResponse>(relaxed = true) {
+            every { room.invite } returns mapOf(
+                    "someRoomId1" to mockk(relaxed = true)
+            )
+        }
+
+        val publisher = TestPublisher.create<SyncResponse>()
+        every { matrixClientMock.syncApi.syncLoop() }.returns(Flux.from(publisher))
+        every { autoJoinServiceMock.shouldJoin("someRoomId", any(), any()) }.returns(Mono.just(false))
+
+        cut.start()
+        publisher.next(response1)
+
+        val roomsApiMock = matrixClientMock.roomsApi
+
+        verify(exactly = 0) { roomsApiMock.joinRoom(any()) }
+        verify { roomsApiMock.leaveRoom("someRoomId1") }
+    }
+
+    @Test
     fun `should deal with multiple starts`() {
         val cut = MatrixClientBot(
                 matrixClientMock,
                 listOf(eventHandlerMock1),
-                MatrixBotProperties(serverName = "someServerName")
+                MatrixBotProperties(serverName = "someServerName"),
+                autoJoinServiceMock
         )
 
         val response = mockk<SyncResponse>(relaxed = true) {
@@ -211,7 +255,8 @@ class MatrixClientBotTest {
         val cut = MatrixClientBot(
                 matrixClientMock,
                 listOf(eventHandlerMock1),
-                MatrixBotProperties(serverName = "someServerName")
+                MatrixBotProperties(serverName = "someServerName"),
+                autoJoinServiceMock
         )
 
         val response = mockk<SyncResponse>(relaxed = true) {
@@ -245,7 +290,8 @@ class MatrixClientBotTest {
                         eventHandlerMock1,
                         eventHandlerMock2
                 ),
-                MatrixBotProperties(serverName = "someServerName")
+                MatrixBotProperties(serverName = "someServerName"),
+                autoJoinServiceMock
         )
 
         val event1 = mockk<MessageEvent<TextMessageEventContent>>()

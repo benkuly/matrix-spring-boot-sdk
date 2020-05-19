@@ -12,6 +12,7 @@ import net.folivo.matrix.bot.appservice.room.AppserviceRoomRepository
 import net.folivo.matrix.bot.appservice.room.DefaultMatrixAppserviceRoomService
 import net.folivo.matrix.bot.appservice.user.AppserviceUserRepository
 import net.folivo.matrix.bot.appservice.user.DefaultMatrixAppserviceUserService
+import net.folivo.matrix.bot.handler.AutoJoinService
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.restclient.MatrixClient
 import org.neo4j.springframework.data.repository.config.EnableReactiveNeo4jRepositories
@@ -50,14 +51,19 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
     @Bean
     @ConditionalOnExpression("'\${matrix.bot.autoJoin}' != 'DISABLED'")
     fun autoJoinEventHandler(
+            autoJoinService: AutoJoinService,
             matrixClient: MatrixClient,
             defaultMatrixAppserviceRoomService: DefaultMatrixAppserviceRoomService,
             appserviceProperties: MatrixAppserviceProperties
     ): AutoJoinEventHandler {
+        val asUserName = matrixBotProperties.username
+                         ?: throw MissingRequiredPropertyException("matrix.bot.username")
+
         return AutoJoinEventHandler(
+                autoJoinService = autoJoinService,
                 matrixClient = matrixClient,
                 roomService = defaultMatrixAppserviceRoomService,
-                asUsername = appserviceProperties.asUsername,
+                asUsername = asUserName,
                 usersRegex = appserviceProperties.namespaces.users.map { it.regex },
                 serverName = matrixBotProperties.serverName,
                 autoJoin = matrixBotProperties.autoJoin

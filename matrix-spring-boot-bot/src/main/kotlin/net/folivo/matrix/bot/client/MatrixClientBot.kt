@@ -2,6 +2,7 @@ package net.folivo.matrix.bot.client
 
 import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.DISABLED
+import net.folivo.matrix.bot.handler.AutoJoinService
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.restclient.MatrixClient
@@ -13,7 +14,8 @@ import reactor.core.publisher.Mono
 class MatrixClientBot(
         private val matrixClient: MatrixClient,
         private val eventHandler: List<MatrixEventHandler>,
-        private val botProperties: MatrixBotProperties
+        private val botProperties: MatrixBotProperties,
+        private val autoJoinService: AutoJoinService
 ) {
 
     private val logger = LoggerFactory.getLogger(MatrixClientBot::class.java)
@@ -39,8 +41,16 @@ class MatrixClientBot(
                             logger.warn("reject room invite to $roomId because autoJoin is not allowed to ${botProperties.serverName}")
                             actions.add(matrixClient.roomsApi.leaveRoom(roomId))
                         } else {
-                            logger.debug("join invitation to roomId: $roomId")
-                            actions.add(matrixClient.roomsApi.joinRoom(roomId).then())
+                            actions.add(autoJoinService.shouldJoin(roomId, botProperties.username)
+                                                .flatMap {
+                                                    if (it) {
+                                                        logger.debug("join invitation to roomId: $roomId")
+                                                        matrixClient.roomsApi.joinRoom(roomId).then()
+                                                    } else {
+                                                        logger.debug("reject room invite to $roomId because service denied it")
+                                                        matrixClient.roomsApi.leaveRoom(roomId)
+                                                    }
+                                                })
                         }
                     }
                     Flux.merge(actions).then()

@@ -3,6 +3,7 @@ package net.folivo.matrix.bot.config
 import net.folivo.matrix.bot.client.MatrixClientBot
 import net.folivo.matrix.bot.client.PersistenceSyncBatchTokenService
 import net.folivo.matrix.bot.client.SyncBatchTokenRepository
+import net.folivo.matrix.bot.handler.AutoJoinService
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.restclient.MatrixClient
 import net.folivo.matrix.restclient.api.sync.SyncBatchTokenService
@@ -22,11 +23,16 @@ class MatrixClientBotAutoconfiguration(private val botProperties: MatrixBotPrope
 
     @Bean
     @ConditionalOnMissingBean
-    fun matrixClientBot(matrixClient: MatrixClient, matrixEventHandler: List<MatrixEventHandler>): MatrixClientBot {
+    fun matrixClientBot(
+            matrixClient: MatrixClient,
+            matrixEventHandler: List<MatrixEventHandler>,
+            autoJoinService: AutoJoinService
+    ): MatrixClientBot {
         val matrixClientBot = MatrixClientBot(
                 matrixClient,
                 matrixEventHandler,
-                botProperties
+                botProperties,
+                autoJoinService
         )
         matrixClientBot.start()
         return matrixClientBot

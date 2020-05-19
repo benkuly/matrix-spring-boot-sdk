@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConstructorBinding
 data class MatrixBotProperties(
         val autoJoin: AutoJoinMode = AutoJoinMode.RESTRICTED,
         val serverName: String,
+        val username: String? = null,
         val mode: BotMode = BotMode.CLIENT
 ) {
     enum class BotMode {

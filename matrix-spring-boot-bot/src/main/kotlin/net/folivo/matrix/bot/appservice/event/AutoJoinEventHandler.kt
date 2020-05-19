@@ -2,6 +2,7 @@ package net.folivo.matrix.bot.appservice.event
 
 import net.folivo.matrix.bot.appservice.room.DefaultMatrixAppserviceRoomService
 import net.folivo.matrix.bot.config.MatrixBotProperties
+import net.folivo.matrix.bot.handler.AutoJoinService
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.m.room.MemberEvent
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory
 import reactor.core.publisher.Mono
 
 class AutoJoinEventHandler(
+        private val autoJoinService: AutoJoinService,
         private val matrixClient: MatrixClient,
         private val roomService: DefaultMatrixAppserviceRoomService,
         private val asUsername: String,
@@ -45,10 +47,19 @@ class AutoJoinEventHandler(
             ) {
                 logger.warn("reject room invite of $invitedUser to $roomId because autoJoin is restricted to $serverName")
                 matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)
-            } else if (isAsUser || usersRegex.map { invitedUsername.matches(Regex(it)) }.contains(true)) {
+            } else if (isAsUser
+                       || usersRegex.map { invitedUsername.matches(Regex(it)) }.contains(true)) {
                 logger.debug("join room $roomId with $invitedUser")
-                matrixClient.roomsApi.joinRoom(roomIdOrAlias = roomId, asUserId = asUserId)
-                        .flatMap { roomService.saveRoomJoin(it, invitedUser) }
+                autoJoinService.shouldJoin(roomId, invitedUser, isAsUser)
+                        .flatMap {
+                            if (it) {
+                                matrixClient.roomsApi.joinRoom(roomIdOrAlias = roomId, asUserId = asUserId)
+                                        .flatMap { roomService.saveRoomJoin(it, invitedUser) }
+                            } else {
+                                logger.debug("reject room invite of $invitedUser to $roomId because autoJoin denied by service")
+                                matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)
+                            }
+                        }
             } else {
                 logger.debug(
                         "invited user $invitedUser to room $roomId not managed by this application service, " +

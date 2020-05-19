@@ -9,6 +9,7 @@ import io.mockk.verifyAll
 import net.folivo.matrix.bot.appservice.room.DefaultMatrixAppserviceRoomService
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.*
+import net.folivo.matrix.bot.handler.AutoJoinService
 import net.folivo.matrix.core.model.events.m.room.MemberEvent
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.INVITE
 import net.folivo.matrix.restclient.MatrixClient
@@ -25,6 +26,9 @@ class AutoJoinEventHandlerTest {
     @MockK(relaxed = true)
     lateinit var matrixClientMock: MatrixClient
 
+    @MockK()
+    lateinit var autoJoinServiceMock: AutoJoinService
+
     @MockK
     lateinit var roomServiceMock: DefaultMatrixAppserviceRoomService
 
@@ -33,10 +37,12 @@ class AutoJoinEventHandlerTest {
         every { matrixClientMock.roomsApi.joinRoom(allAny()) } returns Mono.just("@someRoomId:someServerName")
         every { matrixClientMock.roomsApi.leaveRoom(allAny()) } returns Mono.empty()
         every { roomServiceMock.saveRoomJoin(any(), any()) } returns Mono.empty()
+        every { autoJoinServiceMock.shouldJoin(any(), any(), any()) } returns Mono.just(true)
     }
 
     fun doInvite(userId: String, autoJoinMode: AutoJoinMode, roomId: String = "@someRoomId:someServerName") {
         val cut = AutoJoinEventHandler(
+                autoJoinService = autoJoinServiceMock,
                 matrixClient = matrixClientMock,
                 roomService = roomServiceMock,
                 autoJoin = autoJoinMode,
@@ -56,6 +62,7 @@ class AutoJoinEventHandlerTest {
     @Test
     fun `should support MemberEvent`() {
         val cut = AutoJoinEventHandler(
+                autoJoinService = autoJoinServiceMock,
                 matrixClient = matrixClientMock,
                 roomService = roomServiceMock,
                 autoJoin = DISABLED,
@@ -108,6 +115,22 @@ class AutoJoinEventHandlerTest {
         verifyAll {
             matrixClientMock.roomsApi.joinRoom("@someRoomId:someServerName", asUserId = "@unicorn_star:someServerName")
             roomServiceMock.saveRoomJoin("@someRoomId:someServerName", "@unicorn_star:someServerName")
+        }
+    }
+
+    @Test
+    fun `should do reject invite  when services don't want to join it`() {
+        every {
+            autoJoinServiceMock.shouldJoin(
+                    "@someRoomId:someServerName",
+                    "@someAsUsername:someServerName",
+                    true
+            )
+        } returns Mono.just(false)
+        doInvite("@someAsUsername:someServerName", ENABLED)
+        verifyAll {
+            matrixClientMock.roomsApi.leaveRoom("@someRoomId:someServerName")
+            roomServiceMock wasNot Called
         }
     }
 

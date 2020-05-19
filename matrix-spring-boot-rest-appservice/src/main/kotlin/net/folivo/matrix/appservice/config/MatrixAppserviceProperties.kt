@@ -7,7 +7,6 @@ import org.springframework.boot.context.properties.ConstructorBinding
 @ConstructorBinding
 data class MatrixAppserviceProperties(
         val hsToken: String,
-        val asUsername: String,
         val namespaces: Namespaces = Namespaces()
 ) {
     data class Namespaces(
