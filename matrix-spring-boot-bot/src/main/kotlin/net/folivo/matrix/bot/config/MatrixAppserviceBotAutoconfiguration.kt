@@ -44,8 +44,11 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
 
     @Bean
     @ConditionalOnMissingBean
-    fun defaultAppserviceBotManager(): AppserviceBotManager {
-        return DefaultAppserviceBotManager()
+    fun defaultAppserviceBotManager(appserviceProperties: MatrixAppserviceProperties): AppserviceBotManager {
+        return DefaultAppserviceBotManager(
+                usersRegex = appserviceProperties.namespaces.users.map { it.regex },
+                roomsRegex = appserviceProperties.namespaces.rooms.map { it.regex }
+        )
     }
 
     @Bean
