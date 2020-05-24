@@ -5,10 +5,10 @@ import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
 import net.folivo.matrix.appservice.config.MatrixAppserviceProperties
 import net.folivo.matrix.bot.appservice.AppserviceBotManager
 import net.folivo.matrix.bot.appservice.DefaultAppserviceBotManager
-import net.folivo.matrix.bot.appservice.event.AutoJoinEventHandler
 import net.folivo.matrix.bot.appservice.event.DefaultMatrixAppserviceEventService
 import net.folivo.matrix.bot.appservice.event.EventTransactionRepository
 import net.folivo.matrix.bot.appservice.room.AppserviceRoomRepository
+import net.folivo.matrix.bot.appservice.room.AutoJoinEventHandler
 import net.folivo.matrix.bot.appservice.room.DefaultMatrixAppserviceRoomService
 import net.folivo.matrix.bot.appservice.user.AppserviceUserRepository
 import net.folivo.matrix.bot.appservice.user.DefaultMatrixAppserviceUserService

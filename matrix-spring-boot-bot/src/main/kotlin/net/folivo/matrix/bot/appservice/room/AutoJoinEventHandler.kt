@@ -1,6 +1,5 @@
-package net.folivo.matrix.bot.appservice.event
+package net.folivo.matrix.bot.appservice.room
 
-import net.folivo.matrix.bot.appservice.room.DefaultMatrixAppserviceRoomService
 import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.handler.AutoJoinService
 import net.folivo.matrix.bot.handler.MatrixEventHandler

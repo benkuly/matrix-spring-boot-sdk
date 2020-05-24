@@ -1,4 +1,4 @@
-package net.folivo.matrix.bot.appservice.event
+package net.folivo.matrix.bot.appservice.room
 
 import io.mockk.Called
 import io.mockk.every
@@ -6,7 +6,6 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.verifyAll
-import net.folivo.matrix.bot.appservice.room.DefaultMatrixAppserviceRoomService
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.*
 import net.folivo.matrix.bot.handler.AutoJoinService
@@ -26,7 +25,7 @@ class AutoJoinEventHandlerTest {
     @MockK(relaxed = true)
     lateinit var matrixClientMock: MatrixClient
 
-    @MockK()
+    @MockK
     lateinit var autoJoinServiceMock: AutoJoinService
 
     @MockK

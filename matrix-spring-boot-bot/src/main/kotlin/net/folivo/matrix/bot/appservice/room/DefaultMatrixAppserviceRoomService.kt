@@ -53,4 +53,12 @@ class DefaultMatrixAppserviceRoomService(
                     appserviceUserRepository.save(user)
                 }.then()
     }
+
+    fun saveRoomLeave(roomId: String, userId: String): Mono<Void> {
+        return appserviceUserRepository.findById(userId)
+                .flatMap { user ->
+                    user.rooms.removeIf { it.roomId == roomId }
+                    appserviceUserRepository.save(user)
+                }.then()
+    }
 }

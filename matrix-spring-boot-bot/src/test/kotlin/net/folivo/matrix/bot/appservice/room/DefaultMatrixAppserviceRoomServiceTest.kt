@@ -137,4 +137,19 @@ class DefaultMatrixAppserviceRoomServiceTest {
             appserviceUserRepositoryMock.save<AppserviceUser>(match { it.rooms.contains(room) })
         }
     }
+
+    @Test
+    fun `should save user room leave in database`() {
+        val room1 = AppserviceRoom("someRoomId1")
+        val room2 = AppserviceRoom("someRoomId2")
+        val user = AppserviceUser("someUserId", mutableSetOf(room1, room2))
+        every { appserviceUserRepositoryMock.findById("someUserId") }.returns(Mono.just(user))
+        every { appserviceUserRepositoryMock.save<AppserviceUser>(any()) }.returns(Mono.just(user))
+
+        StepVerifier
+                .create(cut.saveRoomLeave("someRoomId1", "someUserId"))
+                .verifyComplete()
+
+        verify { appserviceUserRepositoryMock.save<AppserviceUser>(match { it.rooms.contains(room2) }) }
+    }
 }
