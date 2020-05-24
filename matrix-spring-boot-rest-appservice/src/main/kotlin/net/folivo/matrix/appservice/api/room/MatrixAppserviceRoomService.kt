@@ -11,4 +11,7 @@ interface MatrixAppserviceRoomService {
     fun roomExistingState(roomAlias: String): Mono<RoomExistingState>
     fun getCreateRoomParameter(roomAlias: String): Mono<CreateRoomParameter>
     fun saveRoom(roomAlias: String, roomId: String): Mono<Void>
+
+    fun saveRoomJoin(roomId: String, userId: String): Mono<Void>
+    fun saveRoomLeave(roomId: String, userId: String): Mono<Void>
 }

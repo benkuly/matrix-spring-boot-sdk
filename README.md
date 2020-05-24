@@ -66,25 +66,16 @@ See also the [matrix application service spec](https://matrix.org/docs/spec/appl
 
 ### Persistence
 
-By default, this framework saves the sync token and other entities into a Neo4J database. Therefore, you must add the following properties:
-```yaml
-org:
-  neo4j:
-    driver:
-      uri: bolt://localhost:7687
-      authentication:
-        username: neo4j
-        password: secret
-```
-
 ### Bot modes
 There are two modes how you can run your bot. The `CLIENT` mode simply acts as a matrix user client. This allows you to create bots without an additional configuration on the Homerserver. The `APPSERVICE` mode acts as a matrix appservice, which allows more customized bots.
 
 #### Client mode
 The `CLIENT` mode does sync endless to the Homeserver as soon as you start your application. To manually stop and start the sync to the Homeserver you can autowire [`MatrixClientBot`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/client/MatrixClientBot.kt)
 
+By default, this framework does not persist anything. It is recommended to persist the sync batch token by implementing [`SyncBatchTokenService`](./matrix-spring-boot-rest-client/src/main/kotlin/net/folivo/matrix/restclient/api/sync/SyncBatchTokenService.kt).
+
 #### Appservice mode
-To customize the default behaviour of the `APPSERVICE` mode you may implement [`AppserviceBotManager`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/appservice/AppserviceBotManager.kt) or extend/override [`DefaultAppserviceBotManager`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/appservice/DefaultAppserviceBotManager.kt) and make it available as bean (annotate it with `@Component`). This allows you to control which and how users and rooms should be created.
+To customize the default behaviour of (and add persistence to) the `APPSERVICE` mode you may override [`DefaultMatrixAppserviceEventService`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/appservice/DefaultMatrixAppserviceEventService.kt),  [`DefaultMatrixAppserviceRoomService`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/appservice/DefaultMatrixAppserviceRoomService.kt) and/or [`DefaultMatrixAppserviceUserService`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/appservice/DefaultMatrixAppserviceUserService.kt) and make them available as bean (annotate it with `@Component`). This allows you to control which and how users and rooms should be created and events are handled.
 
 ### Handle messages
 Just implement [`MatrixMessageContentHandler`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/handler/MatrixMessageContentHandler.kt) and make it available as bean (annotate it with `@Component`). This allows you to react and answer to all Message Events from any room, that you joined.

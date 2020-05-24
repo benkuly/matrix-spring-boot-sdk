@@ -1,7 +1,8 @@
-package net.folivo.matrix.bot.appservice.event
+package net.folivo.matrix.bot.appservice
 
 import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
 import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService.EventProcessingState
+import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService.EventProcessingState.NOT_PROCESSED
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.StateEvent
@@ -10,25 +11,18 @@ import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-class DefaultMatrixAppserviceEventService(
-        private val eventTransactionRepository: EventTransactionRepository,
+open class DefaultMatrixAppserviceEventService(
         private val eventHandler: List<MatrixEventHandler>
 ) : MatrixAppserviceEventService {
-
     private val logger = LoggerFactory.getLogger(DefaultMatrixAppserviceEventService::class.java)
 
-    override fun eventProcessingState(
-            tnxId: String,
-            eventIdOrType: String
-    ): Mono<EventProcessingState> {
-        return eventTransactionRepository.findByTnxIdAndEventIdElseType(tnxId, eventIdOrType)
-                .map { EventProcessingState.PROCESSED }
-                .switchIfEmpty(Mono.just(EventProcessingState.NOT_PROCESSED))
+
+    override fun eventProcessingState(tnxId: String, eventIdOrType: String): Mono<EventProcessingState> {
+        return Mono.just(NOT_PROCESSED)
     }
 
     override fun saveEventProcessed(tnxId: String, eventIdOrType: String): Mono<Void> {
-        return eventTransactionRepository.save(EventTransaction(tnxId, eventIdOrType))
-                .then()
+        return Mono.empty()
     }
 
     override fun processEvent(event: Event<*>): Mono<Void> {

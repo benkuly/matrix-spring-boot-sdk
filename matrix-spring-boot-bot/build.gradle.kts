@@ -7,8 +7,6 @@ dependencies {
     api(project(":matrix-spring-boot-rest-client"))
     api(project(":matrix-spring-boot-rest-appservice"))
 
-    api("org.neo4j.springframework.data:spring-data-neo4j-rx-spring-boot-starter:1.0.1")
-
     annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 

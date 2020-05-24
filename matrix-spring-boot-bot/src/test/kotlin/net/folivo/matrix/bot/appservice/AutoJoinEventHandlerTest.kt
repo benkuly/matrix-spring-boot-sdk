@@ -1,4 +1,4 @@
-package net.folivo.matrix.bot.appservice.room
+package net.folivo.matrix.bot.appservice
 
 import io.mockk.Called
 import io.mockk.every

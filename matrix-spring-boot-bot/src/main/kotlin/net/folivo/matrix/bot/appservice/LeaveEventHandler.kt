@@ -1,5 +1,6 @@
-package net.folivo.matrix.bot.appservice.room
+package net.folivo.matrix.bot.appservice
 
+import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.m.room.MemberEvent
@@ -9,7 +10,7 @@ import org.slf4j.LoggerFactory
 import reactor.core.publisher.Mono
 
 class LeaveEventHandler(
-        private val roomService: DefaultMatrixAppserviceRoomService,
+        private val roomService: MatrixAppserviceRoomService,
         private val asUsername: String,
         private val usersRegex: List<String>
 ) : MatrixEventHandler {

@@ -1,54 +1,49 @@
 package net.folivo.matrix.bot.config
 
 import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
+import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
 import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
 import net.folivo.matrix.appservice.config.MatrixAppserviceProperties
-import net.folivo.matrix.bot.appservice.AppserviceBotManager
-import net.folivo.matrix.bot.appservice.DefaultAppserviceBotManager
-import net.folivo.matrix.bot.appservice.event.DefaultMatrixAppserviceEventService
-import net.folivo.matrix.bot.appservice.event.EventTransactionRepository
-import net.folivo.matrix.bot.appservice.room.AppserviceRoomRepository
-import net.folivo.matrix.bot.appservice.room.AutoJoinEventHandler
-import net.folivo.matrix.bot.appservice.room.DefaultMatrixAppserviceRoomService
-import net.folivo.matrix.bot.appservice.user.AppserviceUserRepository
-import net.folivo.matrix.bot.appservice.user.DefaultMatrixAppserviceUserService
+import net.folivo.matrix.bot.appservice.*
 import net.folivo.matrix.bot.handler.AutoJoinService
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.restclient.MatrixClient
-import org.neo4j.springframework.data.repository.config.EnableReactiveNeo4jRepositories
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 
 @Configuration
 @ConditionalOnProperty(prefix = "matrix.bot", name = ["mode"], havingValue = "APPSERVICE")
-@EnableReactiveNeo4jRepositories("net.folivo.matrix.bot.appservice")
-@EntityScan("net.folivo.matrix.bot.appservice")
 class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: MatrixBotProperties) {
 
     @Bean
     @ConditionalOnMissingBean
-    fun defaultMatrixAppserviceEventService(
-            eventTransactionRepository: EventTransactionRepository,
-            matrixEventHandler: List<MatrixEventHandler>
-    ): MatrixAppserviceEventService {
-        return DefaultMatrixAppserviceEventService(
-                eventTransactionRepository,
-                matrixEventHandler
+    fun matrixAppserviceServiceHelper(appserviceProperties: MatrixAppserviceProperties): MatrixAppserviceServiceHelper {
+        return MatrixAppserviceServiceHelper(
+                usersRegex = appserviceProperties.namespaces.users.map { it.regex },
+                roomsRegex = appserviceProperties.namespaces.rooms.map { it.regex }
         )
     }
 
     @Bean
     @ConditionalOnMissingBean
-    fun defaultAppserviceBotManager(appserviceProperties: MatrixAppserviceProperties): AppserviceBotManager {
-        return DefaultAppserviceBotManager(
-                usersRegex = appserviceProperties.namespaces.users.map { it.regex },
-                roomsRegex = appserviceProperties.namespaces.rooms.map { it.regex }
-        )
+    fun defaultMatrixAppserviceRoomService(helper: MatrixAppserviceServiceHelper): MatrixAppserviceRoomService {
+        return DefaultMatrixAppserviceRoomService(helper)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun defaultMatrixAppserviceUserService(helper: MatrixAppserviceServiceHelper): MatrixAppserviceUserService {
+        return DefaultMatrixAppserviceUserService(helper)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun defaultMatrixAppserviceEventService(eventHandler: List<MatrixEventHandler>): MatrixAppserviceEventService {
+        return DefaultMatrixAppserviceEventService(eventHandler)
     }
 
     @Bean
@@ -56,7 +51,7 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
     fun autoJoinEventHandler(
             autoJoinService: AutoJoinService,
             matrixClient: MatrixClient,
-            defaultMatrixAppserviceRoomService: DefaultMatrixAppserviceRoomService,
+            defaultMatrixAppserviceRoomService: MatrixAppserviceRoomService,
             appserviceProperties: MatrixAppserviceProperties
     ): AutoJoinEventHandler {
         val asUserName = matrixBotProperties.username
@@ -70,29 +65,6 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
                 usersRegex = appserviceProperties.namespaces.users.map { it.regex },
                 serverName = matrixBotProperties.serverName,
                 autoJoin = matrixBotProperties.autoJoin
-        )
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun defaultMatrixAppserviceUserService(
-            appserviceUserRepository: AppserviceUserRepository,
-            appserviceBotManager: AppserviceBotManager
-    ): MatrixAppserviceUserService {
-        return DefaultMatrixAppserviceUserService(appserviceBotManager, appserviceUserRepository)
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun defaultMatrixAppserviceRoomService(
-            appserviceRoomRepository: AppserviceRoomRepository,
-            appserviceUserRepository: AppserviceUserRepository,
-            appserviceBotManager: AppserviceBotManager
-    ): DefaultMatrixAppserviceRoomService {
-        return DefaultMatrixAppserviceRoomService(
-                appserviceBotManager,
-                appserviceRoomRepository,
-                appserviceUserRepository
         )
     }
 }

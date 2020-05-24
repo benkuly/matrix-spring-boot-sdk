@@ -1,5 +1,6 @@
-package net.folivo.matrix.bot.appservice.room
+package net.folivo.matrix.bot.appservice
 
+import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
 import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.handler.AutoJoinService
 import net.folivo.matrix.bot.handler.MatrixEventHandler
@@ -13,7 +14,7 @@ import reactor.core.publisher.Mono
 class AutoJoinEventHandler(
         private val autoJoinService: AutoJoinService,
         private val matrixClient: MatrixClient,
-        private val roomService: DefaultMatrixAppserviceRoomService,
+        private val roomService: MatrixAppserviceRoomService,
         private val asUsername: String,
         private val usersRegex: List<String>,
         private val autoJoin: MatrixBotProperties.AutoJoinMode,
@@ -50,8 +51,8 @@ class AutoJoinEventHandler(
                        || usersRegex.map { invitedUsername.matches(Regex(it)) }.contains(true)) {
                 logger.debug("join room $roomId with $invitedUser")
                 autoJoinService.shouldJoin(roomId, invitedUser, isAsUser)
-                        .flatMap {
-                            if (it) {
+                        .flatMap { shouldJoin ->
+                            if (shouldJoin) {
                                 matrixClient.roomsApi.joinRoom(roomIdOrAlias = roomId, asUserId = asUserId)
                                         .flatMap { roomService.saveRoomJoin(it, invitedUser) }
                             } else {
