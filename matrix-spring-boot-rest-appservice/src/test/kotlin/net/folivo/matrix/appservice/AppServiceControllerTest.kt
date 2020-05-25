@@ -1,8 +1,9 @@
-package net.folivo.matrix.appservice.api
+package net.folivo.matrix.appservice
 
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
+import net.folivo.matrix.appservice.api.AppserviceHandler
 import net.folivo.matrix.core.model.events.RoomEvent
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
