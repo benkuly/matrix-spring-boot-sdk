@@ -78,9 +78,15 @@ class DefaultAppserviceHandler(
                                     .flatMap {
                                         matrixAppserviceUserService.getCreateUserParameter(userId)
                                                 .filter { it.displayName != null }
-                                                .flatMap { matrixClient.userApi.setDisplayName(userId, it.displayName) }
-                                                .onErrorResume { Mono.empty() }
+                                                .flatMap {
+                                                    matrixClient.userApi.setDisplayName(
+                                                            userId,
+                                                            it.displayName,
+                                                            asUserId = userId
+                                                    )
+                                                }
                                                 .doOnError { logger.error("an error occurred in setting displayName: $it") }
+                                                .onErrorResume { Mono.empty() }
                                     }
                                     .then(Mono.just(true))
                         }
