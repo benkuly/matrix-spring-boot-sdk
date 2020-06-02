@@ -36,6 +36,6 @@ class RedactionEvent : StandardRoomEvent<RedactionEvent.RedactionEventContent> {
 
     data class RedactionEventContent(
             @JsonProperty("reason")
-            val reason: String
+            val reason: String?
     ) : RoomEventContent
 }

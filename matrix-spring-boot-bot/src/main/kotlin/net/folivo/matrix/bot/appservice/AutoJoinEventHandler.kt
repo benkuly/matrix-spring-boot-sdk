@@ -28,7 +28,7 @@ class AutoJoinEventHandler(
     }
 
     override fun handleEvent(event: Event<*>, roomId: String?): Mono<Void> {
-        if (autoJoin != MatrixBotProperties.AutoJoinMode.DISABLED
+        if (autoJoin != MatrixBotProperties.AutoJoinMode.DISABLED // TODO should leave room as default action
             && event is MemberEvent
             && event.content.membership == INVITE
         ) {
@@ -61,10 +61,7 @@ class AutoJoinEventHandler(
                             }
                         }
             } else {
-                logger.debug(
-                        "invited user $invitedUser to room $roomId not managed by this application service, " +
-                        "because room not primary hosted on $serverName"
-                )
+                logger.debug("invited user $invitedUser to room $roomId not managed by this application service.")
                 Mono.empty()
             }
         }

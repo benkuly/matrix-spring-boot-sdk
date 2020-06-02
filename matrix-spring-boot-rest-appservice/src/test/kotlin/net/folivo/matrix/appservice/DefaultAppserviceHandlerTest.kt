@@ -155,7 +155,13 @@ class DefaultAppserviceHandlerTest {
                     username = "someUserId"
             )
         }
-        verify { matrixClientMock.userApi.setDisplayName("@someUserId:example.com", "someDisplayName") }
+        verify {
+            matrixClientMock.userApi.setDisplayName(
+                    "@someUserId:example.com",
+                    "someDisplayName",
+                    "@someUserId:example.com"
+            )
+        }
         verify { matrixAppserviceUserServiceMock.saveUser("@someUserId:example.com") }
     }
 

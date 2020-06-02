@@ -75,7 +75,7 @@ class DefaultAppserviceHandler(
                                                 .doOnError { logger.error("an error occurred in saving user: $it") }
                                     }
                                     .thenReturn(true)//TODO fix this hacky workaround (see above)
-                                    .flatMap {
+                                    .flatMap { _ ->
                                         matrixAppserviceUserService.getCreateUserParameter(userId)
                                                 .filter { it.displayName != null }
                                                 .flatMap {
