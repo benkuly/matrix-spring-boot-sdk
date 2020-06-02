@@ -6,8 +6,8 @@ This project contains tools to use [matrix](https://matrix.org/) with Spring Boo
 
 * [matrix-spring-boot-core](./matrix-spring-boot-core) contains the matrix event model and some shared code.
 * [matrix-spring-boot-rest-client](./matrix-spring-boot-rest-client) to interact with the matrix-api on a low level.
-* [matrix-spring-boot-rest-appservice](./matrix-spring-boot-rest-appservice) to create an appservice.
-* [matrix-spring-boot-bot](./matrix-spring-boot-bot) to create simple bots.
+* [matrix-spring-boot-rest-appservice](./matrix-spring-boot-rest-appservice) to create an appservice on a low level.
+* [matrix-spring-boot-bot](./matrix-spring-boot-bot) to create bots and appservices easily.
 * [matrix-spring-boot-bot-examples](./matrix-spring-boot-bot-examples) contains examples how to create bots.
 
 The most developers only will need to use [matrix-spring-boot-bot](./matrix-spring-boot-bot), which contains the other projects. Therefore, this documentation focuses on this sub-project.
