@@ -35,7 +35,7 @@ class PowerLevelsEvent : StandardStateEvent<PowerLevelsEvent.PowerLevelsEventCon
             @JsonProperty("ban")
             val ban: Long = 50,
             @JsonProperty("events")
-            val events: Map<String, Long>,
+            val events: Map<String, Long> = emptyMap(),
             @JsonProperty("events_default")
             val eventsDefault: Long = 0,
             @JsonProperty("invite")
@@ -47,7 +47,7 @@ class PowerLevelsEvent : StandardStateEvent<PowerLevelsEvent.PowerLevelsEventCon
             @JsonProperty("state_default")
             val stateDefault: Long = 50,
             @JsonProperty("users")
-            val users: Map<String, Long>,
+            val users: Map<String, Long> = emptyMap(),
             @JsonProperty("users_default")
             val usersDefault: Long = 0,
             @JsonProperty("notifications")

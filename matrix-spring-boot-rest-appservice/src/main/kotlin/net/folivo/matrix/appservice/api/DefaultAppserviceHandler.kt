@@ -8,16 +8,15 @@ import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService.UserExi
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.RoomEvent
 import net.folivo.matrix.core.model.events.StateEvent
-import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 class DefaultAppserviceHandler(
-        private val matrixClient: MatrixClient,
         private val matrixAppserviceEventService: MatrixAppserviceEventService,
         private val matrixAppserviceUserService: MatrixAppserviceUserService,
-        private val matrixAppserviceRoomService: MatrixAppserviceRoomService
+        private val matrixAppserviceRoomService: MatrixAppserviceRoomService,
+        private val helper: AppserviceHandlerHelper
 ) : AppserviceHandler {
 
     private val logger = LoggerFactory.getLogger(DefaultAppserviceHandler::class.java)
@@ -64,31 +63,7 @@ class DefaultAppserviceHandler(
                         UserExistingState.DOES_NOT_EXISTS -> Mono.just(false)
                         UserExistingState.CAN_BE_CREATED  -> {
                             logger.debug("started user creation of $userId")
-                            matrixClient.userApi
-                                    .register(
-                                            authenticationType = "m.login.application_service",
-                                            username = userId.trimStart('@').substringBefore(":")
-                                    )
-                                    .flatMap {
-                                        matrixAppserviceUserService.saveUser(userId)
-                                                .onErrorResume { Mono.empty() }
-                                                .doOnError { logger.error("an error occurred in saving user: $it") }
-                                    }
-                                    .thenReturn(true)//TODO fix this hacky workaround (see above)
-                                    .flatMap { _ ->
-                                        matrixAppserviceUserService.getCreateUserParameter(userId)
-                                                .filter { it.displayName != null }
-                                                .flatMap {
-                                                    matrixClient.userApi.setDisplayName(
-                                                            userId,
-                                                            it.displayName,
-                                                            asUserId = userId
-                                                    )
-                                                }
-                                                .doOnError { logger.error("an error occurred in setting displayName: $it") }
-                                                .onErrorResume { Mono.empty() }
-                                    }
-                                    .then(Mono.just(true))
+                            helper.registerAndSaveUser(userId)
                         }
                         else                              -> {
                             Mono.just(false)
@@ -105,33 +80,7 @@ class DefaultAppserviceHandler(
                         RoomExistingState.DOES_NOT_EXISTS -> Mono.just(false)
                         RoomExistingState.CAN_BE_CREATED  -> {
                             logger.debug("started room creation of $roomAlias")
-                            matrixAppserviceRoomService.getCreateRoomParameter(roomAlias)
-                                    .flatMap { createRoomParameter ->
-                                        matrixClient.roomsApi
-                                                .createRoom(
-                                                        roomAliasName = roomAlias.trimStart('#').substringBefore(":"),
-                                                        visibility = createRoomParameter.visibility,
-                                                        name = createRoomParameter.name,
-                                                        topic = createRoomParameter.topic,
-                                                        invite = createRoomParameter.invite,
-                                                        invite3Pid = createRoomParameter.invite3Pid,
-                                                        roomVersion = createRoomParameter.roomVersion,
-                                                        asUserId = createRoomParameter.asUserId,
-                                                        creationContent = createRoomParameter.creationContent,
-                                                        initialState = createRoomParameter.initialState,
-                                                        isDirect = createRoomParameter.isDirect,
-                                                        powerLevelContentOverride = createRoomParameter.powerLevelContentOverride,
-                                                        preset = createRoomParameter.preset
-                                                )
-                                                .doOnSuccess {
-                                                    try {
-                                                        matrixAppserviceRoomService.saveRoom(roomAlias, it)
-                                                    } catch (error: Throwable) {
-                                                        logger.error("an error occurred in after room creation tasks: $error")
-                                                    }
-                                                }
-                                                .map { true }
-                                    }
+                            helper.createAndSaveRoom(roomAlias)
                         }
                         else                              -> {
                             Mono.just(false)

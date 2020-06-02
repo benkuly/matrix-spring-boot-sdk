@@ -69,6 +69,14 @@ class TestApplication {
             override fun saveRoom(roomAlias: String, roomId: String): Mono<Void> {
                 return Mono.empty()
             }
+
+            override fun saveRoomJoin(roomId: String, userId: String): Mono<Void> {
+                return Mono.empty()
+            }
+
+            override fun saveRoomLeave(roomId: String, userId: String): Mono<Void> {
+                return Mono.empty()
+            }
         }
     }
 

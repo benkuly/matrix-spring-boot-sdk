@@ -3,6 +3,7 @@ package net.folivo.matrix.appservice.config
 import com.fasterxml.jackson.databind.ObjectMapper
 import net.folivo.matrix.appservice.api.AppserviceController
 import net.folivo.matrix.appservice.api.AppserviceHandler
+import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
 import net.folivo.matrix.appservice.api.DefaultAppserviceHandler
 import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
 import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
@@ -39,17 +40,32 @@ class MatrixAppserviceAutoconfiguration(private val matrixAppserviceProperties: 
 
     @Bean
     @ConditionalOnMissingBean
+    fun appserviceHandlerHelper(
+            matrixClient: MatrixClient,
+            matrixAppserviceUserService: MatrixAppserviceUserService,
+            matrixAppserviceRoomService: MatrixAppserviceRoomService
+    ): AppserviceHandlerHelper {
+        return AppserviceHandlerHelper(
+                matrixClient,
+                matrixAppserviceUserService,
+                matrixAppserviceRoomService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     fun defaultAppserviceHandler(
             matrixClient: MatrixClient,
             matrixAppserviceEventService: MatrixAppserviceEventService,
             matrixAppserviceUserService: MatrixAppserviceUserService,
-            matrixAppserviceRoomService: MatrixAppserviceRoomService
+            matrixAppserviceRoomService: MatrixAppserviceRoomService,
+            helper: AppserviceHandlerHelper
     ): AppserviceHandler {
         return DefaultAppserviceHandler(
-                matrixClient,
                 matrixAppserviceEventService,
                 matrixAppserviceUserService,
-                matrixAppserviceRoomService
+                matrixAppserviceRoomService,
+                helper
         )
     }
 

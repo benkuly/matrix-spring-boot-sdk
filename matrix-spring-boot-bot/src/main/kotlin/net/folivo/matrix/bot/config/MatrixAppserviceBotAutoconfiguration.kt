@@ -1,5 +1,6 @@
 package net.folivo.matrix.bot.config
 
+import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
 import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
 import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
 import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
@@ -52,7 +53,8 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
             autoJoinService: AutoJoinService,
             matrixClient: MatrixClient,
             defaultMatrixAppserviceRoomService: MatrixAppserviceRoomService,
-            appserviceProperties: MatrixAppserviceProperties
+            appserviceProperties: MatrixAppserviceProperties,
+            appserviceHandlerHelper: AppserviceHandlerHelper
     ): AutoJoinEventHandler {
         val asUserName = matrixBotProperties.username
                          ?: throw MissingRequiredPropertyException("matrix.bot.username")
@@ -64,7 +66,8 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
                 asUsername = asUserName,
                 usersRegex = appserviceProperties.namespaces.users.map { it.regex },
                 serverName = matrixBotProperties.serverName,
-                autoJoin = matrixBotProperties.autoJoin
+                autoJoin = matrixBotProperties.autoJoin,
+                helper = appserviceHandlerHelper
         )
     }
 }

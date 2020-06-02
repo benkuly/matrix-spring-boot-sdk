@@ -1,20 +1,24 @@
 package net.folivo.matrix.bot.appservice
 
+import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
 import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
 import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.handler.AutoJoinService
 import net.folivo.matrix.bot.handler.MatrixEventHandler
+import net.folivo.matrix.core.api.MatrixServerException
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.m.room.MemberEvent
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.INVITE
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus.FORBIDDEN
 import reactor.core.publisher.Mono
 
 class AutoJoinEventHandler(
         private val autoJoinService: AutoJoinService,
         private val matrixClient: MatrixClient,
         private val roomService: MatrixAppserviceRoomService,
+        private val helper: AppserviceHandlerHelper,
         private val asUsername: String,
         private val usersRegex: List<String>,
         private val autoJoin: MatrixBotProperties.AutoJoinMode,
@@ -47,17 +51,37 @@ class AutoJoinEventHandler(
             ) {
                 logger.warn("reject room invite of $invitedUser to $roomId because autoJoin is restricted to $serverName")
                 matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)
+                        .onErrorResume { Mono.empty() }
             } else if (isAsUser
                        || usersRegex.map { invitedUsername.matches(Regex(it)) }.contains(true)) {
-                logger.debug("join room $roomId with $invitedUser")
                 autoJoinService.shouldJoin(roomId, invitedUser, isAsUser)
                         .flatMap { shouldJoin ->
                             if (shouldJoin) {
+                                logger.debug("join room $roomId with $invitedUser")
                                 matrixClient.roomsApi.joinRoom(roomIdOrAlias = roomId, asUserId = asUserId)
+                                        .onErrorResume { error ->
+                                            registerOnMatrixException(invitedUser, error)
+                                                    .then(Mono.just(true)) // TODO scary workaround
+                                                    .flatMap {
+                                                        matrixClient.roomsApi.joinRoom(
+                                                                roomIdOrAlias = roomId,
+                                                                asUserId = asUserId
+                                                        )
+                                                    }
+                                        }
                                         .flatMap { roomService.saveRoomJoin(it, invitedUser) }
                             } else {
                                 logger.debug("reject room invite of $invitedUser to $roomId because autoJoin denied by service")
                                 matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)
+                                        .onErrorResume { error ->
+                                            registerOnMatrixException(invitedUser, error)
+                                                    .and(
+                                                            matrixClient.roomsApi.leaveRoom(
+                                                                    roomId = roomId,
+                                                                    asUserId = asUserId
+                                                            )
+                                                    )
+                                        }
                             }
                         }
             } else {
@@ -66,5 +90,12 @@ class AutoJoinEventHandler(
             }
         }
         return Mono.empty()
+    }
+
+    private fun registerOnMatrixException(userId: String, error: Throwable): Mono<Void> {
+        return if (error is MatrixServerException && error.statusCode == FORBIDDEN) {
+            logger.warn("try to register user because of ${error.errorResponse}")
+            helper.registerAndSaveUser(userId).then()
+        } else Mono.error(error)
     }
 }
