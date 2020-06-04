@@ -11,11 +11,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 @RestControllerAdvice
 class MatrixAppserviceExceptionHandler {
 
-    private val logger = LoggerFactory.getLogger(MatrixAppserviceExceptionHandler::class.java)
+    companion object {
+        private val LOG = LoggerFactory.getLogger(this::class.java)
+    }
 
     @ExceptionHandler(Exception::class)
     fun handleAllOtherExceptions(exception: Exception): ResponseEntity<ErrorResponse> {
-        logger.error(exception.toString())
+        LOG.error(exception.toString())
         return ResponseEntity(ErrorResponse("M_UNKNOWN", exception.message), HttpStatus.INTERNAL_SERVER_ERROR)
     }
 

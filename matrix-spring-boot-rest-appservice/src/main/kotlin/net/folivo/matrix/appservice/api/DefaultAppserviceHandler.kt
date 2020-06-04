@@ -19,7 +19,9 @@ class DefaultAppserviceHandler(
         private val helper: AppserviceHandlerHelper
 ) : AppserviceHandler {
 
-    private val logger = LoggerFactory.getLogger(DefaultAppserviceHandler::class.java)
+    companion object {
+        private val LOG = LoggerFactory.getLogger(this::class.java)
+    }
 
     override fun addTransactions(tnxId: String, events: Flux<Event<*>>): Mono<Void> {
         return events.flatMap { event ->
@@ -28,12 +30,12 @@ class DefaultAppserviceHandler(
                 is StateEvent<*, *> -> event.id
                 else                -> event.type
             }
-            logger.debug("incoming event $eventIdOrType in transaction $tnxId")
+            LOG.debug("incoming event $eventIdOrType in transaction $tnxId")
             matrixAppserviceEventService.eventProcessingState(tnxId, eventIdOrType)
                     .flatMap { eventProcessingState ->
                         when (eventProcessingState) {
                             MatrixAppserviceEventService.EventProcessingState.NOT_PROCESSED -> {
-                                logger.debug("process event $eventIdOrType in transaction $tnxId")
+                                LOG.debug("process event $eventIdOrType in transaction $tnxId")
                                 matrixAppserviceEventService.processEvent(event)
                                         .thenReturn(true)//TODO fix this hacky workaround (without this saveEventProcessed never gets called due to empty mono
                                         .flatMap {
@@ -44,7 +46,7 @@ class DefaultAppserviceHandler(
                                         }
                             }
                             MatrixAppserviceEventService.EventProcessingState.PROCESSED     -> {
-                                logger.debug("event $eventIdOrType in transaction $tnxId already processed")
+                                LOG.debug("event $eventIdOrType in transaction $tnxId already processed")
                                 Mono.empty()
                             }
                             else                                                            -> {
@@ -52,7 +54,7 @@ class DefaultAppserviceHandler(
                             }
                         }
                     }
-        }.doOnError { logger.error("something went wrong while processing events", it) }.then()
+        }.doOnError { LOG.error("something went wrong while processing events", it) }.then()
     }
 
     override fun hasUser(userId: String): Mono<Boolean> {
@@ -62,7 +64,7 @@ class DefaultAppserviceHandler(
                         UserExistingState.EXISTS          -> Mono.just(true)
                         UserExistingState.DOES_NOT_EXISTS -> Mono.just(false)
                         UserExistingState.CAN_BE_CREATED  -> {
-                            logger.debug("started user creation of $userId")
+                            LOG.debug("started user creation of $userId")
                             helper.registerAndSaveUser(userId)
                         }
                         else                              -> {
@@ -79,7 +81,7 @@ class DefaultAppserviceHandler(
                         RoomExistingState.EXISTS          -> Mono.just(true)
                         RoomExistingState.DOES_NOT_EXISTS -> Mono.just(false)
                         RoomExistingState.CAN_BE_CREATED  -> {
-                            logger.debug("started room creation of $roomAlias")
+                            LOG.debug("started room creation of $roomAlias")
                             helper.createAndSaveRoom(roomAlias)
                         }
                         else                              -> {

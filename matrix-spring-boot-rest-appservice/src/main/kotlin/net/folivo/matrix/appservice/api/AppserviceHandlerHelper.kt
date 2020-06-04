@@ -12,8 +12,9 @@ class AppserviceHandlerHelper(
         private val matrixAppserviceRoomService: MatrixAppserviceRoomService
 ) {
 
-    private val logger = LoggerFactory.getLogger(AppserviceHandlerHelper::class.java)
-
+    companion object {
+        private val LOG = LoggerFactory.getLogger(this::class.java)
+    }
 
     fun registerAndSaveUser(userId: String): Mono<Boolean> {
         return matrixClient.userApi
@@ -23,7 +24,7 @@ class AppserviceHandlerHelper(
                 )
                 .flatMap {
                     matrixAppserviceUserService.saveUser(userId)
-                            .doOnError { logger.error("an error occurred in saving user: $userId", it) }
+                            .doOnError { LOG.error("an error occurred in saving user: $userId", it) }
                             .onErrorResume { Mono.empty() }
                 }
                 .thenReturn(true)//TODO fix this hacky workaround
@@ -37,7 +38,7 @@ class AppserviceHandlerHelper(
                                         asUserId = userId
                                 )
                             }
-                            .doOnError { logger.error("an error occurred in setting displayName", it) }
+                            .doOnError { LOG.error("an error occurred in setting displayName", it) }
                             .onErrorResume { Mono.empty() }
                 }
                 .then(Mono.just(true))
@@ -64,7 +65,7 @@ class AppserviceHandlerHelper(
                             )
                 }.flatMap { roomId ->
                     matrixAppserviceRoomService.saveRoom(roomAlias, roomId)
-                            .doOnError { logger.error("an error occurred in saving room: $roomId", it) }
+                            .doOnError { LOG.error("an error occurred in saving room: $roomId", it) }
                             .onErrorResume { Mono.empty() }
                 }
                 .then(Mono.just(true))

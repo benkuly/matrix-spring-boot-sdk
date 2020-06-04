@@ -9,7 +9,9 @@ import org.springframework.core.annotation.AnnotationUtils
 
 class MatrixConfiguration {
 
-    private val logger = LoggerFactory.getLogger(MatrixConfiguration::class.java)
+    companion object {
+        private val LOG = LoggerFactory.getLogger(this::class.java)
+    }
 
     val registeredEvents: MutableMap<String, Class<out Event<*>>> = mutableMapOf()
     val registeredMessageEventContent: MutableMap<String, Class<out MessageEvent.MessageEventContent>> = mutableMapOf()
@@ -22,11 +24,11 @@ class MatrixConfiguration {
         events.forEach {
             val eventType = AnnotationUtils.findAnnotation(it, MatrixEvent::class.java)
             if (eventType == null) {
-                logger.warn("$it has no ${MatrixEvent::class} annotation")
+                LOG.warn("$it has no ${MatrixEvent::class} annotation")
                 return
             }
             registeredEvents[eventType.type] = it
-            logger.debug("registered event type ${eventType.type}")
+            LOG.debug("registered event type ${eventType.type}")
         }
     }
 
@@ -35,11 +37,11 @@ class MatrixConfiguration {
         messageEventContents.forEach {
             val messageType = AnnotationUtils.findAnnotation(it, MatrixMessageEventContent::class.java)
             if (messageType == null) {
-                logger.warn("$it has no ${MatrixMessageEventContent::class}")
+                LOG.warn("$it has no ${MatrixMessageEventContent::class}")
                 return
             }
             registeredMessageEventContent[messageType.type] = it
-            logger.debug("registered message event content type ${messageType.type}")
+            LOG.debug("registered message event content type ${messageType.type}")
         }
     }
 }

@@ -13,7 +13,9 @@ import reactor.core.publisher.Mono
 
 @Component
 class PingHandler(private val matrixClient: MatrixClient) : MatrixMessageContentHandler {
-    private val logger = LoggerFactory.getLogger(PingHandler::class.java)
+    companion object {
+        private val LOG = LoggerFactory.getLogger(this::class.java)
+    }
 
     override fun handleMessage(content: MessageEvent.MessageEventContent, context: MessageContext): Mono<Void> {
         if (content is TextMessageEventContent) {
@@ -22,7 +24,7 @@ class PingHandler(private val matrixClient: MatrixClient) : MatrixMessageContent
                         .flatMapMany { Flux.fromIterable(it.joined.keys) }
                         .flatMap { member ->
                             context.answer(NoticeMessageEventContent("pong"), asUserId = member)
-                                    .doOnSuccess { logger.info("pong (messageid: $it)") }
+                                    .doOnSuccess { LOG.info("pong (messageid: $it)") }
                         }.then()
             }
         }

@@ -18,13 +18,15 @@ class MatrixClientBot(
         private val autoJoinService: AutoJoinService
 ) {
 
-    private val logger = LoggerFactory.getLogger(MatrixClientBot::class.java)
+    companion object {
+        private val LOG = LoggerFactory.getLogger(this::class.java)
+    }
 
     private var disposable: Disposable? = null
 
     fun start() {
         stop()
-        logger.info("started syncLoop")
+        LOG.info("started syncLoop")
         disposable = matrixClient.syncApi
                 .syncLoop()
                 .flatMap { syncResponse ->
@@ -38,16 +40,16 @@ class MatrixClientBot(
                             || botProperties.autoJoin == MatrixBotProperties.AutoJoinMode.RESTRICTED
                             && roomId.substringAfter(":") != botProperties.serverName
                         ) {
-                            logger.warn("reject room invite to $roomId because autoJoin is not allowed to ${botProperties.serverName}")
+                            LOG.warn("reject room invite to $roomId because autoJoin is not allowed to ${botProperties.serverName}")
                             actions.add(matrixClient.roomsApi.leaveRoom(roomId))
                         } else {
                             actions.add(autoJoinService.shouldJoin(roomId, botProperties.username)
                                                 .flatMap {
                                                     if (it) {
-                                                        logger.debug("join invitation to roomId: $roomId")
+                                                        LOG.debug("join invitation to roomId: $roomId")
                                                         matrixClient.roomsApi.joinRoom(roomId).then()
                                                     } else {
-                                                        logger.debug("reject room invite to $roomId because service denied it")
+                                                        LOG.debug("reject room invite to $roomId because service denied it")
                                                         matrixClient.roomsApi.leaveRoom(roomId)
                                                     }
                                                 })
@@ -56,14 +58,14 @@ class MatrixClientBot(
                     Flux.merge(actions).then()
                 }
                 .subscribe(
-                        { logger.debug("processed sync response") },
-                        { logger.error("some error while processing response", it) }
+                        { LOG.debug("processed sync response") },
+                        { LOG.error("some error while processing response", it) }
                 )
     }
 
     fun stop() {
         disposable?.apply {
-            logger.info("stopped syncLoop")
+            LOG.info("stopped syncLoop")
             dispose()
         }
     }

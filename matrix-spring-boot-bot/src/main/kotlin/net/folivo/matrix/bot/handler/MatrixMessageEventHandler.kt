@@ -12,8 +12,9 @@ class MatrixMessageEventHandler(
         private val matrixClient: MatrixClient
 ) : MatrixEventHandler {
 
-    private val logger = LoggerFactory.getLogger(MatrixMessageEventHandler::class.java)
-
+    companion object {
+        private val LOG = LoggerFactory.getLogger(this::class.java)
+    }
 
     override fun supports(clazz: Class<*>): Boolean {
         return clazz == MessageEvent::class.java
@@ -22,7 +23,7 @@ class MatrixMessageEventHandler(
     override fun handleEvent(event: Event<*>, roomId: String?): Mono<Void> {
         if (event is MessageEvent<*>) {
             if (roomId == null) {
-                logger.info("could not handle event due to missing roomId")
+                LOG.info("could not handle event due to missing roomId")
                 return Mono.empty()
             }
             val messageContext = MessageContext(
@@ -30,10 +31,10 @@ class MatrixMessageEventHandler(
                     event,
                     roomId
             )
-            logger.debug("handle message event")
+            LOG.debug("handle message event")
             return Flux.fromIterable(messageContentHandler)
                     .flatMap { it.handleMessage(event.content, messageContext) }
-                    .onErrorContinue { throwable, _ -> logger.warn("could not handle message due to $throwable") }
+                    .onErrorContinue { throwable, _ -> LOG.warn("could not handle message due to $throwable") }
                     .then()
         }
         return Mono.empty()

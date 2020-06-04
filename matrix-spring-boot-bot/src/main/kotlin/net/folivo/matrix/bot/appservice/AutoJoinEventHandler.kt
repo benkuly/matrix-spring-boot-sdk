@@ -25,7 +25,9 @@ class AutoJoinEventHandler(
         private val serverName: String
 ) : MatrixEventHandler {
 
-    private val logger = LoggerFactory.getLogger(AutoJoinEventHandler::class.java)
+    companion object {
+        private val LOG = LoggerFactory.getLogger(this::class.java)
+    }
 
     override fun supports(clazz: Class<*>): Boolean {
         return clazz == MemberEvent::class.java
@@ -37,7 +39,7 @@ class AutoJoinEventHandler(
             && event.content.membership == INVITE
         ) {
             if (roomId == null) {
-                logger.warn("could not handle join event due to missing roomId")
+                LOG.warn("could not handle join event due to missing roomId")
                 return Mono.empty()
             }
 
@@ -49,7 +51,7 @@ class AutoJoinEventHandler(
             return if (autoJoin == MatrixBotProperties.AutoJoinMode.RESTRICTED
                        && roomId.substringAfter(":") != serverName
             ) {
-                logger.warn("reject room invite of $invitedUser to $roomId because autoJoin is restricted to $serverName")
+                LOG.warn("reject room invite of $invitedUser to $roomId because autoJoin is restricted to $serverName")
                 matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)
                         .onErrorResume { Mono.empty() }
             } else if (isAsUser
@@ -57,7 +59,7 @@ class AutoJoinEventHandler(
                 autoJoinService.shouldJoin(roomId, invitedUser, isAsUser)
                         .flatMap { shouldJoin ->
                             if (shouldJoin) {
-                                logger.debug("join room $roomId with $invitedUser")
+                                LOG.debug("join room $roomId with $invitedUser")
                                 matrixClient.roomsApi.joinRoom(roomIdOrAlias = roomId, asUserId = asUserId)
                                         .onErrorResume { error ->
                                             registerOnMatrixException(invitedUser, error)
@@ -71,7 +73,7 @@ class AutoJoinEventHandler(
                                         }
                                         .flatMap { roomService.saveRoomJoin(it, invitedUser) }
                             } else {
-                                logger.debug("reject room invite of $invitedUser to $roomId because autoJoin denied by service")
+                                LOG.debug("reject room invite of $invitedUser to $roomId because autoJoin denied by service")
                                 matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)
                                         .onErrorResume { error ->
                                             registerOnMatrixException(invitedUser, error)
@@ -85,7 +87,7 @@ class AutoJoinEventHandler(
                             }
                         }
             } else {
-                logger.debug("invited user $invitedUser to room $roomId not managed by this application service.")
+                LOG.debug("invited user $invitedUser to room $roomId not managed by this application service.")
                 Mono.empty()
             }
         }
@@ -94,7 +96,7 @@ class AutoJoinEventHandler(
 
     private fun registerOnMatrixException(userId: String, error: Throwable): Mono<Void> {
         return if (error is MatrixServerException && error.statusCode == FORBIDDEN) {
-            logger.warn("try to register user because of ${error.errorResponse}")
+            LOG.warn("try to register user because of ${error.errorResponse}")
             helper.registerAndSaveUser(userId).then()
         } else Mono.error(error)
     }

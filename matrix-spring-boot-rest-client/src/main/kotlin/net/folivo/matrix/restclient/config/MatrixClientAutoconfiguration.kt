@@ -24,7 +24,9 @@ import reactor.core.publisher.Mono
 @EnableConfigurationProperties(MatrixClientProperties::class)
 class MatrixClientAutoconfiguration {
 
-    private val logger = LoggerFactory.getLogger(MatrixClientAutoconfiguration::class.java)
+    companion object {
+        private val LOG = LoggerFactory.getLogger(this::class.java)
+    }
 
     @Bean
     @ConditionalOnMissingBean
@@ -45,7 +47,7 @@ class MatrixClientAutoconfiguration {
     @Bean
     @ConditionalOnMissingBean
     fun inMemorySyncBatchTokenService(): SyncBatchTokenService {
-        logger.info("you should implement a persistent SyncBatchTokenService if you use the sync api. Currently used: InMemorySyncBatchTokenService")
+        LOG.info("you should implement a persistent SyncBatchTokenService if you use the sync api. Currently used: InMemorySyncBatchTokenService")
         return InMemorySyncBatchTokenService()
     }
 

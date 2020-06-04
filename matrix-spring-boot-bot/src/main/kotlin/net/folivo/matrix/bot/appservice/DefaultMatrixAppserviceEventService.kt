@@ -14,8 +14,9 @@ import reactor.core.publisher.Mono
 open class DefaultMatrixAppserviceEventService(
         private val eventHandler: List<MatrixEventHandler>
 ) : MatrixAppserviceEventService {
-    private val logger = LoggerFactory.getLogger(DefaultMatrixAppserviceEventService::class.java)
-
+    companion object {
+        private val LOG = LoggerFactory.getLogger(this::class.java)
+    }
 
     override fun eventProcessingState(tnxId: String, eventIdOrType: String): Mono<EventProcessingState> {
         return Mono.just(NOT_PROCESSED)
@@ -34,7 +35,7 @@ open class DefaultMatrixAppserviceEventService(
     }
 
     private fun delegateEventHandling(event: Event<*>, roomId: String? = null): Mono<Void> {
-        logger.debug("delegate event $event to event handlers")
+        LOG.debug("delegate event $event to event handlers")
         return Flux.fromIterable(eventHandler)
                 .filter { it.supports(event::class.java) }
                 .flatMap {

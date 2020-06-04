@@ -7,7 +7,9 @@ import reactor.core.publisher.Mono
 
 class SyncApiClient(private val webClient: WebClient, private val syncBatchTokenService: SyncBatchTokenService) {
 
-    private val logger = LoggerFactory.getLogger(SyncApiClient::class.java)
+    companion object {
+        private val LOG = LoggerFactory.getLogger(this::class.java)
+    }
 
     fun syncOnce(
             filter: String? = null,
@@ -31,7 +33,7 @@ class SyncApiClient(private val webClient: WebClient, private val syncBatchToken
                 }
                 .retrieve()
                 .bodyToMono(SyncResponse::class.java)
-                .doOnSuccess { logger.debug("synced with batchToken $since") }
+                .doOnSuccess { LOG.debug("synced with batchToken $since") }
     }
 
     fun syncLoop(
@@ -69,7 +71,7 @@ class SyncApiClient(private val webClient: WebClient, private val syncBatchToken
                 }
                 .repeat()
                 .retry()
-                .doOnError { logger.error("error in syncLoop", it) }
+                .doOnError { LOG.error("error in syncLoop", it) }
     }
 
 }

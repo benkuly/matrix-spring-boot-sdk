@@ -11,14 +11,16 @@ import reactor.core.publisher.Mono
 
 @Component
 class PingHandler : MatrixMessageContentHandler {
-    private val logger = LoggerFactory.getLogger(PingHandler::class.java)
+    companion object {
+        private val LOG = LoggerFactory.getLogger(this::class.java)
+    }
 
     override fun handleMessage(content: MessageEvent.MessageEventContent, context: MessageContext): Mono<Void> {
         if (content is TextMessageEventContent) {
             if (content.body.contains("ping")) {
                 return context.answer(NoticeMessageEventContent("pong"))
                         .doOnSuccess {
-                            logger.info("pong (messageid: $it)")
+                            LOG.info("pong (messageid: $it)")
                         }
                         .then()
             }

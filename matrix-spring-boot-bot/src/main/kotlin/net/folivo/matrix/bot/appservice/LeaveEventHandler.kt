@@ -15,7 +15,9 @@ class LeaveEventHandler(
         private val usersRegex: List<String>
 ) : MatrixEventHandler {
 
-    private val logger = LoggerFactory.getLogger(LeaveEventHandler::class.java)
+    companion object {
+        private val LOG = LoggerFactory.getLogger(this::class.java)
+    }
 
     override fun supports(clazz: Class<*>): Boolean {
         return clazz == MemberEvent::class.java
@@ -27,7 +29,7 @@ class LeaveEventHandler(
                 || event.content.membership == BAN)
         ) {
             if (roomId == null) {
-                logger.warn("could not handle leave event due to missing roomId")
+                LOG.warn("could not handle leave event due to missing roomId")
                 return Mono.empty()
             }
 
@@ -37,10 +39,10 @@ class LeaveEventHandler(
             val isAsUser = leavedUsername == asUsername
 
             if (isAsUser || usersRegex.map { leavedUsername.matches(Regex(it)) }.contains(true)) {
-                logger.debug("handle room leave of user $leavedUser and room $roomId")
+                LOG.debug("handle room leave of user $leavedUser and room $roomId")
                 return roomService.saveRoomLeave(roomId, leavedUser)
             }
-            logger.debug("ignore leave event due to unmanaged user $leavedUser")
+            LOG.debug("ignore leave event due to unmanaged user $leavedUser")
         }
         return Mono.empty()
     }
