@@ -33,6 +33,9 @@ matrix:
     # DISABLED disables this feature.
     # Default is RESTRICTED, which means, that only automatic joins to serverName are allowed.
     autoJoin: RESTRICTED
+    # (optional) Configure if ALL membership changes should be tracked/saved with help of MatrixAppserviceRoomService 
+    # or only membership changes of users, which are MANAGED by the bridge. Default is NONE (no tracking/saving).
+    trackMembership: ALL
   client:
     homeServer:
       # The hostname of your Homeserver.

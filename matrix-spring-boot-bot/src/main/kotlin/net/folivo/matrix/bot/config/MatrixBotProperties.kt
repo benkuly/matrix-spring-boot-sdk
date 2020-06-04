@@ -7,6 +7,7 @@ import org.springframework.boot.context.properties.ConstructorBinding
 @ConstructorBinding
 data class MatrixBotProperties(
         val autoJoin: AutoJoinMode = AutoJoinMode.RESTRICTED,
+        val trackMembership: TrackMembershipMode = TrackMembershipMode.NONE,
         val serverName: String,
         val username: String? = null,
         val mode: BotMode = BotMode.CLIENT
@@ -17,5 +18,9 @@ data class MatrixBotProperties(
 
     enum class AutoJoinMode {
         ENABLED, DISABLED, RESTRICTED
+    }
+
+    enum class TrackMembershipMode {
+        ALL, MANAGED, NONE
     }
 }

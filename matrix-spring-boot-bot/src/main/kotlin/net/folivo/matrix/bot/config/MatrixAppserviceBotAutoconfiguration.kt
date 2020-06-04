@@ -9,7 +9,6 @@ import net.folivo.matrix.bot.appservice.*
 import net.folivo.matrix.bot.handler.AutoJoinService
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.restclient.MatrixClient
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -48,26 +47,28 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
     }
 
     @Bean
-    @ConditionalOnExpression("'\${matrix.bot.autoJoin}' != 'DISABLED'")
-    fun autoJoinEventHandler(
+    @ConditionalOnMissingBean
+    fun membershipEventHandler(
             autoJoinService: AutoJoinService,
             matrixClient: MatrixClient,
-            defaultMatrixAppserviceRoomService: MatrixAppserviceRoomService,
+            matrixAppserviceRoomService: MatrixAppserviceRoomService,
             appserviceProperties: MatrixAppserviceProperties,
             appserviceHandlerHelper: AppserviceHandlerHelper
-    ): AutoJoinEventHandler {
+    ): MembershipEventHandler {
         val asUserName = matrixBotProperties.username
                          ?: throw MissingRequiredPropertyException("matrix.bot.username")
 
-        return AutoJoinEventHandler(
+        return MembershipEventHandler(
                 autoJoinService = autoJoinService,
                 matrixClient = matrixClient,
-                roomService = defaultMatrixAppserviceRoomService,
+                roomService = matrixAppserviceRoomService,
                 asUsername = asUserName,
                 usersRegex = appserviceProperties.namespaces.users.map { it.regex },
                 serverName = matrixBotProperties.serverName,
                 autoJoin = matrixBotProperties.autoJoin,
-                helper = appserviceHandlerHelper
+                helper = appserviceHandlerHelper,
+                trackMembershipMode = matrixBotProperties.trackMembership
+
         )
     }
 }
