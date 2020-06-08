@@ -10,7 +10,7 @@ This project contains tools to use [matrix](https://matrix.org/) with Spring Boo
 * [matrix-spring-boot-bot](./matrix-spring-boot-bot) to create bots and appservices easily.
 * [matrix-spring-boot-bot-examples](./matrix-spring-boot-bot-examples) contains examples how to create bots.
 
-The most developers only will need to use [matrix-spring-boot-bot](./matrix-spring-boot-bot), which contains the other projects. Therefore, this documentation focuses on this sub-project.
+The most developers only need to use [matrix-spring-boot-bot](./matrix-spring-boot-bot), which contains the other projects. Therefore, this documentation focuses on this sub-project.
 
 ## How to use
 Just add the maven/gradle dependency `net.folivo.matrix:matrix-spring-boot-bot` to you project.
