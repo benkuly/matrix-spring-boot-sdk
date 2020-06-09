@@ -43,16 +43,20 @@ class MatrixClientBot(
                             LOG.warn("reject room invite to $roomId because autoJoin is not allowed to ${botProperties.serverName}")
                             actions.add(matrixClient.roomsApi.leaveRoom(roomId))
                         } else {
-                            actions.add(autoJoinService.shouldJoin(roomId, botProperties.username)
-                                                .flatMap {
-                                                    if (it) {
-                                                        LOG.debug("join invitation to roomId: $roomId")
-                                                        matrixClient.roomsApi.joinRoom(roomId).then()
-                                                    } else {
-                                                        LOG.debug("reject room invite to $roomId because service denied it")
-                                                        matrixClient.roomsApi.leaveRoom(roomId)
-                                                    }
-                                                })
+                            actions.add(autoJoinService.shouldJoin(
+                                    roomId,
+                                    botProperties.username?.let { username ->
+                                        "@${username}:${botProperties.serverName}"
+                                    }
+                            ).flatMap {
+                                if (it) {
+                                    LOG.debug("join invitation to roomId: $roomId")
+                                    matrixClient.roomsApi.joinRoom(roomId).then()
+                                } else {
+                                    LOG.debug("reject room invite to $roomId because service denied it")
+                                    matrixClient.roomsApi.leaveRoom(roomId)
+                                }
+                            })
                         }
                     }
                     Flux.merge(actions).then()
