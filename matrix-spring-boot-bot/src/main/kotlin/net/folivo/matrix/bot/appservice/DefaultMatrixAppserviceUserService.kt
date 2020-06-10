@@ -11,7 +11,7 @@ open class DefaultMatrixAppserviceUserService(
         private val helper: MatrixAppserviceServiceHelper
 ) : MatrixAppserviceUserService {
     override fun userExistingState(userId: String): Mono<UserExistingState> {
-        return helper.shouldCreateUser(userId)
+        return helper.isManagedUser(userId)
                 .map { if (it) CAN_BE_CREATED else EXISTS }
     }
 

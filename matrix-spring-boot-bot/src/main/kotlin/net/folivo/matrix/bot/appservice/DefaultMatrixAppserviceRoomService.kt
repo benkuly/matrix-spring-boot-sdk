@@ -11,7 +11,7 @@ open class DefaultMatrixAppserviceRoomService(
         private val helper: MatrixAppserviceServiceHelper
 ) : MatrixAppserviceRoomService {
     override fun roomExistingState(roomAlias: String): Mono<RoomExistingState> {
-        return helper.shouldCreateUser(roomAlias)
+        return helper.isManagedUser(roomAlias)
                 .map { if (it) CAN_BE_CREATED else EXISTS }
     }
 

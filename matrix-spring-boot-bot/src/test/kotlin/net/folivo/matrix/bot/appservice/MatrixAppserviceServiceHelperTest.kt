@@ -9,7 +9,7 @@ class MatrixAppserviceServiceHelperTest {
     @Test
     fun `should allow user creation, when managed by this appservice`() {
         val cut = MatrixAppserviceServiceHelper(listOf("unicorn_.+"), listOf())
-        StepVerifier.create(cut.shouldCreateUser("unicorn_fluffy"))
+        StepVerifier.create(cut.isManagedUser("unicorn_fluffy"))
                 .assertNext { assertThat(it).isTrue() }
                 .verifyComplete()
     }
@@ -17,7 +17,7 @@ class MatrixAppserviceServiceHelperTest {
     @Test
     fun `should not allow user creation, when not managed by this appservice`() {
         val cut = MatrixAppserviceServiceHelper(listOf("unicorn_.+"), listOf())
-        StepVerifier.create(cut.shouldCreateUser("dino_fluffy"))
+        StepVerifier.create(cut.isManagedUser("dino_fluffy"))
                 .assertNext { assertThat(it).isFalse() }
                 .verifyComplete()
     }
@@ -25,7 +25,7 @@ class MatrixAppserviceServiceHelperTest {
     @Test
     fun `should allow room creation, when managed by this appservice`() {
         val cut = MatrixAppserviceServiceHelper(listOf(), listOf("unicorn_.+"))
-        StepVerifier.create(cut.shouldCreateRoom("unicorn_fluffy"))
+        StepVerifier.create(cut.isManagedRoom("unicorn_fluffy"))
                 .assertNext { assertThat(it).isTrue() }
                 .verifyComplete()
     }
@@ -33,7 +33,7 @@ class MatrixAppserviceServiceHelperTest {
     @Test
     fun `should not allow room creation, when managed by this appservice`() {
         val cut = MatrixAppserviceServiceHelper(listOf(), listOf("unicorn_.+"))
-        StepVerifier.create(cut.shouldCreateRoom("dino_fluffy"))
+        StepVerifier.create(cut.isManagedRoom("dino_fluffy"))
                 .assertNext { assertThat(it).isFalse() }
                 .verifyComplete()
     }
