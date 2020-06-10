@@ -260,8 +260,8 @@ class RoomsApiClient(
             roomAliasName: String? = null,
             name: String? = null,
             topic: String? = null,
-            invite: List<String>? = null,
-            invite3Pid: List<Invite3Pid>? = null,
+            invite: Set<String>? = null,
+            invite3Pid: Set<Invite3Pid>? = null,
             roomVersion: String? = null,
             creationContent: CreateEvent.CreateEventContent? = null,
             initialState: List<StateEvent<*, *>>? = null,
@@ -396,7 +396,7 @@ class RoomsApiClient(
      */
     fun joinRoom(
             roomIdOrAlias: String,
-            serverNames: List<String>? = null,
+            serverNames: Set<String>? = null,
             thirdPartySigned: ThirdPartySigned? = null,
             asUserId: String? = null
     ): Mono<String> {
