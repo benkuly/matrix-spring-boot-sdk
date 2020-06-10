@@ -24,37 +24,40 @@ class DefaultAppserviceHandler(
     }
 
     override fun addTransactions(tnxId: String, events: Flux<Event<*>>): Mono<Void> {
-        return events.flatMap { event ->
-            val eventIdOrType = when (event) {
-                is RoomEvent<*, *>  -> event.id
-                is StateEvent<*, *> -> event.id
-                else                -> event.type
-            }
-            LOG.debug("incoming event $eventIdOrType in transaction $tnxId")
-            matrixAppserviceEventService.eventProcessingState(tnxId, eventIdOrType)
-                    .flatMap { eventProcessingState ->
-                        when (eventProcessingState) {
-                            MatrixAppserviceEventService.EventProcessingState.NOT_PROCESSED -> {
-                                LOG.debug("process event $eventIdOrType in transaction $tnxId")
-                                matrixAppserviceEventService.processEvent(event)
-                                        .thenReturn(true)//TODO fix this hacky workaround (without this saveEventProcessed never gets called due to empty mono
-                                        .flatMap {
-                                            matrixAppserviceEventService.saveEventProcessed(
-                                                    tnxId,
-                                                    eventIdOrType
-                                            )
-                                        }
-                            }
-                            MatrixAppserviceEventService.EventProcessingState.PROCESSED     -> {
-                                LOG.debug("event $eventIdOrType in transaction $tnxId already processed")
-                                Mono.empty()
-                            }
-                            else                                                            -> {
-                                Mono.empty()
-                            }
-                        }
+        return events.flatMapSequential(
+                { event ->
+                    val eventIdOrType = when (event) {
+                        is RoomEvent<*, *>  -> event.id
+                        is StateEvent<*, *> -> event.id
+                        else                -> event.type
                     }
-        }.doOnError { LOG.error("something went wrong while processing events", it) }.then()
+                    LOG.debug("incoming event $eventIdOrType in transaction $tnxId")
+                    matrixAppserviceEventService.eventProcessingState(tnxId, eventIdOrType)
+                            .flatMap { eventProcessingState ->
+                                when (eventProcessingState) {
+                                    MatrixAppserviceEventService.EventProcessingState.NOT_PROCESSED -> {
+                                        LOG.debug("process event $eventIdOrType in transaction $tnxId")
+                                        matrixAppserviceEventService.processEvent(event)
+                                                .thenReturn(true)//TODO fix this hacky workaround (without this saveEventProcessed never gets called due to empty mono
+                                                .flatMap {
+                                                    matrixAppserviceEventService.saveEventProcessed(
+                                                            tnxId,
+                                                            eventIdOrType
+                                                    )
+                                                }
+                                    }
+                                    MatrixAppserviceEventService.EventProcessingState.PROCESSED     -> {
+                                        LOG.debug("event $eventIdOrType in transaction $tnxId already processed")
+                                        Mono.empty()
+                                    }
+                                    else                                                            -> {
+                                        Mono.empty()
+                                    }
+                                }
+                            }
+                }, 1
+        ).doOnError { LOG.error("something went wrong while processing events", it) }
+                .then()
     }
 
     override fun hasUser(userId: String): Mono<Boolean> {

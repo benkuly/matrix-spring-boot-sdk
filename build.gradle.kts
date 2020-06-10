@@ -15,13 +15,14 @@ allprojects {
     apply(plugin = "kotlin")
 
     group = "net.folivo"
-    version = "0.2.6.RELEASE"
+    version = "0.2.7.RELEASE"
     java.sourceCompatibility = JavaVersion.VERSION_11
 
     repositories {
         mavenCentral()
     }
 
+    extra["isReleaseVersion"] = version.toString().endsWith("RELEASE")
 }
 subprojects {
     apply(plugin = "org.springframework.boot")
@@ -72,6 +73,10 @@ subprojects {
             freeCompilerArgs = listOf("-Xjsr305=strict")
             jvmTarget = "11"
         }
+    }
+
+    tasks.withType<Sign>().configureEach {
+        onlyIf { project.extra["isReleaseVersion"] as Boolean }
     }
 }
 
