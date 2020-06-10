@@ -373,10 +373,10 @@ class RoomsApiClientTest {
 
         val result = matrixClient.roomsApi.createRoom(
                 visibility = Visibility.PRIVATE,
-                invite = listOf("@user1:example.com"),
+                invite = setOf("@user1:example.com"),
                 isDirect = true,
                 name = "someRoomName",
-                invite3Pid = listOf(Invite3Pid("identityServer", "token", "email", "user2@example.org"))
+                invite3Pid = setOf(Invite3Pid("identityServer", "token", "email", "user2@example.org"))
         ).block()
 
         assertThat(result).isEqualTo("someRoomId")
@@ -510,7 +510,7 @@ class RoomsApiClientTest {
 
         val result = matrixClient.roomsApi.joinRoom(
                 roomIdOrAlias = "someRoomId",
-                serverNames = listOf("someServer"),
+                serverNames = setOf("someServer"),
                 thirdPartySigned = ThirdPartySigned(
                         sender = "@alice:example.org",
                         mxid = "@bob:example.org",
