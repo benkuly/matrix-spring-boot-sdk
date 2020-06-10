@@ -22,9 +22,13 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
     @Bean
     @ConditionalOnMissingBean
     fun matrixAppserviceServiceHelper(appserviceProperties: MatrixAppserviceProperties): MatrixAppserviceServiceHelper {
+        val asUserName = matrixBotProperties.username
+                         ?: throw MissingRequiredPropertyException("matrix.bot.username")
+
         return MatrixAppserviceServiceHelper(
                 usersRegex = appserviceProperties.namespaces.users.map { it.regex },
-                roomsRegex = appserviceProperties.namespaces.rooms.map { it.regex }
+                roomsRegex = appserviceProperties.namespaces.rooms.map { it.regex },
+                asUsername = asUserName
         )
     }
 
