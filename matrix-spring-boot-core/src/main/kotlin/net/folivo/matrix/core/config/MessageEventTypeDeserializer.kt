@@ -15,7 +15,7 @@ class MessageEventTypeDeserializer(
 
     override fun deserialize(parser: JsonParser, context: DeserializationContext): MessageEvent<*> {
         val node: JsonNode = context.readTree(parser)
-        val msgtype = node.get("content").get("msgtype").asText()
+        val msgtype = node.get("content")?.get("msgtype")?.asText()
 
         val javaType = eventContentTypes[msgtype] ?: UnknownMessageEventContent::class.java
 

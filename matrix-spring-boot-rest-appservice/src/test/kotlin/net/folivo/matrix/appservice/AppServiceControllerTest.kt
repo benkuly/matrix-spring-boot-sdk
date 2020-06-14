@@ -54,6 +54,32 @@ class AppServiceControllerTest {
     }
 
     @Test
+    fun `addTransactions should handle null events`() {
+        every { appserviceHandlerMock.addTransactions("1", any()) } returns Mono.empty()
+
+        webTestClient.put()
+                .uri("/_matrix/app/v1/transactions/1?access_token=validToken")
+                .bodyValue(
+                        mapOf(
+                                "events" to listOf(
+                                        MessageEvent<TextMessageEventContent>(
+                                                TextMessageEventContent("hello"),
+                                                "someId",
+                                                "someSender",
+                                                123,
+                                                "someRoomId",
+                                                RoomEvent.UnsignedData()
+                                        )
+                                )
+                        )
+                )
+                .accept(APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk
+                .expectBody().json("{}")
+    }
+
+    @Test
     fun `addTransactions should return 404 when handler is false`() {
         every { appserviceHandlerMock.hasRoomAlias("someRoomAlias") } returns Mono.just(false)
 

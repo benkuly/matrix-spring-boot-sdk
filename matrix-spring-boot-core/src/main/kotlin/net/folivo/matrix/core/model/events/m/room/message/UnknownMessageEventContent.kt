@@ -6,9 +6,9 @@ class UnknownMessageEventContent : MessageEvent.MessageEventContent {
     constructor(
             body: String,
             @JsonProperty("msgtype")
-            messageType: String
+            messageType: String?
     ) : super(
             body = body,
-            messageType = messageType
+            messageType = messageType ?: ""
     )
 }
