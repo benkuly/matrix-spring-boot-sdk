@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 class UnknownMessageEventContent : MessageEvent.MessageEventContent {
     constructor(
-            body: String,
+            body: String?,
             @JsonProperty("msgtype")
             messageType: String?
     ) : super(
-            body = body,
+            body = body ?: "",
             messageType = messageType ?: ""
     )
 }
