@@ -17,12 +17,13 @@ class MatrixAppserviceExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleAllOtherExceptions(exception: Exception): ResponseEntity<ErrorResponse> {
-        LOG.error(exception.toString())
+        LOG.error("some unhandled exception occurred", exception)
         return ResponseEntity(ErrorResponse("M_UNKNOWN", exception.message), HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     @ExceptionHandler(MatrixServerException::class)
     fun handleMatrixServerException(exception: MatrixServerException): ResponseEntity<ErrorResponse> {
+        LOG.warn("MatrixServerException occurred", exception)
         return ResponseEntity(exception.errorResponse, exception.statusCode)
     }
 }
