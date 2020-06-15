@@ -21,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
@@ -73,15 +74,13 @@ class AppserviceHandlerHelperTest {
                     authenticationType = "m.login.application_service",
                     username = "someUserId"
             )
-        }
-        verify {
             matrixClientMock.userApi.setDisplayName(
                     "@someUserId:example.com",
                     "someDisplayName",
                     "@someUserId:example.com"
             )
+            matrixAppserviceUserServiceMock.saveUser("@someUserId:example.com")
         }
-        verify { matrixAppserviceUserServiceMock.saveUser("@someUserId:example.com") }
     }
 
     @Test
@@ -103,6 +102,43 @@ class AppserviceHandlerHelperTest {
                 .verifyError()
 
         verify(exactly = 0) { matrixAppserviceUserServiceMock.saveUser(any()) }
+    }
+
+    @Test
+    fun `should catch error when register fails due to already existing id`() {
+        every { matrixAppserviceUserServiceMock.getCreateUserParameter("@someUserId:example.com") }
+                .returns(Mono.just(CreateUserParameter("someDisplayName")))
+        every { matrixClientMock.userApi.register(allAny()) }
+                .returns(Mono.just(RegisterResponse("@someUserId:example.com")))
+        every { matrixClientMock.userApi.setDisplayName(allAny()) }
+                .returns(Mono.empty())
+
+        every {
+            matrixClientMock.userApi.register(allAny())
+        } returns Mono.error(
+                MatrixServerException(
+                        BAD_REQUEST,
+                        ErrorResponse("M_USER_IN_USE", "Desired user ID is already taken.")
+                )
+        )
+
+        StepVerifier
+                .create(cut.registerAndSaveUser("@someUserId:example.com"))
+                .assertNext { Assertions.assertThat(it).isTrue() }
+                .verifyComplete()
+
+        verify {
+            matrixClientMock.userApi.register(
+                    authenticationType = "m.login.application_service",
+                    username = "someUserId"
+            )
+            matrixClientMock.userApi.setDisplayName(
+                    "@someUserId:example.com",
+                    "someDisplayName",
+                    "@someUserId:example.com"
+            )
+            matrixAppserviceUserServiceMock.saveUser("@someUserId:example.com")
+        }
     }
 
     @Test

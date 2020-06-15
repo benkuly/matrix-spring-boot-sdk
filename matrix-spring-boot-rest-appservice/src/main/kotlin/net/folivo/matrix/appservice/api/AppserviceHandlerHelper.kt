@@ -2,7 +2,9 @@ package net.folivo.matrix.appservice.api
 
 import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
 import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
+import net.folivo.matrix.core.api.MatrixServerException
 import net.folivo.matrix.restclient.MatrixClient
+import net.folivo.matrix.restclient.api.user.RegisterResponse
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Mono
 
@@ -21,27 +23,29 @@ class AppserviceHandlerHelper(
                 .register(
                         authenticationType = "m.login.application_service",
                         username = userId.trimStart('@').substringBefore(":")
-                )
-                .flatMap {
-                    matrixAppserviceUserService.saveUser(userId)
-                            .doOnError { LOG.error("an error occurred in saving user: $userId", it) }
-                            .onErrorResume { Mono.empty() }
-                }
-                .thenReturn(true)//TODO fix this hacky workaround
-                .flatMap {
-                    matrixAppserviceUserService.getCreateUserParameter(userId)
-                            .filter { it.displayName != null }
-                            .flatMap {
-                                matrixClient.userApi.setDisplayName(
-                                        userId,
-                                        it.displayName,
-                                        asUserId = userId
-                                )
-                            }
-                            .doOnError { LOG.error("an error occurred in setting displayName", it) }
-                            .onErrorResume { Mono.empty() }
-                }
-                .then(Mono.just(true))
+                ).onErrorResume {
+                    if (it is MatrixServerException && it.errorResponse.errorCode == "M_USER_IN_USE") {
+                        LOG.warn("user has already been created")
+                        Mono.just(RegisterResponse(userId))
+                    } else Mono.error(it)
+                }.flatMap {
+                    Mono.zipDelayError(
+                            matrixAppserviceUserService.saveUser(userId)
+                                    .doOnError { LOG.error("an error occurred in saving user: $userId", it) }
+                                    .onErrorResume { Mono.empty() },
+                            matrixAppserviceUserService.getCreateUserParameter(userId)
+                                    .filter { it.displayName != null }
+                                    .flatMap {
+                                        matrixClient.userApi.setDisplayName(
+                                                userId,
+                                                it.displayName,
+                                                asUserId = userId
+                                        )
+                                    }
+                                    .doOnError { LOG.error("an error occurred in setting displayName", it) }
+                                    .onErrorResume { Mono.empty() }
+                    )
+                }.then(Mono.just(true))
     }
 
     fun createAndSaveRoom(roomAlias: String): Mono<Boolean> {
