@@ -1,11 +1,10 @@
 package net.folivo.matrix.appservice.api
 
+import kotlinx.coroutines.flow.Flow
 import net.folivo.matrix.core.model.events.Event
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 
 interface AppserviceHandler {
-    fun addTransactions(tnxId: String, events: Flux<Event<*>>): Mono<Void>
-    fun hasUser(userId: String): Mono<Boolean>
-    fun hasRoomAlias(roomAlias: String): Mono<Boolean>
+    suspend fun addTransactions(tnxId: String, events: Flow<Event<*>>)
+    suspend fun hasUser(userId: String): Boolean
+    suspend fun hasRoomAlias(roomAlias: String): Boolean
 }

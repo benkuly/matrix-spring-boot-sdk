@@ -1,6 +1,9 @@
 subprojects {
     dependencies {
         implementation(project(":matrix-spring-boot-bot"))
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${Versions.kotlinxCoroutines}")
+
     }
 
     tasks.getByName<Jar>("jar") {

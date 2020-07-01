@@ -1,6 +1,7 @@
 package net.folivo.matrix.restclient.api.server
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.restclient.MatrixClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -11,7 +12,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
+import org.springframework.http.HttpMethod.GET
 import org.springframework.http.MediaType
 
 @SpringBootTest(properties = ["matrix.client.homeServer.port=5002"])
@@ -46,13 +47,13 @@ class ServerApiClientTest {
                         .setBody(objectMapper.writeValueAsString(response))
         )
 
-        val result = matrixClient.serverApi.getVersions().block()
+        val result = runBlocking { matrixClient.serverApi.getVersions() }
 
         Assertions.assertThat(result).isEqualTo(response)
 
         val request = mockWebServer.takeRequest()
         Assertions.assertThat(request.path).isEqualTo("/_matrix/client/versions")
-        Assertions.assertThat(request.method).isEqualTo(HttpMethod.GET.toString())
+        Assertions.assertThat(request.method).isEqualTo(GET.toString())
     }
 
     @Test
@@ -72,12 +73,12 @@ class ServerApiClientTest {
                         .setBody(objectMapper.writeValueAsString(response))
         )
 
-        val result = matrixClient.serverApi.getCapabilities().block()
+        val result = runBlocking { matrixClient.serverApi.getCapabilities() }
 
         Assertions.assertThat(result).isEqualTo(response)
 
         val request = mockWebServer.takeRequest()
         Assertions.assertThat(request.path).isEqualTo("/_matrix/client/r0/capabilities")
-        Assertions.assertThat(request.method).isEqualTo(HttpMethod.GET.toString())
+        Assertions.assertThat(request.method).isEqualTo(GET.toString())
     }
 }

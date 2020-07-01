@@ -1,43 +1,37 @@
 package net.folivo.matrix.bot.appservice
 
+import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import reactor.test.StepVerifier
 
 class MatrixAppserviceServiceHelperTest {
 
     @Test
     fun `should allow user creation, when managed by this appservice`() {
         val cut = MatrixAppserviceServiceHelper(listOf("unicorn_.+"), listOf(), "bot")
-        StepVerifier.create(cut.isManagedUser("@unicorn_fluffy:someServer"))
-                .assertNext { assertThat(it).isTrue() }
-                .verifyComplete()
-        StepVerifier.create(cut.isManagedUser("@bot:someServer"))
-                .assertNext { assertThat(it).isTrue() }
-                .verifyComplete()
+
+        assertThat(runBlocking { cut.isManagedUser("@unicorn_fluffy:someServer") }).isTrue()
+        assertThat(runBlocking { cut.isManagedUser("@bot:someServer") }).isTrue()
     }
 
     @Test
     fun `should not allow user creation, when not managed by this appservice`() {
         val cut = MatrixAppserviceServiceHelper(listOf("unicorn_.+"), listOf(), "bot")
-        StepVerifier.create(cut.isManagedUser("@dino_fluffy:someServer"))
-                .assertNext { assertThat(it).isFalse() }
-                .verifyComplete()
+
+        assertThat(runBlocking { cut.isManagedUser("@dino_fluffy:someServer") }).isFalse()
     }
 
     @Test
     fun `should allow room creation, when managed by this appservice`() {
         val cut = MatrixAppserviceServiceHelper(listOf(), listOf("unicorn_.+"), "bot")
-        StepVerifier.create(cut.isManagedRoom("#unicorn_fluffy:someServer"))
-                .assertNext { assertThat(it).isTrue() }
-                .verifyComplete()
+
+        assertThat(runBlocking { cut.isManagedRoom("#unicorn_fluffy:someServer") }).isTrue()
     }
 
     @Test
     fun `should not allow room creation, when managed by this appservice`() {
         val cut = MatrixAppserviceServiceHelper(listOf(), listOf("unicorn_.+"), "bot")
-        StepVerifier.create(cut.isManagedRoom("#dino_fluffy:someServer"))
-                .assertNext { assertThat(it).isFalse() }
-                .verifyComplete()
+
+        assertThat(runBlocking { cut.isManagedRoom("#dino_fluffy:someServer") }).isFalse()
     }
 }

@@ -4,18 +4,18 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     base
-    id("org.springframework.boot") version "2.3.0.RELEASE" apply false
-    id("io.spring.dependency-management") version "1.0.9.RELEASE" apply false
-    kotlin("jvm") version "1.3.72"
-    kotlin("kapt") version "1.3.72"
-    kotlin("plugin.spring") version "1.3.72" apply false
+    id("org.springframework.boot") version Versions.springBoot apply false
+    id("io.spring.dependency-management") version Versions.springDependencyManagement apply false
+    kotlin("jvm") version Versions.kotlin
+    kotlin("kapt") version Versions.kotlin
+    kotlin("plugin.spring") version Versions.kotlin apply false
 }
 
 allprojects {
     apply(plugin = "kotlin")
 
     group = "net.folivo"
-    version = "0.2.11.RELEASE"
+    version = "0.2.12.RELEASE"
     java.sourceCompatibility = JavaVersion.VERSION_11
 
     repositories {
@@ -36,7 +36,7 @@ subprojects {
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-        testImplementation("com.ninja-squad:springmockk:2.0.1")
+        testImplementation("com.ninja-squad:springmockk:${Versions.springMockk}")
 
         testImplementation("org.springframework.boot:spring-boot-starter-test") {
             exclude(group = "org.junit.vintage", module = "junit-vintage-engine")

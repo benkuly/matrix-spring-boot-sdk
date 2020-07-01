@@ -1,10 +1,11 @@
 package net.folivo.matrix.bot.handler
 
 import io.mockk.Called
+import io.mockk.coVerifyAll
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.core.model.events.RoomEvent
 import net.folivo.matrix.core.model.events.StateEvent
 import net.folivo.matrix.core.model.events.m.room.AliasesEvent
@@ -42,18 +43,22 @@ class MatrixMessageEventHandlerTest {
                 ), matrixClientMock
         )
         val content = TextMessageEventContent("test")
-        cut.handleEvent(
-                MessageEvent(
-                        content = content,
-                        roomId = "someRoomId",
-                        id = "someMessageId",
-                        sender = "someSender",
-                        originTimestamp = 1234,
-                        unsigned = RoomEvent.UnsignedData()
-                ), "roomId"
-        ).subscribe()
-        verify { messageContentHandler1.handleMessage(content, any()) }
-        verify { messageContentHandler1.handleMessage(content, any()) }
+        runBlocking {
+            cut.handleEvent(
+                    MessageEvent(
+                            content = content,
+                            roomId = "someRoomId",
+                            id = "someMessageId",
+                            sender = "someSender",
+                            originTimestamp = 1234,
+                            unsigned = RoomEvent.UnsignedData()
+                    ), "roomId"
+            )
+        }
+        coVerifyAll {
+            messageContentHandler1.handleMessage(content, any())
+            messageContentHandler2.handleMessage(content, any())
+        }
     }
 
     @Test
@@ -64,18 +69,22 @@ class MatrixMessageEventHandlerTest {
                         messageContentHandler2
                 ), matrixClientMock
         )
-        cut.handleEvent(
-                AliasesEvent(
-                        content = AliasesEvent.AliasesEventContent(),
-                        roomId = "someRoomId",
-                        id = "someMessageId",
-                        sender = "someSender",
-                        originTimestamp = 1234,
-                        stateKey = "",
-                        unsigned = StateEvent.UnsignedData()
-                ), "roomId"
-        ).subscribe()
-        verify { messageContentHandler1 wasNot Called }
-        verify { messageContentHandler2 wasNot Called }
+        runBlocking {
+            cut.handleEvent(
+                    AliasesEvent(
+                            content = AliasesEvent.AliasesEventContent(),
+                            roomId = "someRoomId",
+                            id = "someMessageId",
+                            sender = "someSender",
+                            originTimestamp = 1234,
+                            stateKey = "",
+                            unsigned = StateEvent.UnsignedData()
+                    ), "roomId"
+            )
+        }
+        coVerifyAll {
+            messageContentHandler1 wasNot Called
+            messageContentHandler2 wasNot Called
+        }
     }
 }

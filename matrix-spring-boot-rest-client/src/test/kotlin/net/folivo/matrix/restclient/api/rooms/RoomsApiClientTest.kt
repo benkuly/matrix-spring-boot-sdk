@@ -3,6 +3,8 @@ package net.folivo.matrix.restclient.api.rooms
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.core.api.MatrixClientException
 import net.folivo.matrix.core.model.events.RoomEventContent
 import net.folivo.matrix.core.model.events.StateEvent
@@ -23,7 +25,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpHeaders.CONTENT_TYPE
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
-import reactor.test.StepVerifier
 
 @SpringBootTest(properties = ["matrix.client.homeServer.port=5001"])
 class RoomsApiClientTest {
@@ -63,7 +64,7 @@ class RoomsApiClientTest {
                         .setBody(objectMapper.writeValueAsString(response))
         )
 
-        val result = matrixClient.roomsApi.getEvent("someRoomId", "someEventId").block()
+        val result = runBlocking { matrixClient.roomsApi.getEvent("someRoomId", "someEventId") }
 
         if (result !is AliasesEvent) {
             fail<Unit>("result should be of type ${AliasesEvent::class}")
@@ -83,13 +84,11 @@ class RoomsApiClientTest {
                         .setBody(objectMapper.writeValueAsString(response))
         )
 
-        val result = matrixClient.roomsApi.getStateEvent<AliasesEvent.AliasesEventContent>(
-                roomId = "someRoomId",
-                stateKey = "someStateKey"
-        ).block()
-
-        if (result !is AliasesEvent.AliasesEventContent) {
-            fail<Unit>("result should be of type ${AliasesEvent.AliasesEventContent::class}")
+        runBlocking {
+            matrixClient.roomsApi.getStateEvent<AliasesEvent.AliasesEventContent>(
+                    roomId = "someRoomId",
+                    stateKey = "someStateKey"
+            )
         }
 
         val request = mockWebServer.takeRequest()
@@ -126,17 +125,15 @@ class RoomsApiClientTest {
                         .setBody(objectMapper.writeValueAsString(response))
         )
 
-        val result = matrixClient.roomsApi.getState("someRoomId").collectList().block()
+        val result = runBlocking { matrixClient.roomsApi.getState("someRoomId").toList() }
 
         assertThat(result).isNotNull
         assertThat(result).hasSize(2)
-        if (result !== null) {
-            if (result[0] !is AliasesEvent) {
-                fail<Unit>("result should be of type ${AliasesEvent::class}")
-            }
-            if (result[1] !is MemberEvent) {
-                fail<Unit>("result should be of type ${MemberEvent::class}")
-            }
+        if (result[0] !is AliasesEvent) {
+            fail<Unit>("result should be of type ${AliasesEvent::class}")
+        }
+        if (result[1] !is MemberEvent) {
+            fail<Unit>("result should be of type ${MemberEvent::class}")
         }
 
         val request = mockWebServer.takeRequest()
@@ -174,17 +171,16 @@ class RoomsApiClientTest {
                         .setBody(objectMapper.writeValueAsString(response))
         )
 
-        val result = matrixClient.roomsApi.getMembers(
-                roomId = "someRoomId",
-                at = "someAt",
-                membership = Membership.JOIN
-        ).collectList().block()
+        val result = runBlocking {
+            matrixClient.roomsApi.getMembers(
+                    roomId = "someRoomId",
+                    at = "someAt",
+                    membership = Membership.JOIN
+            ).toList()
+        }
 
         assertThat(result).isNotNull
         assertThat(result).hasSize(2)
-        if (result !== null && result[0] !is MemberEvent && result[1] !is MemberEvent) {
-            fail<Unit>("result should be of type ${MemberEvent::class}")
-        }
 
         val request = mockWebServer.takeRequest()
         assertThat(request.path).isEqualTo("/_matrix/client/r0/rooms/someRoomId/members?at=someAt&membership=join")
@@ -205,7 +201,7 @@ class RoomsApiClientTest {
                         .setBody(objectMapper.writeValueAsString(response))
         )
 
-        val result = matrixClient.roomsApi.getJoinedMembers("someRoomId").block()
+        val result = runBlocking { matrixClient.roomsApi.getJoinedMembers("someRoomId") }
 
         assertThat(result).isEqualTo(response)
 
@@ -228,11 +224,13 @@ class RoomsApiClientTest {
                         .setBody(objectMapper.writeValueAsString(response))
         )
 
-        val result = matrixClient.roomsApi.getEvents(
-                roomId = "someRoomId",
-                from = "from",
-                dir = Direction.FORWARD
-        ).block()
+        val result = runBlocking {
+            matrixClient.roomsApi.getEvents(
+                    roomId = "someRoomId",
+                    from = "from",
+                    dir = Direction.FORWARD
+            )
+        }
 
         assertThat(result).isEqualTo(response)
 
@@ -251,11 +249,13 @@ class RoomsApiClientTest {
         )
 
         val eventContent = AliasesEvent.AliasesEventContent(listOf("#someAlias:example.com"))
-        val result = matrixClient.roomsApi.sendStateEvent(
-                roomId = "someRoomId",
-                eventContent = eventContent,
-                stateKey = "someStateKey"
-        ).block()
+        val result = runBlocking {
+            matrixClient.roomsApi.sendStateEvent(
+                    roomId = "someRoomId",
+                    eventContent = eventContent,
+                    stateKey = "someStateKey"
+            )
+        }
 
         assertThat(result).isEqualTo("someEventId")
 
@@ -277,17 +277,21 @@ class RoomsApiClientTest {
         val eventContent = object : StateEventContent {
             val banana: String = "yeah"
         }
-        val result = matrixClient.roomsApi.sendStateEvent(
-                roomId = "someRoomId",
-                eventContent = eventContent,
-                stateKey = "someStateKey"
-        )
 
-        StepVerifier.create(result).consumeErrorWith {
-            if (it !is MatrixClientException) {
-                fail<Unit>("error should be of type ${MatrixClientException::class} but was ${it::class}")
+        try {
+            runBlocking {
+                matrixClient.roomsApi.sendStateEvent(
+                        roomId = "someRoomId",
+                        eventContent = eventContent,
+                        stateKey = "someStateKey"
+                )
             }
-        }.verify()
+            fail<Unit>("error has error")
+        } catch (error: Throwable) {
+            if (error !is MatrixClientException) {
+                fail<Unit>("error should be of type ${MatrixClientException::class} but was ${error::class}")
+            }
+        }
     }
 
     @Test
@@ -300,11 +304,13 @@ class RoomsApiClientTest {
         )
 
         val eventContent = TextMessageEventContent("someBody")
-        val result = matrixClient.roomsApi.sendRoomEvent(
-                roomId = "someRoomId",
-                eventContent = eventContent,
-                txnId = "someTxnId"
-        ).block()
+        val result = runBlocking {
+            matrixClient.roomsApi.sendRoomEvent(
+                    roomId = "someRoomId",
+                    eventContent = eventContent,
+                    txnId = "someTxnId"
+            )
+        }
 
         assertThat(result).isEqualTo("someEventId")
 
@@ -326,16 +332,19 @@ class RoomsApiClientTest {
         val eventContent = object : RoomEventContent {
             val banana: String = "yeah"
         }
-        val result = matrixClient.roomsApi.sendRoomEvent(
-                roomId = "someRoomId",
-                eventContent = eventContent
-        )
-
-        StepVerifier.create(result).consumeErrorWith {
-            if (it !is MatrixClientException) {
-                fail<Unit>("error should be of type ${MatrixClientException::class} but was ${it::class}")
+        try {
+            runBlocking {
+                matrixClient.roomsApi.sendRoomEvent(
+                        roomId = "someRoomId",
+                        eventContent = eventContent
+                )
             }
-        }.verify()
+            fail<Unit>("error has error")
+        } catch (error: Throwable) {
+            if (error !is MatrixClientException) {
+                fail<Unit>("error should be of type ${MatrixClientException::class} but was ${error::class}")
+            }
+        }
     }
 
     @Test
@@ -347,12 +356,14 @@ class RoomsApiClientTest {
                         .setBody(objectMapper.writeValueAsString(response))
         )
 
-        val result = matrixClient.roomsApi.sendRedactEvent(
-                roomId = "someRoomId",
-                eventId = "someEventIdToRedact",
-                reason = "someReason",
-                txnId = "someTxnId"
-        ).block()
+        val result = runBlocking {
+            matrixClient.roomsApi.sendRedactEvent(
+                    roomId = "someRoomId",
+                    eventId = "someEventIdToRedact",
+                    reason = "someReason",
+                    txnId = "someTxnId"
+            )
+        }
 
         assertThat(result).isEqualTo("someEventId")
 
@@ -371,13 +382,15 @@ class RoomsApiClientTest {
                         .setBody(objectMapper.writeValueAsString(response))
         )
 
-        val result = matrixClient.roomsApi.createRoom(
-                visibility = Visibility.PRIVATE,
-                invite = setOf("@user1:example.com"),
-                isDirect = true,
-                name = "someRoomName",
-                invite3Pid = setOf(Invite3Pid("identityServer", "token", "email", "user2@example.org"))
-        ).block()
+        val result = runBlocking {
+            matrixClient.roomsApi.createRoom(
+                    visibility = Visibility.PRIVATE,
+                    invite = setOf("@user1:example.com"),
+                    isDirect = true,
+                    name = "someRoomName",
+                    invite3Pid = setOf(Invite3Pid("identityServer", "token", "email", "user2@example.org"))
+            )
+        }
 
         assertThat(result).isEqualTo("someRoomId")
 
@@ -412,12 +425,12 @@ class RoomsApiClientTest {
                         .setBody("{}")
         )
 
-        val result = matrixClient.roomsApi.setRoomAlias(
-                roomId = "someRoomId",
-                roomAlias = "#unicorns:example.org"
-        ).block()
-
-        assertThat(result).isNull()
+        runBlocking {
+            matrixClient.roomsApi.setRoomAlias(
+                    roomId = "someRoomId",
+                    roomAlias = "#unicorns:example.org"
+            )
+        }
 
         val request = mockWebServer.takeRequest()
         assertThat(request.path).isEqualTo("/_matrix/client/r0/directory/room/%23unicorns%3Aexample.org")
@@ -437,7 +450,7 @@ class RoomsApiClientTest {
                         .setBody(objectMapper.writeValueAsString(response))
         )
 
-        val result = matrixClient.roomsApi.getRoomAlias("#unicorns:example.org").block()
+        val result = runBlocking { matrixClient.roomsApi.getRoomAlias("#unicorns:example.org") }
 
         assertThat(result).isEqualTo(response)
 
@@ -454,9 +467,7 @@ class RoomsApiClientTest {
                         .setBody("{}")
         )
 
-        val result = matrixClient.roomsApi.deleteRoomAlias("#unicorns:example.org").block()
-
-        assertThat(result).isNull()
+        runBlocking { matrixClient.roomsApi.deleteRoomAlias("#unicorns:example.org") }
 
         val request = mockWebServer.takeRequest()
         assertThat(request.path).isEqualTo("/_matrix/client/r0/directory/room/%23unicorns%3Aexample.org")
@@ -472,7 +483,7 @@ class RoomsApiClientTest {
                         .setBody(objectMapper.writeValueAsString(response))
         )
 
-        val result = matrixClient.roomsApi.getJoinedRooms().collectList().block()
+        val result = runBlocking { matrixClient.roomsApi.getJoinedRooms().toList() }
 
         assertThat(result).containsOnly("room1", "room2")
 
@@ -489,9 +500,7 @@ class RoomsApiClientTest {
                         .setBody("{}")
         )
 
-        val result = matrixClient.roomsApi.inviteUser("someRoomId", "someUserId").block()
-
-        assertThat(result).isNull()
+        runBlocking { matrixClient.roomsApi.inviteUser("someRoomId", "someUserId") }
 
         val request = mockWebServer.takeRequest()
         assertThat(request.path).isEqualTo("/_matrix/client/r0/rooms/someRoomId/invite")
@@ -508,19 +517,21 @@ class RoomsApiClientTest {
                         .setBody(objectMapper.writeValueAsString(response))
         )
 
-        val result = matrixClient.roomsApi.joinRoom(
-                roomIdOrAlias = "someRoomId",
-                serverNames = setOf("someServer"),
-                thirdPartySigned = ThirdPartySigned(
-                        sender = "@alice:example.org",
-                        mxid = "@bob:example.org",
-                        token = "someToken",
-                        signatures = mapOf(
-                                "example.org" to
-                                        mapOf("ed25519:0" to "some9signature")
-                        )
-                )
-        ).block()
+        val result = runBlocking {
+            matrixClient.roomsApi.joinRoom(
+                    roomIdOrAlias = "someRoomId",
+                    serverNames = setOf("someServer"),
+                    thirdPartySigned = ThirdPartySigned(
+                            sender = "@alice:example.org",
+                            mxid = "@bob:example.org",
+                            token = "someToken",
+                            signatures = mapOf(
+                                    "example.org" to
+                                            mapOf("ed25519:0" to "some9signature")
+                            )
+                    )
+            )
+        }
 
         val expectedRequest = """
             {
@@ -556,9 +567,7 @@ class RoomsApiClientTest {
                         .setBody("{}")
         )
 
-        val result = matrixClient.roomsApi.leaveRoom("someRoomId").block()
-
-        assertThat(result).isNull()
+        runBlocking { matrixClient.roomsApi.leaveRoom("someRoomId") }
 
         val request = mockWebServer.takeRequest()
         assertThat(request.path).isEqualTo("/_matrix/client/r0/rooms/someRoomId/leave")

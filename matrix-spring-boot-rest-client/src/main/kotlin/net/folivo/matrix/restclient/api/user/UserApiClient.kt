@@ -1,15 +1,14 @@
 package net.folivo.matrix.restclient.api.user
 
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.bodyToMono
-import reactor.core.publisher.Mono
+import org.springframework.web.reactive.function.client.awaitBody
 
 class UserApiClient(private val webClient: WebClient) {
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#post-matrix-client-r0-register">matrix spec</a>
      */
-    fun register(
+    suspend fun register(
             authenticationType: String,
             authenticationSession: String? = null,
             username: String? = null,
@@ -18,7 +17,7 @@ class UserApiClient(private val webClient: WebClient) {
             deviceId: String? = null,
             initialDeviceDisplayName: String? = null,
             inhibitLogin: Boolean? = null
-    ): Mono<RegisterResponse> {
+    ): RegisterResponse {
         return webClient
                 .post().uri {
                     it.apply {
@@ -40,14 +39,14 @@ class UserApiClient(private val webClient: WebClient) {
                         )
                 )
                 .retrieve()
-                .bodyToMono()
+                .awaitBody()
     }
 
-    fun setDisplayName(
+    suspend fun setDisplayName(
             userId: String,
             displayName: String? = null,
             asUserId: String? = null
-    ): Mono<Void> {
+    ) {
         return webClient
                 .put().uri {
                     it.apply {
@@ -57,7 +56,7 @@ class UserApiClient(private val webClient: WebClient) {
                 }
                 .bodyValue(mapOf("displayname" to displayName))
                 .retrieve()
-                .bodyToMono()
+                .awaitBody()
     }
 
 }

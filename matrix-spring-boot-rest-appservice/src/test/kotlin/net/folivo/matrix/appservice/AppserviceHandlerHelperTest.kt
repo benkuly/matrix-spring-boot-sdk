@@ -1,10 +1,13 @@
 package net.folivo.matrix.appservice
 
-import io.mockk.every
+import io.mockk.Runs
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.verify
+import io.mockk.just
+import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
 import net.folivo.matrix.appservice.api.room.CreateRoomParameter
 import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
@@ -16,15 +19,12 @@ import net.folivo.matrix.core.api.MatrixServerException
 import net.folivo.matrix.restclient.MatrixClient
 import net.folivo.matrix.restclient.api.rooms.Visibility
 import net.folivo.matrix.restclient.api.user.RegisterResponse
-import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.http.HttpStatus
+import org.junit.jupiter.api.fail
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
-import reactor.core.publisher.Mono
-import reactor.test.StepVerifier
 
 @ExtendWith(MockKExtension::class)
 class AppserviceHandlerHelperTest {
@@ -43,33 +43,27 @@ class AppserviceHandlerHelperTest {
 
     @BeforeEach
     fun beforeEach() {
-        every { matrixAppserviceUserServiceMock.userExistingState(allAny()) }
-                .returns(Mono.just(UserExistingState.CAN_BE_CREATED))
-        every { matrixAppserviceUserServiceMock.getCreateUserParameter(allAny()) }
-                .returns(Mono.just(CreateUserParameter()))
-        every { matrixAppserviceUserServiceMock.saveUser(allAny()) }
-                .returns(Mono.empty())
-        every { matrixAppserviceRoomServiceMock.saveRoom(any(), any()) }
-                .returns(Mono.empty())
-        every { matrixAppserviceRoomServiceMock.getCreateRoomParameter(any()) }
-                .returns(Mono.just(CreateRoomParameter()))
+        coEvery { matrixAppserviceUserServiceMock.userExistingState(allAny()) }
+                .returns(UserExistingState.CAN_BE_CREATED)
+        coEvery { matrixAppserviceUserServiceMock.getCreateUserParameter(allAny()) }
+                .returns(CreateUserParameter())
+        coEvery { matrixAppserviceUserServiceMock.saveUser(allAny()) } just Runs
+        coEvery { matrixAppserviceRoomServiceMock.saveRoom(any(), any()) } just Runs
+        coEvery { matrixAppserviceRoomServiceMock.getCreateRoomParameter(any()) }
+                .returns(CreateRoomParameter())
     }
 
     @Test
     fun `should create and save user`() {
-        every { matrixAppserviceUserServiceMock.getCreateUserParameter("@someUserId:example.com") }
-                .returns(Mono.just(CreateUserParameter("someDisplayName")))
-        every { matrixClientMock.userApi.register(allAny()) }
-                .returns(Mono.just(RegisterResponse("@someUserId:example.com")))
-        every { matrixClientMock.userApi.setDisplayName(allAny()) }
-                .returns(Mono.empty())
+        coEvery { matrixAppserviceUserServiceMock.getCreateUserParameter("@someUserId:example.com") }
+                .returns(CreateUserParameter("someDisplayName"))
+        coEvery { matrixClientMock.userApi.register(allAny()) }
+                .returns(RegisterResponse("@someUserId:example.com"))
+        coEvery { matrixClientMock.userApi.setDisplayName(allAny()) } just Runs
 
-        StepVerifier
-                .create(cut.registerAndSaveUser("@someUserId:example.com"))
-                .assertNext { Assertions.assertThat(it).isTrue() }
-                .verifyComplete()
+        runBlocking { cut.registerAndSaveUser("@someUserId:example.com") }
 
-        verify {
+        coVerify {
             matrixClientMock.userApi.register(
                     authenticationType = "m.login.application_service",
                     username = "someUserId"
@@ -85,49 +79,48 @@ class AppserviceHandlerHelperTest {
 
     @Test
     fun `should have error when register fails`() {
-        every { matrixAppserviceUserServiceMock.userExistingState("@someUserId:example.com") }
-                .returns(Mono.just(UserExistingState.CAN_BE_CREATED))
+        coEvery { matrixAppserviceUserServiceMock.userExistingState("@someUserId:example.com") }
+                .returns(UserExistingState.CAN_BE_CREATED)
 
-        every {
-            matrixClientMock.userApi.register(allAny())
-        } returns Mono.error(
-                MatrixServerException(
-                        INTERNAL_SERVER_ERROR,
-                        ErrorResponse("500", "M_UNKNOWN")
+        coEvery { matrixClientMock.userApi.register(allAny()) }
+                .throws(
+                        MatrixServerException(
+                                INTERNAL_SERVER_ERROR,
+                                ErrorResponse("500", "M_UNKNOWN")
+                        )
                 )
-        )
 
-        StepVerifier
-                .create(cut.registerAndSaveUser("@someUserId:example.com"))
-                .verifyError()
+        try {
+            runBlocking { cut.registerAndSaveUser("@someUserId:example.com") }
+            fail { "should have error" }
+        } catch (error: Throwable) {
 
-        verify(exactly = 0) { matrixAppserviceUserServiceMock.saveUser(any()) }
+        }
+
+        coVerify(exactly = 0) { matrixAppserviceUserServiceMock.saveUser(any()) }
     }
 
     @Test
     fun `should catch error when register fails due to already existing id`() {
-        every { matrixAppserviceUserServiceMock.getCreateUserParameter("@someUserId:example.com") }
-                .returns(Mono.just(CreateUserParameter("someDisplayName")))
-        every { matrixClientMock.userApi.register(allAny()) }
-                .returns(Mono.just(RegisterResponse("@someUserId:example.com")))
-        every { matrixClientMock.userApi.setDisplayName(allAny()) }
-                .returns(Mono.empty())
+        coEvery { matrixAppserviceUserServiceMock.getCreateUserParameter("@someUserId:example.com") }
+                .returns(CreateUserParameter("someDisplayName"))
+        coEvery { matrixClientMock.userApi.register(allAny()) }
+                .returns(RegisterResponse("@someUserId:example.com"))
+        coEvery { matrixClientMock.userApi.setDisplayName(allAny()) } just Runs
 
-        every {
-            matrixClientMock.userApi.register(allAny())
-        } returns Mono.error(
-                MatrixServerException(
-                        BAD_REQUEST,
-                        ErrorResponse("M_USER_IN_USE", "Desired user ID is already taken.")
+        coEvery { matrixClientMock.userApi.register(allAny()) }
+                .throws(
+                        MatrixServerException(
+                                BAD_REQUEST,
+                                ErrorResponse("M_USER_IN_USE", "Desired user ID is already taken.")
+                        )
                 )
-        )
 
-        StepVerifier
-                .create(cut.registerAndSaveUser("@someUserId:example.com"))
-                .assertNext { Assertions.assertThat(it).isTrue() }
-                .verifyComplete()
+        runBlocking {
+            cut.registerAndSaveUser("@someUserId:example.com")
+        }
 
-        verify {
+        coVerify {
             matrixClientMock.userApi.register(
                     authenticationType = "m.login.application_service",
                     username = "someUserId"
@@ -142,25 +135,23 @@ class AppserviceHandlerHelperTest {
     }
 
     @Test
-    fun `should not has error when saving by user service fails`() {
-        every { matrixAppserviceUserServiceMock.saveUser("@someUserId:example.com") }
-                .returns(Mono.error(RuntimeException()))
-        every { matrixAppserviceUserServiceMock.getCreateUserParameter("@someUserId:example.com") }
-                .returns(Mono.just(CreateUserParameter(displayName = "someDisplayName")))
+    fun `should have error when saving by user service fails`() {
+        coEvery { matrixAppserviceUserServiceMock.saveUser("@someUserId:example.com") }
+                .throws(RuntimeException())
+        coEvery { matrixAppserviceUserServiceMock.getCreateUserParameter("@someUserId:example.com") }
+                .returns(CreateUserParameter(displayName = "someDisplayName"))
 
-        every {
-            matrixClientMock.userApi.setDisplayName(allAny())
-        } returns Mono.empty()
-        every {
-            matrixClientMock.userApi.register(allAny())
-        } returns Mono.just(RegisterResponse("@someUserId:example.com"))
+        coEvery { matrixClientMock.userApi.setDisplayName(allAny()) } just Runs
+        coEvery { matrixClientMock.userApi.register(allAny()) }
+                .returns(RegisterResponse("@someUserId:example.com"))
 
-        StepVerifier
-                .create(cut.registerAndSaveUser("@someUserId:example.com"))
-                .assertNext { Assertions.assertThat(it).isTrue() }
-                .verifyComplete()
+        try {
+            runBlocking { cut.registerAndSaveUser("@someUserId:example.com") }
+            fail { "should have error" }
+        } catch (error: Throwable) {
+        }
 
-        verify {
+        coVerify {
             matrixClientMock.userApi.setDisplayName(
                     "@someUserId:example.com",
                     displayName = "someDisplayName",
@@ -171,97 +162,82 @@ class AppserviceHandlerHelperTest {
 
     @Test
     fun `should not set displayName if null`() {
-        every { matrixAppserviceUserServiceMock.getCreateUserParameter("@someUserId:example.com") }
-                .returns(Mono.just(CreateUserParameter()))
-        every {
-            matrixClientMock.userApi.register(allAny())
-        } returns Mono.just(RegisterResponse("@someUserId:example.com"))
+        coEvery { matrixAppserviceUserServiceMock.getCreateUserParameter("@someUserId:example.com") }
+                .returns(CreateUserParameter())
+        coEvery { matrixClientMock.userApi.register(allAny()) }
+                .returns(RegisterResponse("@someUserId:example.com"))
 
-        StepVerifier
-                .create(cut.registerAndSaveUser("@someUserId:example.com"))
-                .assertNext { Assertions.assertThat(it).isTrue() }
-                .verifyComplete()
+        runBlocking { cut.registerAndSaveUser("@someUserId:example.com") }
 
         val userApi = matrixClientMock.userApi
-        verify(exactly = 0) { userApi.setDisplayName(allAny()) }
+        coVerify(exactly = 0) { userApi.setDisplayName(allAny()) }
     }
 
     @Test
-    fun `should not has error when setting displayName fails`() {
-        every {
-            matrixClientMock.userApi.setDisplayName(allAny())
-        } returns Mono.error(MatrixServerException(HttpStatus.BAD_REQUEST, ErrorResponse("M_UNKNOWN")))
-        every {
-            matrixClientMock.userApi.register(allAny())
-        } returns Mono.just(RegisterResponse("@someUserId:example.com"))
+    fun `should not have error when setting displayName fails`() {
+        coEvery { matrixClientMock.userApi.setDisplayName(allAny()) }
+                .throws(MatrixServerException(BAD_REQUEST, ErrorResponse("M_UNKNOWN")))
+        coEvery { matrixClientMock.userApi.register(allAny()) }
+                .returns(RegisterResponse("@someUserId:example.com"))
 
-        StepVerifier
-                .create(cut.registerAndSaveUser("@someUserId:example.com"))
-                .assertNext { Assertions.assertThat(it).isTrue() }
-                .verifyComplete()
+        runBlocking { cut.registerAndSaveUser("@someUserId:example.com") }
     }
 
     @Test
     fun `should create and save room`() {
-        every { matrixAppserviceRoomServiceMock.getCreateRoomParameter("#someRoomAlias:example.com") }
-                .returns(Mono.just(CreateRoomParameter(name = "someName")))
+        coEvery { matrixAppserviceRoomServiceMock.getCreateRoomParameter("#someRoomAlias:example.com") }
+                .returns(CreateRoomParameter(name = "someName"))
 
-        every {
-            matrixClientMock.roomsApi.createRoom(allAny())
-        } returns Mono.just("someRoomId")
+        coEvery { matrixClientMock.roomsApi.createRoom(allAny()) }
+                .returns("someRoomId")
 
-        StepVerifier
-                .create(cut.createAndSaveRoom("#someRoomAlias:example.com"))
-                .assertNext { Assertions.assertThat(it).isTrue() }
-                .verifyComplete()
+        runBlocking { cut.createAndSaveRoom("#someRoomAlias:example.com") }
 
-        verify {
+        coVerify {
             matrixClientMock.roomsApi.createRoom(
                     roomAliasName = "someRoomAlias",
                     visibility = Visibility.PUBLIC,
                     name = "someName"
             )
+            matrixAppserviceRoomServiceMock.saveRoom("#someRoomAlias:example.com", any())
         }
-        verify { matrixAppserviceRoomServiceMock.saveRoom("#someRoomAlias:example.com", any()) }
     }
 
     @Test
     fun `should have error when creation fails`() {
-        every {
-            matrixClientMock.roomsApi.createRoom(allAny())
-        } returns Mono.error(
-                MatrixServerException(
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        ErrorResponse("500", "M_UNKNOWN")
+        coEvery { matrixClientMock.roomsApi.createRoom(allAny()) }
+                .throws(
+                        MatrixServerException(
+                                INTERNAL_SERVER_ERROR,
+                                ErrorResponse("500", "M_UNKNOWN")
+                        )
                 )
-        )
 
-        StepVerifier
-                .create(cut.createAndSaveRoom("#someRoomAlias:example.com"))
-                .verifyError()
+        try {
+            runBlocking { cut.createAndSaveRoom("#someRoomAlias:example.com") }
+            fail { "should have error" }
+        } catch (error: Throwable) {
 
-        verify(exactly = 0) { matrixAppserviceRoomServiceMock.saveRoom(any(), any()) }
+        }
+
+        coVerify(exactly = 0) { matrixAppserviceRoomServiceMock.saveRoom(any(), any()) }
     }
 
     @Test
-    fun `should not has error when saving by room service fails`() {
-        every {
-            matrixAppserviceRoomServiceMock.saveRoom(
-                    "#someRoomAlias:example.com",
-                    any()
-            )
-        }.returns(Mono.error(RuntimeException()))
+    fun `should have error when saving by room service fails`() {
+        coEvery { matrixAppserviceRoomServiceMock.saveRoom("#someRoomAlias:example.com", any()) }
+                .throws(RuntimeException())
 
-        every {
-            matrixClientMock.roomsApi.createRoom(allAny())
-        } returns Mono.just("someRoomId")
+        coEvery { matrixClientMock.roomsApi.createRoom(allAny()) }
+                .returns("someRoomId")
 
-        StepVerifier
-                .create(cut.createAndSaveRoom("#someRoomAlias:example.com"))
-                .assertNext { Assertions.assertThat(it).isTrue() }
-                .verifyComplete()
+        try {
+            runBlocking { cut.createAndSaveRoom("#someRoomAlias:example.com") }
+            fail { "should have error" }
+        } catch (error: Throwable) {
+        }
 
-        verify { matrixAppserviceRoomServiceMock.saveRoom(any(), any()) }
+        coVerify { matrixAppserviceRoomServiceMock.saveRoom(any(), any()) }
     }
 
 }

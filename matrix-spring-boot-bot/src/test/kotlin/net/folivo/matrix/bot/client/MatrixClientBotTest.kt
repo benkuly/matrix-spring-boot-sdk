@@ -1,12 +1,11 @@
 package net.folivo.matrix.bot.client
 
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
-import io.mockk.verify
-import io.mockk.verifyOrder
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.DISABLED
@@ -20,9 +19,6 @@ import net.folivo.matrix.restclient.api.sync.SyncResponse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
-import reactor.test.publisher.TestPublisher
 
 @ExtendWith(MockKExtension::class)
 class MatrixClientBotTest {
@@ -41,7 +37,7 @@ class MatrixClientBotTest {
 
     @BeforeEach
     fun beforeEach() {
-        every { autoJoinServiceMock.shouldJoin(any(), any(), any()) }.returns(Mono.just(true))
+        coEvery { autoJoinServiceMock.shouldJoin(any(), any(), any()) }.returns(true)
     }
 
     @Test
@@ -85,17 +81,15 @@ class MatrixClientBotTest {
         every { eventHandlerMock1.supports(any()) } returns true
         every { eventHandlerMock2.supports(any()) } returns true
 
-        val publisher = TestPublisher.create<SyncResponse>()
-        every { matrixClientMock.syncApi.syncLoop() }.returns(Flux.from(publisher))
+        every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response1, response2))
 
-        cut.start()
-        publisher.next(response1, response2)
+        runBlocking { cut.start().join() }
 
-        verifyOrder {
+        coVerifyOrder {
             eventHandlerMock1.handleEvent(event1, "someRoomId1")
             eventHandlerMock1.handleEvent(event3, "someRoomId2")
         }
-        verifyOrder {
+        coVerifyOrder {
             eventHandlerMock2.handleEvent(event1, "someRoomId1")
             eventHandlerMock2.handleEvent(event2, "someRoomId1")
             eventHandlerMock2.handleEvent(event3, "someRoomId2")
@@ -118,19 +112,17 @@ class MatrixClientBotTest {
             )
         }
 
-        val publisher = TestPublisher.create<SyncResponse>()
-        every { matrixClientMock.syncApi.syncLoop() }.returns(Flux.from(publisher))
+        every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response1))
 
-        cut.start()
-        publisher.next(response1)
+        runBlocking { cut.start().join() }
 
         val roomsApiMock = matrixClientMock.roomsApi
 
-        verifyOrder {
+        coVerifyOrder {
             roomsApiMock.joinRoom("someRoomId1")
             roomsApiMock.joinRoom("someRoomId2")
         }
-        verify(exactly = 0) { roomsApiMock.leaveRoom(any()) }
+        coVerify(exactly = 0) { roomsApiMock.leaveRoom(any()) }
     }
 
     @Test
@@ -148,16 +140,14 @@ class MatrixClientBotTest {
             )
         }
 
-        val publisher = TestPublisher.create<SyncResponse>()
-        every { matrixClientMock.syncApi.syncLoop() }.returns(Flux.from(publisher))
+        every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response1))
 
-        cut.start()
-        publisher.next(response1)
+        runBlocking { cut.start().join() }
 
         val roomsApiMock = matrixClientMock.roomsApi
 
-        verify(exactly = 0) { roomsApiMock.joinRoom(any()) }
-        verify { roomsApiMock.leaveRoom("someRoomId1") }
+        coVerify(exactly = 0) { roomsApiMock.joinRoom(any()) }
+        coVerify { roomsApiMock.leaveRoom("someRoomId1") }
     }
 
     @Test
@@ -176,15 +166,13 @@ class MatrixClientBotTest {
             )
         }
 
-        val publisher = TestPublisher.create<SyncResponse>()
-        every { matrixClientMock.syncApi.syncLoop() }.returns(Flux.from(publisher))
+        every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response1))
 
-        cut.start()
-        publisher.next(response1)
+        runBlocking { cut.start().join() }
 
         val roomsApiMock = matrixClientMock.roomsApi
 
-        verify(exactly = 1) {
+        coVerify(exactly = 1) {
             roomsApiMock.joinRoom("!someRoomId2:someServerName")
             roomsApiMock.leaveRoom("!someRoomId1:someOtherServer")
         }
@@ -204,18 +192,16 @@ class MatrixClientBotTest {
                     "someRoomId1" to mockk(relaxed = true)
             )
         }
+        coEvery { autoJoinServiceMock.shouldJoin("someRoomId", any(), any()) }.returns(false)
 
-        val publisher = TestPublisher.create<SyncResponse>()
-        every { matrixClientMock.syncApi.syncLoop() }.returns(Flux.from(publisher))
-        every { autoJoinServiceMock.shouldJoin("someRoomId", any(), any()) }.returns(Mono.just(false))
+        every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response1))
 
-        cut.start()
-        publisher.next(response1)
+        runBlocking { cut.start().join() }
 
         val roomsApiMock = matrixClientMock.roomsApi
 
-        verify(exactly = 0) { roomsApiMock.joinRoom(any()) }
-        verify { roomsApiMock.leaveRoom("someRoomId1") }
+        coVerify(exactly = 0) { roomsApiMock.joinRoom(any()) }
+        coVerify { roomsApiMock.leaveRoom("someRoomId1") }
     }
 
     @Test
@@ -239,15 +225,12 @@ class MatrixClientBotTest {
 
         every { eventHandlerMock1.supports(any()) } returns true
 
-        val publisher = TestPublisher.create<SyncResponse>()
-        every { matrixClientMock.syncApi.syncLoop() }.returns(Flux.from(publisher))
+        every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response))
 
-        cut.start()
-        publisher.next(response)
-        cut.start()
-        publisher.next(response)
+        runBlocking { cut.start().join() }
+        runBlocking { cut.start().join() }
 
-        verify(exactly = 2) { eventHandlerMock1.handleEvent(any(), any()) }
+        coVerify(exactly = 2) { eventHandlerMock1.handleEvent(any(), any()) }
     }
 
     @Test
@@ -271,15 +254,12 @@ class MatrixClientBotTest {
 
         every { eventHandlerMock1.supports(any()) } returns true
 
-        val publisher = TestPublisher.create<SyncResponse>()
-        every { matrixClientMock.syncApi.syncLoop() }.returns(Flux.from(publisher))
+        every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response))
 
-        cut.start()
-        publisher.next(response)
+        runBlocking { cut.start().join() }
         cut.stop()
-        publisher.next(response)
 
-        verify(exactly = 1) { eventHandlerMock1.handleEvent(any(), any()) }
+        coVerify(exactly = 1) { eventHandlerMock1.handleEvent(any(), any()) }
     }
 
     @Test
@@ -310,15 +290,13 @@ class MatrixClientBotTest {
 
         every { eventHandlerMock1.supports(any()) } returns true
         every { eventHandlerMock2.supports(any()) } returns true
-        every { eventHandlerMock1.handleEvent(any()) } returns Mono.error(RuntimeException())
+        coEvery { eventHandlerMock1.handleEvent(any()) }.throws(RuntimeException())
 
-        val publisher = TestPublisher.create<SyncResponse>()
-        every { matrixClientMock.syncApi.syncLoop() }.returns(Flux.from(publisher))
+        every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response1))
 
-        cut.start()
-        publisher.next(response1)
+        runBlocking { cut.start().join() }
 
-        verifyOrder {
+        coVerifyOrder {
             eventHandlerMock1.handleEvent(event1, "someRoomId1")
             eventHandlerMock1.handleEvent(event2, "someRoomId1")
         }

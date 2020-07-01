@@ -1,5 +1,8 @@
 package net.folivo.matrix.restclient.api.rooms
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.reactive.awaitFirst
 import net.folivo.matrix.core.annotation.MatrixEvent
 import net.folivo.matrix.core.api.MatrixClientException
 import net.folivo.matrix.core.model.events.*
@@ -8,10 +11,8 @@ import net.folivo.matrix.core.model.events.m.room.MemberEvent
 import net.folivo.matrix.core.model.events.m.room.PowerLevelsEvent
 import org.springframework.core.annotation.MergedAnnotations
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.bodyToFlux
-import org.springframework.web.reactive.function.client.bodyToMono
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
+import org.springframework.web.reactive.function.client.awaitBody
+import org.springframework.web.reactive.function.client.bodyToFlow
 import java.util.*
 
 class RoomsApiClient(
@@ -21,11 +22,11 @@ class RoomsApiClient(
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#get-matrix-client-r0-rooms-roomid-event-eventid">matrix spec</a>
      */
-    fun getEvent(
+    suspend fun getEvent(
             roomId: String,
             eventId: String,
             asUserId: String? = null
-    ): Mono<Event<*>> {
+    ): Event<*> {
         return webClient
                 .get().uri {
                     it.apply {
@@ -34,38 +35,38 @@ class RoomsApiClient(
                     }.build(roomId, eventId)
                 }
                 .retrieve()
-                .bodyToMono()
+                .awaitBody()
     }
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#get-matrix-client-r0-rooms-roomid-state-eventtype-statekey">matrix spec</a>
      */
-    inline fun <reified T : EventContent> getStateEvent(
+    suspend inline fun <reified T : EventContent> getStateEvent(
             roomId: String,
             stateKey: String = "",
             eventType: String? = null,
             asUserId: String? = null
-    ): Mono<T> {
+    ): T {
         return getStateEvent(T::class.java, roomId, stateKey, eventType, asUserId)
     }
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#get-matrix-client-r0-rooms-roomid-state-eventtype-statekey">matrix spec</a>
      */
-    fun <T : EventContent> getStateEvent(
+    suspend fun <T : EventContent> getStateEvent(
             eventContentClass: Class<T>,
             roomId: String,
             stateKey: String = "",
             eventType: String? = null,
             asUserId: String? = null
-    ): Mono<T> {
+    ): T {
         val annotatedEventType = MergedAnnotations
                 .from(eventContentClass, MergedAnnotations.SearchStrategy.TYPE_HIERARCHY_AND_ENCLOSING_CLASSES)
                 .get(MatrixEvent::class.java)
                 .getValue("type", String::class.java)
                 .orElse(eventType)
         if (annotatedEventType.isNullOrEmpty()) {
-            return Mono.error(MatrixClientException("the eventContent should be an inner-class of your custom event to find eventType or else you must use the method parameter 'eventType'"))
+            throw MatrixClientException("the eventContent should be an inner-class of your custom event to find eventType or else you must use the method parameter 'eventType'")
         }
         return webClient
                 .get().uri {
@@ -76,12 +77,13 @@ class RoomsApiClient(
                 }
                 .retrieve()
                 .bodyToMono(eventContentClass)
+                .awaitFirst()
     }
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#get-matrix-client-r0-rooms-roomid-state">matrix spec</a>
      */
-    fun getState(roomId: String, asUserId: String? = null): Flux<StateEvent<*, *>> {
+    fun getState(roomId: String, asUserId: String? = null): Flow<StateEvent<*, *>> {
         return webClient
                 .get().uri {
                     it.apply {
@@ -90,7 +92,7 @@ class RoomsApiClient(
                     }.build(roomId)
                 }
                 .retrieve()
-                .bodyToFlux()
+                .bodyToFlow()
     }
 
     /**
@@ -102,29 +104,32 @@ class RoomsApiClient(
             membership: Membership? = null,
             notMembership: Membership? = null,
             asUserId: String? = null
-    ): Flux<MemberEvent> {
-        return webClient
-                .get().uri {
-                    it.apply {
-                        path("/r0/rooms/{roomId}/members")
-                        if (at != null) queryParam("at", at)
-                        if (membership != null) queryParam("membership", membership.value)
-                        if (notMembership != null) queryParam("not_membership", notMembership.value)
-                        if (asUserId != null) queryParam("user_id", asUserId)
-                    }.build(roomId)
-                }
-                .retrieve()
-                .bodyToMono<GetMembersResponse>()
-                .flatMapMany { Flux.fromIterable(it.chunk) }
+    ): Flow<MemberEvent> {
+        return flow {
+            webClient
+                    .get().uri {
+                        it.apply {
+                            path("/r0/rooms/{roomId}/members")
+                            if (at != null) queryParam("at", at)
+                            if (membership != null) queryParam("membership", membership.value)
+                            if (notMembership != null) queryParam("not_membership", notMembership.value)
+                            if (asUserId != null) queryParam("user_id", asUserId)
+                        }.build(roomId)
+                    }
+                    .retrieve()
+                    .awaitBody<GetMembersResponse>()
+                    .chunk
+                    .forEach { emit(it) }
+        }
     }
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#get-matrix-client-r0-rooms-roomid-joined-members">matrix spec</a>
      */
-    fun getJoinedMembers(
+    suspend fun getJoinedMembers(
             roomId: String,
             asUserId: String? = null
-    ): Mono<GetJoinedMembersResponse> {
+    ): GetJoinedMembersResponse {
         return webClient
                 .get().uri {
                     it.apply {
@@ -133,13 +138,13 @@ class RoomsApiClient(
                     }.build(roomId)
                 }
                 .retrieve()
-                .bodyToMono()
+                .awaitBody()
     }
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#get-matrix-client-r0-rooms-roomid-messages">matrix spec</a>
      */
-    fun getEvents(
+    suspend fun getEvents(
             roomId: String,
             from: String,
             dir: Direction,
@@ -147,7 +152,7 @@ class RoomsApiClient(
             limit: Long = 10,
             filter: String? = null,
             asUserId: String? = null
-    ): Mono<GetEventsResponse> {
+    ): GetEventsResponse {
         return webClient
                 .get().uri {
                     it.apply {
@@ -161,27 +166,26 @@ class RoomsApiClient(
                     }.build(roomId)
                 }
                 .retrieve()
-                .bodyToMono()
+                .awaitBody()
     }
-
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#put-matrix-client-r0-rooms-roomid-state-eventtype-statekey">matrix spec</a>
      */
-    fun sendStateEvent( // TODO should handle resend by itself (maybe use reactors retry)
+    suspend fun sendStateEvent( // TODO should handle resend by itself (maybe use reactors retry)
             roomId: String,
             eventContent: StateEventContent,
             stateKey: String,
             eventType: String? = null,
             asUserId: String? = null
-    ): Mono<String> {
+    ): String {
         val annotatedEventType = MergedAnnotations
                 .from(eventContent::class.java, MergedAnnotations.SearchStrategy.TYPE_HIERARCHY_AND_ENCLOSING_CLASSES)
                 .get(MatrixEvent::class.java)
                 .getValue("type", String::class.java)
                 .orElse(eventType)
         if (annotatedEventType.isNullOrEmpty()) {
-            return Mono.error(MatrixClientException("the eventContent should be an inner-class of your custom event to find eventType or else you must use the method parameter 'eventType'"))
+            throw MatrixClientException("the eventContent should be an inner-class of your custom event to find eventType or else you must use the method parameter 'eventType'")
         }
 
         return webClient
@@ -193,27 +197,27 @@ class RoomsApiClient(
                 }
                 .bodyValue(eventContent)
                 .retrieve()
-                .bodyToMono<SendEventResponse>()
-                .map { it.eventId }
+                .awaitBody<SendEventResponse>()
+                .eventId
     }
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#put-matrix-client-r0-rooms-roomid-send-eventtype-txnid">matrix spec</a>
      */
-    fun sendRoomEvent( // TODO should handle resend by itself (maybe use reactors retry)
+    suspend fun sendRoomEvent( // TODO should handle resend by itself (maybe use reactors retry)
             roomId: String,
             eventContent: RoomEventContent,
             eventType: String? = null,
             txnId: String = UUID.randomUUID().toString(),
             asUserId: String? = null
-    ): Mono<String> {
+    ): String {
         val annotatedEventType = MergedAnnotations
                 .from(eventContent::class.java, MergedAnnotations.SearchStrategy.TYPE_HIERARCHY_AND_ENCLOSING_CLASSES)
                 .get(MatrixEvent::class.java)
                 .getValue("type", String::class.java)
                 .orElse(eventType)
         if (annotatedEventType.isNullOrEmpty()) {
-            return Mono.error(MatrixClientException("the eventContent should be an inner-class of your custom event to find eventType or else you must use the method parameter 'eventType'"))
+            throw MatrixClientException("the eventContent should be an inner-class of your custom event to find eventType or else you must use the method parameter 'eventType'")
         }
 
         return webClient
@@ -225,20 +229,20 @@ class RoomsApiClient(
                 }
                 .bodyValue(eventContent)
                 .retrieve()
-                .bodyToMono<SendEventResponse>()
-                .map { it.eventId }
+                .awaitBody<SendEventResponse>()
+                .eventId
     }
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#put-matrix-client-r0-rooms-roomid-redact-eventid-txnid">matrix spec</a>
      */
-    fun sendRedactEvent( // TODO should handle resend by itself (maybe use reactors retry)
+    suspend fun sendRedactEvent( // TODO should handle resend by itself (maybe use reactors retry)
             roomId: String,
             eventId: String,
             reason: String,
             txnId: String = UUID.randomUUID().toString(),
             asUserId: String? = null
-    ): Mono<String> {
+    ): String {
         return webClient
                 .put().uri {
                     it.apply {
@@ -248,14 +252,14 @@ class RoomsApiClient(
                 }
                 .bodyValue(mapOf("reason" to reason))
                 .retrieve()
-                .bodyToMono<SendEventResponse>()
-                .map { it.eventId }
+                .awaitBody<SendEventResponse>()
+                .eventId
     }
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#post-matrix-client-r0-createroom">matrix spec</a>
      */
-    fun createRoom(
+    suspend fun createRoom(
             visibility: Visibility = Visibility.PRIVATE,
             roomAliasName: String? = null,
             name: String? = null,
@@ -269,7 +273,7 @@ class RoomsApiClient(
             isDirect: Boolean? = null,
             powerLevelContentOverride: PowerLevelsEvent.PowerLevelsEventContent? = null,
             asUserId: String? = null
-    ): Mono<String> {
+    ): String {
         return webClient
                 .post().uri {
                     it.apply {
@@ -294,18 +298,18 @@ class RoomsApiClient(
                         )
                 )
                 .retrieve()
-                .bodyToMono<CreateRoomResponse>()
-                .map { it.roomId }
+                .awaitBody<CreateRoomResponse>()
+                .roomId
     }
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#put-matrix-client-r0-directory-room-roomalias">matrix spec</a>
      */
-    fun setRoomAlias(
+    suspend fun setRoomAlias(
             roomId: String,
             roomAlias: String,
             asUserId: String? = null
-    ): Mono<Void> {
+    ) {
         return webClient
                 .put().uri {
                     it.apply {
@@ -315,16 +319,16 @@ class RoomsApiClient(
                 }
                 .bodyValue(mapOf("room_id" to roomId))
                 .retrieve()
-                .bodyToMono()
+                .awaitBody()
     }
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#get-matrix-client-r0-directory-room-roomalias">matrix spec</a>
      */
-    fun getRoomAlias(
+    suspend fun getRoomAlias(
             roomAlias: String,
             asUserId: String? = null
-    ): Mono<GetRoomAliasResponse> {
+    ): GetRoomAliasResponse {
         return webClient
                 .get().uri {
                     it.apply {
@@ -333,16 +337,16 @@ class RoomsApiClient(
                     }.build(roomAlias)
                 }
                 .retrieve()
-                .bodyToMono()
+                .awaitBody()
     }
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#delete-matrix-client-r0-directory-room-roomalias">matrix spec</a>
      */
-    fun deleteRoomAlias(
+    suspend fun deleteRoomAlias(
             roomAlias: String,
             asUserId: String? = null
-    ): Mono<Void> {
+    ) {
         return webClient
                 .delete().uri {
                     it.apply {
@@ -351,33 +355,36 @@ class RoomsApiClient(
                     }.build(roomAlias)
                 }
                 .retrieve()
-                .bodyToMono()
+                .awaitBody()
     }
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#get-matrix-client-r0-joined-rooms">matrix spec</a>
      */
-    fun getJoinedRooms(asUserId: String? = null): Flux<String> {
-        return webClient
-                .get().uri {
-                    it.apply {
-                        path("/r0/joined_rooms")
-                        if (asUserId != null) queryParam("user_id", asUserId)
-                    }.build()
-                }
-                .retrieve()
-                .bodyToMono<GetJoinedRoomsResponse>()
-                .flatMapMany { Flux.fromIterable(it.joinedRooms) }
+    fun getJoinedRooms(asUserId: String? = null): Flow<String> {
+        return flow {
+            webClient
+                    .get().uri {
+                        it.apply {
+                            path("/r0/joined_rooms")
+                            if (asUserId != null) queryParam("user_id", asUserId)
+                        }.build()
+                    }
+                    .retrieve()
+                    .awaitBody<GetJoinedRoomsResponse>()
+                    .joinedRooms
+                    .forEach { emit(it) }
+        }
     }
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#post-matrix-client-r0-rooms-roomid-invite">matrix spec</a>
      */
-    fun inviteUser(
+    suspend fun inviteUser(
             roomId: String,
             userId: String,
             asUserId: String? = null
-    ): Mono<Void> {
+    ) {
         return webClient
                 .post().uri {
                     it.apply {
@@ -387,19 +394,18 @@ class RoomsApiClient(
                 }
                 .bodyValue(mapOf("user_id" to userId))
                 .retrieve()
-                .bodyToMono()
+                .awaitBody()
     }
 
-// TODO does it work with empty servers? Maybe use also https://matrix.org/docs/spec/client_server/r0.6.0#post-matrix-client-r0-rooms-roomid-join
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#post-matrix-client-r0-join-roomidoralias">matrix spec</a>
      */
-    fun joinRoom(
+    suspend fun joinRoom(
             roomIdOrAlias: String,
             serverNames: Set<String>? = null,
             thirdPartySigned: ThirdPartySigned? = null,
             asUserId: String? = null
-    ): Mono<String> {
+    ): String {
         return webClient
                 .post().uri {
                     it.apply {
@@ -410,17 +416,17 @@ class RoomsApiClient(
                 }
                 .bodyValue(mapOf("third_party_signed" to thirdPartySigned))
                 .retrieve()
-                .bodyToMono<JoinRoomResponse>()
-                .map { it.roomId }
+                .awaitBody<JoinRoomResponse>()
+                .roomId
     }
 
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#post-matrix-client-r0-rooms-roomid-leave">matrix spec</a>
      */
-    fun leaveRoom(
+    suspend fun leaveRoom(
             roomId: String,
             asUserId: String? = null
-    ): Mono<Void> {
+    ) {
         return webClient
                 .post().uri {
                     it.apply {
@@ -429,7 +435,7 @@ class RoomsApiClient(
                     }.build(roomId)
                 }
                 .retrieve()
-                .bodyToMono()
+                .awaitBody()
     }
 
 //    /**

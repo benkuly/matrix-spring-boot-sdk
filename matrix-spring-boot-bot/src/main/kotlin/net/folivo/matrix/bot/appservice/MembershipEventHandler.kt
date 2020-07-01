@@ -17,7 +17,6 @@ import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus.FORBIDDEN
-import reactor.core.publisher.Mono
 
 class MembershipEventHandler(
         private val autoJoinService: AutoJoinService,
@@ -39,11 +38,11 @@ class MembershipEventHandler(
         return clazz == MemberEvent::class.java
     }
 
-    override fun handleEvent(event: Event<*>, roomId: String?): Mono<Void> {
+    override suspend fun handleEvent(event: Event<*>, roomId: String?) {
         if (event is MemberEvent) {
             if (roomId == null) {
                 LOG.warn("could not handle join event due to missing roomId")
-                return Mono.empty()
+                return
             }
 
             val userId = event.stateKey
@@ -51,87 +50,76 @@ class MembershipEventHandler(
             val isAsUser = username == asUsername
             val isManagedUser = usersRegex.map { username.matches(Regex(it)) }.contains(true)
 
-            return when (event.content.membership) {
+            when (event.content.membership) {
                 INVITE     -> {
                     if (isAsUser || isManagedUser) {
                         val asUserId = if (isAsUser) null else userId
                         if (autoJoin == DISABLED) {
-                            Mono.empty()
+                            return
                         } else if (autoJoin == RESTRICTED && roomId.substringAfter(":") != serverName) {
                             LOG.warn("reject room invite of $userId to $roomId because autoJoin is restricted to $serverName")
-                            matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)
-                                    .onErrorResume { handleForbidden(it, "leave room") }
+                            try {
+                                matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)
+                            } catch (error: Throwable) {
+                                handleForbidden(error, "leave room")
+                            }
                         } else {
-                            autoJoinService.shouldJoin(roomId, userId, isAsUser)
-                                    .flatMap { shouldJoin ->
-                                        if (shouldJoin) {
-                                            LOG.debug("join room $roomId with $userId")
-                                            matrixClient.roomsApi.joinRoom(
-                                                    roomIdOrAlias = roomId,
-                                                    asUserId = asUserId
-                                            ).onErrorResume { error ->
-                                                registerOnMatrixException(userId, error)
-                                                        .then(Mono.just(true)) // TODO scary workaround
-                                                        .flatMap {
-                                                            matrixClient.roomsApi.joinRoom(
-                                                                    roomIdOrAlias = roomId,
-                                                                    asUserId = asUserId
-                                                            )
-                                                        }
-                                            }.then()
-                                        } else {
-                                            LOG.debug("reject room invite of $userId to $roomId because autoJoin denied by service")
-                                            matrixClient.roomsApi.leaveRoom(
-                                                    roomId = roomId,
-                                                    asUserId = asUserId
-                                            ).onErrorResume { error ->
-                                                registerOnMatrixException(userId, error)
-                                                        .and(
-                                                                matrixClient.roomsApi.leaveRoom(
-                                                                        roomId = roomId,
-                                                                        asUserId = asUserId
-                                                                )
-                                                        )
-                                            }
-                                        }
-                                    }
+                            if (autoJoinService.shouldJoin(roomId, userId, isAsUser)) {
+                                LOG.debug("join room $roomId with $userId")
+                                try {
+                                    matrixClient.roomsApi.joinRoom(roomIdOrAlias = roomId, asUserId = asUserId)
+                                } catch (error: Throwable) {
+                                    registerOnMatrixException(userId, error)
+                                    matrixClient.roomsApi.joinRoom(roomIdOrAlias = roomId, asUserId = asUserId)
+                                }
+                            } else {
+                                LOG.debug("reject room invite of $userId to $roomId because autoJoin denied by service")
+                                try {
+                                    matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)
+                                } catch (error: Throwable) {
+                                    registerOnMatrixException(userId, error)
+                                    matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)
+                                }
+                            }
                         }
                     } else {
                         LOG.debug("invited user $userId not managed by this application service.")
-                        Mono.empty()
                     }
                 }
                 JOIN       -> {
                     if (trackMembershipMode == MANAGED && (isAsUser || isManagedUser) || trackMembershipMode == ALL) {
                         LOG.debug("save room join of user $userId and room $roomId")
                         roomService.saveRoomJoin(roomId, userId)
-                    } else Mono.empty()
+                    }
                 }
                 LEAVE, BAN -> {
                     if (trackMembershipMode == MANAGED && (isAsUser || isManagedUser) || trackMembershipMode == ALL) {
                         LOG.debug("save room leave of user $userId and room $roomId")
                         roomService.saveRoomLeave(roomId, userId)
-                    } else Mono.empty()
+                    }
                 }
-                else       -> Mono.empty()
+                else       -> {
+                }
             }
-        } else return Mono.empty()
+        }
     }
 
-    private fun registerOnMatrixException(userId: String, error: Throwable): Mono<Void> {
-        return if (error is MatrixServerException && error.statusCode == FORBIDDEN) {
+    private suspend fun registerOnMatrixException(userId: String, error: Throwable) {
+        if (error is MatrixServerException && error.statusCode == FORBIDDEN) {
             LOG.warn("try to register user because of ${error.errorResponse}")
-            helper.registerAndSaveUser(userId)
-                    .onErrorResume { handleForbidden(it, "register user").map { false } }.then()
-        } else Mono.error(error)
+            try {
+                helper.registerAndSaveUser(userId)
+            } catch (registerError: Throwable) {
+                handleForbidden(registerError, "register user")
+            }
+        } else throw error
     }
 
-    private fun handleForbidden(error: Throwable, action: String): Mono<Void> {
-        return if (error is MatrixServerException && error.statusCode == FORBIDDEN) {
+    private fun handleForbidden(error: Throwable, action: String) {
+        if (error is MatrixServerException && error.statusCode == FORBIDDEN) {
             LOG.warn("could not $action due to: ${error.errorResponse}")
-            Mono.empty()
         } else {
-            Mono.error(error)
+            throw error
         }
     }
 

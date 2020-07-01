@@ -1,11 +1,12 @@
 package net.folivo.matrix.bot.handler
 
+import com.github.michaelbull.retry.policy.binaryExponentialBackoff
+import com.github.michaelbull.retry.policy.limitAttempts
+import com.github.michaelbull.retry.policy.plus
+import com.github.michaelbull.retry.retry
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
-import reactor.core.publisher.Mono
-import reactor.util.retry.Retry
-import java.time.Duration
 
 class MessageContext(
         val matrixClient: MatrixClient,
@@ -17,16 +18,21 @@ class MessageContext(
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    fun answer(
+    suspend fun answer(
             content: MessageEvent.MessageEventContent,
             asUserId: String? = null
-    ): Mono<String> {
-        return matrixClient.roomsApi.sendRoomEvent(
-                roomId = roomId,
-                eventContent = content,
-                asUserId = asUserId
-        ).retryWhen(Retry.backoff(3, Duration.ofMillis(500)))
-                .doOnError { LOG.warn("could not answer to $roomId", it) }
-                .onErrorResume { Mono.empty() }
+    ): String {
+        return try {
+            retry(limitAttempts(3) + binaryExponentialBackoff(LongRange(500, 5000))) {
+                matrixClient.roomsApi.sendRoomEvent(
+                        roomId = roomId,
+                        eventContent = content,
+                        asUserId = asUserId
+                )
+            }
+        } catch (error: Throwable) {
+            LOG.warn("could not answer to $roomId", error)
+            throw error
+        }
     }
 }

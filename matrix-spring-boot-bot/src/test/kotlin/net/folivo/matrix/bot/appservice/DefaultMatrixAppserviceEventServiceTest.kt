@@ -1,14 +1,11 @@
 package net.folivo.matrix.bot.appservice
 
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verifyAll
+import io.mockk.*
+import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
 import org.junit.jupiter.api.Test
-import reactor.core.publisher.Mono
-import reactor.test.StepVerifier
 
 class DefaultMatrixAppserviceEventServiceTest {
 
@@ -16,21 +13,20 @@ class DefaultMatrixAppserviceEventServiceTest {
     fun `should process event and delegate to event handler`() {
         val eventHandler1 = mockk<MatrixEventHandler> {
             every { supports(any()) } returns true
-            every { handleEvent(any(), any()) } returns Mono.empty()
+            coEvery { handleEvent(any(), any()) } just Runs
         }
         val event = mockk<MessageEvent<TextMessageEventContent>>()
         every { event.roomId } returns "someRoomId"
 
         val cut = DefaultMatrixAppserviceEventService(listOf(eventHandler1))
 
-        StepVerifier
-                .create(cut.processEvent(event))
-                .verifyComplete()
+        runBlocking { cut.processEvent(event) }
 
-        verifyAll {
+        verify {
             eventHandler1.supports(MessageEvent::class.java)
+        }
+        coVerify {
             eventHandler1.handleEvent(event, "someRoomId")
         }
-
     }
 }

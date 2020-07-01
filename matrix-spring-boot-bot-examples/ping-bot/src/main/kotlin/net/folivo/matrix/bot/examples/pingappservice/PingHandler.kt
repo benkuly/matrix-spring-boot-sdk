@@ -7,7 +7,6 @@ import net.folivo.matrix.core.model.events.m.room.message.NoticeMessageEventCont
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import reactor.core.publisher.Mono
 
 @Component
 class PingHandler : MatrixMessageContentHandler {
@@ -15,16 +14,12 @@ class PingHandler : MatrixMessageContentHandler {
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    override fun handleMessage(content: MessageEvent.MessageEventContent, context: MessageContext): Mono<Void> {
+    override suspend fun handleMessage(content: MessageEvent.MessageEventContent, context: MessageContext) {
         if (content is TextMessageEventContent) {
             if (content.body.contains("ping")) {
-                return context.answer(NoticeMessageEventContent("pong"))
-                        .doOnSuccess {
-                            LOG.info("pong (messageid: $it)")
-                        }
-                        .then()
+                val messageId = context.answer(NoticeMessageEventContent("pong"))
+                LOG.info("pong (messageId: $messageId)")
             }
         }
-        return Mono.empty()
     }
 }

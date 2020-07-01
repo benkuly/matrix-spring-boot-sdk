@@ -3,6 +3,7 @@ package net.folivo.matrix.bot.appservice
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.*
@@ -19,11 +20,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.fail
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.I_AM_A_TEAPOT
-import reactor.core.publisher.Mono
-import reactor.test.StepVerifier
-import reactor.test.StepVerifier.FirstStep
 
 @ExtendWith(MockKExtension::class)
 class MembershipEventHandlerTest {
@@ -42,21 +41,21 @@ class MembershipEventHandlerTest {
 
     @BeforeEach
     fun setupMocks() {
-        every { matrixClientMock.roomsApi.joinRoom(allAny()) } returns Mono.just("!someRoomId:someServerName")
-        every { matrixClientMock.roomsApi.leaveRoom(allAny()) } returns Mono.empty()
-        every { roomServiceMock.saveRoomJoin(any(), any()) } returns Mono.empty()
-        every { roomServiceMock.saveRoomLeave(any(), any()) } returns Mono.empty()
-        every { autoJoinServiceMock.shouldJoin(any(), any(), any()) } returns Mono.just(true)
-        every { helperMock.registerAndSaveUser(any()) } returns Mono.just(true)
+        coEvery { matrixClientMock.roomsApi.joinRoom(allAny()) }.returns("!someRoomId:someServerName")
+        coEvery { matrixClientMock.roomsApi.leaveRoom(allAny()) } just Runs
+        coEvery { roomServiceMock.saveRoomJoin(any(), any()) } just Runs
+        coEvery { roomServiceMock.saveRoomLeave(any(), any()) } just Runs
+        coEvery { autoJoinServiceMock.shouldJoin(any(), any(), any()) }.returns(true)
+        coEvery { helperMock.registerAndSaveUser(any()) } just Runs
     }
 
-    fun doMemberEvent(
+    private fun doMemberEvent(
             membership: Membership,
             userId: String,
             autoJoinMode: AutoJoinMode = ENABLED,
             roomId: String = "!someRoomId:someServerName",
             trackMembershipMode: TrackMembershipMode = NONE
-    ): FirstStep<Void> {
+    ) {
         val cut = MembershipEventHandler(
                 autoJoinService = autoJoinServiceMock,
                 matrixClient = matrixClientMock,
@@ -72,8 +71,7 @@ class MembershipEventHandlerTest {
             every { content.membership } returns membership
             every { stateKey } returns userId
         }
-        return StepVerifier
-                .create(cut.handleEvent(inviteEvent, roomId))
+        runBlocking { cut.handleEvent(inviteEvent, roomId) }
     }
 
     @Test
@@ -94,8 +92,8 @@ class MembershipEventHandlerTest {
 
     @Test
     fun `should do nothing when autoJoin is disabled`() {
-        doMemberEvent(INVITE, "@someUserId:someServerName", DISABLED).verifyComplete()
-        verifyAll {
+        doMemberEvent(INVITE, "@someUserId:someServerName", DISABLED)
+        coVerifyAll {
             matrixClientMock wasNot Called
             roomServiceMock wasNot Called
         }
@@ -108,8 +106,8 @@ class MembershipEventHandlerTest {
                 "@unicorn_someUserId:someServerName",
                 RESTRICTED,
                 "!someRoomId:foreignServer"
-        ).verifyComplete()
-        verifyAll {
+        )
+        coVerifyAll {
             matrixClientMock.roomsApi.leaveRoom("!someRoomId:foreignServer", "@unicorn_someUserId:someServerName")
             roomServiceMock wasNot Called
         }
@@ -117,15 +115,15 @@ class MembershipEventHandlerTest {
 
     @Test
     fun `should do reject invite from other server when autoJoin is restricted even with leave forbidden by homserver`() {
-        every { matrixClientMock.roomsApi.leaveRoom(allAny()) } returns Mono.error(
+        coEvery { matrixClientMock.roomsApi.leaveRoom(allAny()) }.throws(
                 MatrixServerException(
                         FORBIDDEN,
                         ErrorResponse("")
                 )
         )
         doMemberEvent(INVITE, "@unicorn_someUserId:someServerName", RESTRICTED, "!someRoomId:foreignServer")
-                .verifyComplete()
-        verifyAll {
+
+        coVerifyAll {
             matrixClientMock.roomsApi.leaveRoom("!someRoomId:foreignServer", "@unicorn_someUserId:someServerName")
             roomServiceMock wasNot Called
         }
@@ -133,15 +131,18 @@ class MembershipEventHandlerTest {
 
     @Test
     fun `should do reject invite from other server when autoJoin is restricted and have error when not forbidden by homserver`() {
-        every { matrixClientMock.roomsApi.leaveRoom(allAny()) } returns Mono.error(
+        coEvery { matrixClientMock.roomsApi.leaveRoom(allAny()) }.throws(
                 MatrixServerException(
                         I_AM_A_TEAPOT,
                         ErrorResponse("")
                 )
         )
-        doMemberEvent(INVITE, "@unicorn_someUserId:someServerName", RESTRICTED, "!someRoomId:foreignServer")
-                .verifyError(MatrixServerException::class.java)
-        verifyAll {
+        try {
+            doMemberEvent(INVITE, "@unicorn_someUserId:someServerName", RESTRICTED, "!someRoomId:foreignServer")
+            fail { "should have error" }
+        } catch (error: MatrixServerException) {
+        }
+        coVerifyAll {
             matrixClientMock.roomsApi.leaveRoom("!someRoomId:foreignServer", "@unicorn_someUserId:someServerName")
             roomServiceMock wasNot Called
         }
@@ -149,11 +150,11 @@ class MembershipEventHandlerTest {
 
     @Test
     fun `should join invited room when autoJoin is restricted or enabled and invited user is application service user or managed`() {
-        doMemberEvent(INVITE, "@someAsUsername:someServerName", RESTRICTED).verifyComplete()
-        doMemberEvent(INVITE, "@someAsUsername:someServerName").verifyComplete()
-        doMemberEvent(INVITE, "@unicorn_star:someServerName", RESTRICTED).verifyComplete()
-        doMemberEvent(INVITE, "@unicorn_star:someServerName").verifyComplete()
-        verifyOrder {
+        doMemberEvent(INVITE, "@someAsUsername:someServerName", RESTRICTED)
+        doMemberEvent(INVITE, "@someAsUsername:someServerName")
+        doMemberEvent(INVITE, "@unicorn_star:someServerName", RESTRICTED)
+        doMemberEvent(INVITE, "@unicorn_star:someServerName")
+        coVerifyOrder {
             matrixClientMock.roomsApi.joinRoom("!someRoomId:someServerName")
             matrixClientMock.roomsApi.joinRoom("!someRoomId:someServerName")
             matrixClientMock.roomsApi.joinRoom("!someRoomId:someServerName", asUserId = "@unicorn_star:someServerName")
@@ -164,15 +165,15 @@ class MembershipEventHandlerTest {
 
     @Test
     fun `should do reject invite when services don't want to join it`() {
-        every {
+        coEvery {
             autoJoinServiceMock.shouldJoin(
                     "!someRoomId:someServerName",
                     "@someAsUsername:someServerName",
                     true
             )
-        } returns Mono.just(false)
-        doMemberEvent(INVITE, "@someAsUsername:someServerName").verifyComplete()
-        verifyAll {
+        }.returns(false)
+        doMemberEvent(INVITE, "@someAsUsername:someServerName")
+        coVerifyAll {
             matrixClientMock.roomsApi.leaveRoom("!someRoomId:someServerName")
             roomServiceMock wasNot Called
         }
@@ -180,21 +181,22 @@ class MembershipEventHandlerTest {
 
     @Test
     fun `should try to register user when join room is FORBIDDEN`() {
-        every {
+        coEvery {
             matrixClientMock.roomsApi.joinRoom(
                     "!someRoomId:someServerName",
                     asUserId = "@unicorn_star:someServerName"
             )
-        }.returnsMany(
-                Mono.error(MatrixServerException(FORBIDDEN, ErrorResponse("FORBIDDEN"))),
-                Mono.just("!someRoomId:someServerName")
-        )
+        }.throws(
+                MatrixServerException(FORBIDDEN, ErrorResponse("FORBIDDEN"))
+        ).coAndThen {
+            "!someRoomId:someServerName"
+        }
 
-        doMemberEvent(INVITE, "@unicorn_star:someServerName").verifyComplete()
-        verifyAll {
+        doMemberEvent(INVITE, "@unicorn_star:someServerName")
+        coVerifyAll {
             helperMock.registerAndSaveUser("@unicorn_star:someServerName")
         }
-        verify(exactly = 2) {
+        coVerify(exactly = 2) {
             matrixClientMock.roomsApi.joinRoom(
                     "!someRoomId:someServerName",
                     asUserId = "@unicorn_star:someServerName"
@@ -204,22 +206,22 @@ class MembershipEventHandlerTest {
 
     @Test
     fun `should try to register user when leave room is FORBIDDEN and not restricted`() {
-        every {
+        coEvery {
             matrixClientMock.roomsApi.leaveRoom(
                     "!someRoomId:someServerName",
                     asUserId = "@unicorn_star:someServerName"
             )
-        }.returnsMany(
-                Mono.error(MatrixServerException(FORBIDDEN, ErrorResponse("FORBIDDEN"))),
-                Mono.empty()
-        )
-        every { autoJoinServiceMock.shouldJoin(any(), any(), any()) } returns Mono.just(false)
+        }.throws(
+                MatrixServerException(FORBIDDEN, ErrorResponse("FORBIDDEN"))
+        ).coAndThen { (_) -> run {} }
 
-        doMemberEvent(INVITE, "@unicorn_star:someServerName").verifyComplete()
-        verify {
+        coEvery { autoJoinServiceMock.shouldJoin(any(), any(), any()) }.returns(false)
+
+        doMemberEvent(INVITE, "@unicorn_star:someServerName")
+        coVerify {
             helperMock.registerAndSaveUser("@unicorn_star:someServerName")
         }
-        verify(exactly = 2) {
+        coVerify(exactly = 2) {
             matrixClientMock.roomsApi.leaveRoom(
                     "!someRoomId:someServerName",
                     asUserId = "@unicorn_star:someServerName"
@@ -229,25 +231,24 @@ class MembershipEventHandlerTest {
 
     @Test
     fun `should not try to register user when leave is FORBIDDEN and restricted`() {
-        every {
+        coEvery {
             matrixClientMock.roomsApi.leaveRoom(
                     "!someRoomId:someOtherServerName",
                     asUserId = "@unicorn_star:someServerName"
             )
-        }.returnsMany(
-                Mono.error(MatrixServerException(FORBIDDEN, ErrorResponse("FORBIDDEN"))),
-                Mono.empty()
+        }.throws(
+                MatrixServerException(FORBIDDEN, ErrorResponse("FORBIDDEN"))
         )
-        every { autoJoinServiceMock.shouldJoin(any(), any(), any()) } returns Mono.just(false)
+        coEvery { autoJoinServiceMock.shouldJoin(any(), any(), any()) }.returns(false)
 
         doMemberEvent(
                 INVITE,
                 "@unicorn_star:someServerName",
                 RESTRICTED,
                 "!someRoomId:someOtherServerName"
-        ).verifyComplete()
-        verify(exactly = 0) { helperMock.registerAndSaveUser("@unicorn_star:someServerName") }
-        verify(exactly = 1) {
+        )
+        coVerify(exactly = 0) { helperMock.registerAndSaveUser("@unicorn_star:someServerName") }
+        coVerify(exactly = 1) {
             matrixClientMock.roomsApi.leaveRoom(
                     "!someRoomId:someOtherServerName",
                     asUserId = "@unicorn_star:someServerName"
@@ -257,9 +258,9 @@ class MembershipEventHandlerTest {
 
     @Test
     fun `should do nothing when invited user is not managed by application service`() {
-        doMemberEvent(INVITE, "@dino_star:someServerName", RESTRICTED).verifyComplete()
-        doMemberEvent(INVITE, "@dino_star:someServerName").verifyComplete()
-        verifyAll {
+        doMemberEvent(INVITE, "@dino_star:someServerName", RESTRICTED)
+        doMemberEvent(INVITE, "@dino_star:someServerName")
+        coVerifyAll {
             matrixClientMock wasNot Called
             roomServiceMock wasNot Called
         }
@@ -267,9 +268,9 @@ class MembershipEventHandlerTest {
 
     @Test
     fun `should save room leave when ban or leave and all membership should be tracked`() {
-        doMemberEvent(BAN, "@someUser:someServerName", trackMembershipMode = ALL).verifyComplete()
-        doMemberEvent(LEAVE, "@someUser:someServerName", trackMembershipMode = ALL).verifyComplete()
-        verifyOrder {
+        doMemberEvent(BAN, "@someUser:someServerName", trackMembershipMode = ALL)
+        doMemberEvent(LEAVE, "@someUser:someServerName", trackMembershipMode = ALL)
+        coVerifyOrder {
             roomServiceMock.saveRoomLeave("!someRoomId:someServerName", "@someUser:someServerName")
             roomServiceMock.saveRoomLeave("!someRoomId:someServerName", "@someUser:someServerName")
         }
@@ -277,16 +278,16 @@ class MembershipEventHandlerTest {
 
     @Test
     fun `should not save room leave when ban or leave and only managed membership should be tracked`() {
-        doMemberEvent(BAN, "@someUser:someServerName", trackMembershipMode = MANAGED).verifyComplete()
-        doMemberEvent(LEAVE, "@someUser:someServerName", trackMembershipMode = MANAGED).verifyComplete()
-        verify { roomServiceMock wasNot Called }
+        doMemberEvent(BAN, "@someUser:someServerName", trackMembershipMode = MANAGED)
+        doMemberEvent(LEAVE, "@someUser:someServerName", trackMembershipMode = MANAGED)
+        coVerify { roomServiceMock wasNot Called }
     }
 
     @Test
     fun `should save room leave when ban or leave and only managed membership should be tracked`() {
-        doMemberEvent(BAN, "@unicorn_star:someServerName", trackMembershipMode = MANAGED).verifyComplete()
-        doMemberEvent(LEAVE, "@someAsUsername:someServerName", trackMembershipMode = MANAGED).verifyComplete()
-        verifyOrder {
+        doMemberEvent(BAN, "@unicorn_star:someServerName", trackMembershipMode = MANAGED)
+        doMemberEvent(LEAVE, "@someAsUsername:someServerName", trackMembershipMode = MANAGED)
+        coVerifyOrder {
             roomServiceMock.saveRoomLeave("!someRoomId:someServerName", "@unicorn_star:someServerName")
             roomServiceMock.saveRoomLeave("!someRoomId:someServerName", "@someAsUsername:someServerName")
         }
@@ -294,30 +295,30 @@ class MembershipEventHandlerTest {
 
     @Test
     fun `should not save room leave when ban or leave and no membership should be tracked`() {
-        doMemberEvent(BAN, "@someAsUsername:someServerName").verifyComplete()
-        doMemberEvent(LEAVE, "@unicorn_star:someServerName").verifyComplete()
-        verify { roomServiceMock wasNot Called }
+        doMemberEvent(BAN, "@someAsUsername:someServerName")
+        doMemberEvent(LEAVE, "@unicorn_star:someServerName")
+        coVerify { roomServiceMock wasNot Called }
     }
 
     @Test
     fun `should save room join when ban or leave and all membership should be tracked`() {
-        doMemberEvent(JOIN, "@someUser:someServerName", trackMembershipMode = ALL).verifyComplete()
-        verifyOrder {
+        doMemberEvent(JOIN, "@someUser:someServerName", trackMembershipMode = ALL)
+        coVerify {
             roomServiceMock.saveRoomJoin("!someRoomId:someServerName", "@someUser:someServerName")
         }
     }
 
     @Test
     fun `should not save room join when ban or leave and only managed membership should be tracked`() {
-        doMemberEvent(JOIN, "@someUser:someServerName", trackMembershipMode = MANAGED).verifyComplete()
-        verify { roomServiceMock wasNot Called }
+        doMemberEvent(JOIN, "@someUser:someServerName", trackMembershipMode = MANAGED)
+        coVerify { roomServiceMock wasNot Called }
     }
 
     @Test
     fun `should save room join when ban or leave and only managed membership should be tracked`() {
-        doMemberEvent(JOIN, "@unicorn_star:someServerName", trackMembershipMode = MANAGED).verifyComplete()
-        doMemberEvent(JOIN, "@someAsUsername:someServerName", trackMembershipMode = MANAGED).verifyComplete()
-        verifyOrder {
+        doMemberEvent(JOIN, "@unicorn_star:someServerName", trackMembershipMode = MANAGED)
+        doMemberEvent(JOIN, "@someAsUsername:someServerName", trackMembershipMode = MANAGED)
+        coVerifyOrder {
             roomServiceMock.saveRoomJoin("!someRoomId:someServerName", "@unicorn_star:someServerName")
             roomServiceMock.saveRoomJoin("!someRoomId:someServerName", "@someAsUsername:someServerName")
         }
@@ -325,8 +326,8 @@ class MembershipEventHandlerTest {
 
     @Test
     fun `should not save room join when ban or leave and no membership should be tracked`() {
-        doMemberEvent(JOIN, "@someAsUsername:someServerName").verifyComplete()
-        doMemberEvent(JOIN, "@unicorn_star:someServerName").verifyComplete()
-        verify { roomServiceMock wasNot Called }
+        doMemberEvent(JOIN, "@someAsUsername:someServerName")
+        doMemberEvent(JOIN, "@unicorn_star:someServerName")
+        coVerify { roomServiceMock wasNot Called }
     }
 }

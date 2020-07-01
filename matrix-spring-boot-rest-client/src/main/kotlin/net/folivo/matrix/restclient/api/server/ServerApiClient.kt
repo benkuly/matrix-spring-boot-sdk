@@ -1,20 +1,20 @@
 package net.folivo.matrix.restclient.api.server
 
 import org.springframework.web.reactive.function.client.WebClient
-import reactor.core.publisher.Mono
+import org.springframework.web.reactive.function.client.awaitBody
 
 class ServerApiClient(private val webClient: WebClient) {
 
-    fun getVersions(): Mono<VersionsResponse> {
+    suspend fun getVersions(): VersionsResponse {
         return webClient
                 .get().uri("/versions").retrieve()
-                .bodyToMono(VersionsResponse::class.java)
+                .awaitBody()
     }
 
-    fun getCapabilities(): Mono<CapabilitiesResponse> {
+    suspend fun getCapabilities(): CapabilitiesResponse {
         return webClient
                 .get().uri("/r0/capabilities").retrieve()
-                .bodyToMono(CapabilitiesResponse::class.java)
+                .awaitBody()
     }
 
 }

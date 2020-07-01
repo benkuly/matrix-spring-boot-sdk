@@ -1,9 +1,15 @@
 package net.folivo.matrix.restclient.api.sync
 
+import com.github.michaelbull.retry.ContinueRetrying
+import com.github.michaelbull.retry.policy.RetryPolicy
+import com.github.michaelbull.retry.policy.binaryExponentialBackoff
+import com.github.michaelbull.retry.policy.plus
+import com.github.michaelbull.retry.retry
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.slf4j.LoggerFactory
 import org.springframework.web.reactive.function.client.WebClient
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
+import org.springframework.web.reactive.function.client.awaitBody
 
 class SyncApiClient(private val webClient: WebClient, private val syncBatchTokenService: SyncBatchTokenService) {
 
@@ -11,14 +17,14 @@ class SyncApiClient(private val webClient: WebClient, private val syncBatchToken
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    fun syncOnce(
+    suspend fun syncOnce(
             filter: String? = null,
             since: String? = null,
             fullState: Boolean = false,
             setPresence: Presence? = null,
             timeout: Long = 0
 //            asUserId: String? = null // TODO currently not supported due to limit of syncBatchTokenService to only store one token
-    ): Mono<SyncResponse> {
+    ): SyncResponse {
         return webClient
                 .get().uri {
                     it.apply {
@@ -32,28 +38,36 @@ class SyncApiClient(private val webClient: WebClient, private val syncBatchToken
                     }.build()
                 }
                 .retrieve()
-                .bodyToMono(SyncResponse::class.java)
-                .doOnSuccess { LOG.debug("synced with batchToken $since") }
+                .awaitBody<SyncResponse>()
+                .also { LOG.debug("synced with batchToken $since") }
+    }
+
+    private fun logAttempt(): RetryPolicy<Throwable> {
+        return {
+            LOG.error("error while sync to server: ${reason.message}")
+            ContinueRetrying
+        }
     }
 
     fun syncLoop(
             filter: String? = null,
             setPresence: Presence? = null
 //            asUserId: String? = null // TODO see TODO in syncOnce parameter
-    ): Flux<SyncResponse> {
-        return Mono.just(true) // TODO is there a less hacky way? Without that line, repeat does not call getBatchToken
-                .flatMap {
-                    syncBatchTokenService.getBatchToken()
-                }.flatMap { batchToken ->
-                    syncOnce(
-                            filter = filter,
-                            setPresence = setPresence,
-                            fullState = false,
-                            since = batchToken,
-                            timeout = 30000
-                            //asUserId = asUserId // TODO see TODO in syncOnce parameter
-                    )
-                }.switchIfEmpty(
+    ): Flow<SyncResponse> {
+        return flow {
+            while (true) {
+                val batchToken = syncBatchTokenService.getBatchToken()
+                val response = retry(binaryExponentialBackoff(LongRange(1000, 90000)) + logAttempt()) {
+                    if (batchToken != null) {
+                        syncOnce(
+                                filter = filter,
+                                setPresence = setPresence,
+                                fullState = false,
+                                since = batchToken,
+                                timeout = 30000
+                                //asUserId = asUserId // TODO see TODO in syncOnce parameter
+                        )
+                    } else {
                         syncOnce(
                                 filter = filter,
                                 setPresence = setPresence,
@@ -61,17 +75,12 @@ class SyncApiClient(private val webClient: WebClient, private val syncBatchToken
                                 timeout = 30000
                                 //asUserId = asUserId // TODO see TODO in syncOnce parameter
                         )
-                ).flatMap { response ->
-                    if (response != null) {
-                        syncBatchTokenService.setBatchToken(response.nextBatch)
-                                .thenReturn(response)
-                    } else {
-                        Mono.just<SyncResponse>(response)
                     }
                 }
-                .repeat()
-                .retry()
-                .doOnError { LOG.error("error in syncLoop", it) }
+                syncBatchTokenService.setBatchToken(response.nextBatch)
+                emit(response)
+            }
+        }
     }
 
 }

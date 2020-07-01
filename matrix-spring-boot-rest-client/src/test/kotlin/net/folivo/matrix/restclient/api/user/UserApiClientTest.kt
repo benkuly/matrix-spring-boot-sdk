@@ -3,6 +3,7 @@ package net.folivo.matrix.restclient.api.user
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.restclient.MatrixClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -45,16 +46,18 @@ class UserApiClientTest {
                         .setBody(objectMapper.writeValueAsString(response))
         )
 
-        val result = matrixClient.userApi.register(
-                authenticationType = "someAuthenticationType",
-                authenticationSession = "someAuthenticationSession",
-                username = "someUsername",
-                password = "somePassword",
-                accountType = AccountType.USER,
-                deviceId = "someDeviceId",
-                initialDeviceDisplayName = "someInitialDeviceDisplayName",
-                inhibitLogin = true
-        ).block()
+        val result = runBlocking {
+            matrixClient.userApi.register(
+                    authenticationType = "someAuthenticationType",
+                    authenticationSession = "someAuthenticationSession",
+                    username = "someUsername",
+                    password = "somePassword",
+                    accountType = AccountType.USER,
+                    deviceId = "someDeviceId",
+                    initialDeviceDisplayName = "someInitialDeviceDisplayName",
+                    inhibitLogin = true
+            )
+        }
 
         Assertions.assertThat(result).isEqualTo(response)
 

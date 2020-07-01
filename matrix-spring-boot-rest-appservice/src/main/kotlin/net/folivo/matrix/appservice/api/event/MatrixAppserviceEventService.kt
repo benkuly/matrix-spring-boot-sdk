@@ -1,7 +1,6 @@
 package net.folivo.matrix.appservice.api.event
 
 import net.folivo.matrix.core.model.events.Event
-import reactor.core.publisher.Mono
 
 interface MatrixAppserviceEventService {
 
@@ -9,8 +8,8 @@ interface MatrixAppserviceEventService {
         PROCESSED, NOT_PROCESSED
     }
 
-    fun eventProcessingState(tnxId: String, eventIdOrType: String): Mono<EventProcessingState>
-    fun saveEventProcessed(tnxId: String, eventIdOrType: String): Mono<Void>
+    suspend fun eventProcessingState(tnxId: String, eventIdOrType: String): EventProcessingState
+    suspend fun saveEventProcessed(tnxId: String, eventIdOrType: String)
 
-    fun processEvent(event: Event<*>): Mono<Void>
+    suspend fun processEvent(event: Event<*>)
 }

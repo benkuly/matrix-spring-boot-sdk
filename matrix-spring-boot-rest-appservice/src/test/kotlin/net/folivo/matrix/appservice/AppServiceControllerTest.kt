@@ -1,8 +1,10 @@
 package net.folivo.matrix.appservice
 
 import com.ninjasquad.springmockk.MockkBean
-import io.mockk.every
+import io.mockk.Runs
+import io.mockk.coEvery
 import io.mockk.junit5.MockKExtension
+import io.mockk.just
 import net.folivo.matrix.appservice.api.AppserviceHandler
 import net.folivo.matrix.core.model.events.RoomEvent
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
@@ -14,7 +16,6 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.web.reactive.server.WebTestClient
-import reactor.core.publisher.Mono
 
 @SpringBootTest
 @AutoConfigureWebTestClient
@@ -29,7 +30,7 @@ class AppServiceControllerTest {
 
     @Test
     fun `addTransactions should return 200 when handler is okay`() {
-        every { appserviceHandlerMock.addTransactions("1", any()) } returns Mono.empty()
+        coEvery { appserviceHandlerMock.addTransactions("1", any()) } just Runs
 
         webTestClient.put()
                 .uri("/_matrix/app/v1/transactions/1?access_token=validToken")
@@ -55,7 +56,7 @@ class AppServiceControllerTest {
 
     @Test
     fun `addTransactions should handle null events`() {
-        every { appserviceHandlerMock.addTransactions("1", any()) } returns Mono.empty()
+        coEvery { appserviceHandlerMock.addTransactions("1", any()) } just Runs
 
         webTestClient.put()
                 .uri("/_matrix/app/v1/transactions/1?access_token=validToken")
@@ -81,7 +82,7 @@ class AppServiceControllerTest {
 
     @Test
     fun `addTransactions should return 404 when handler is false`() {
-        every { appserviceHandlerMock.hasRoomAlias("someRoomAlias") } returns Mono.just(false)
+        coEvery { appserviceHandlerMock.hasRoomAlias("someRoomAlias") } returns false
 
         webTestClient.get()
                 .uri("/_matrix/app/v1/rooms/someRoomAlias?access_token=validToken")
@@ -94,7 +95,7 @@ class AppServiceControllerTest {
 
     @Test
     fun `hasUser should return 200 when handler is true`() {
-        every { appserviceHandlerMock.hasUser("someUserId") } returns Mono.just(true)
+        coEvery { appserviceHandlerMock.hasUser("someUserId") } returns true
 
         webTestClient.get()
                 .uri("/_matrix/app/v1/users/someUserId?access_token=validToken")
@@ -106,7 +107,7 @@ class AppServiceControllerTest {
 
     @Test
     fun `hasUser should return 404 when handler is false`() {
-        every { appserviceHandlerMock.hasUser("someUserId") } returns Mono.just(false)
+        coEvery { appserviceHandlerMock.hasUser("someUserId") } returns false
 
         webTestClient.get()
                 .uri("/_matrix/app/v1/users/someUserId?access_token=validToken")
@@ -119,7 +120,7 @@ class AppServiceControllerTest {
 
     @Test
     fun `hasRoomAlias should return 200 when handler is true`() {
-        every { appserviceHandlerMock.hasRoomAlias("someRoomAlias") } returns Mono.just(true)
+        coEvery { appserviceHandlerMock.hasRoomAlias("someRoomAlias") } returns true
 
         webTestClient.get()
                 .uri("/_matrix/app/v1/rooms/someRoomAlias?access_token=validToken")
@@ -131,7 +132,7 @@ class AppServiceControllerTest {
 
     @Test
     fun `hasRoomAlias should return 404 when handler is false`() {
-        every { appserviceHandlerMock.hasRoomAlias("someRoomAlias") } returns Mono.just(false)
+        coEvery { appserviceHandlerMock.hasRoomAlias("someRoomAlias") } returns false
 
         webTestClient.get()
                 .uri("/_matrix/app/v1/rooms/someRoomAlias?access_token=validToken")

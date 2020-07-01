@@ -21,14 +21,12 @@ class MatrixClientBotAutoconfiguration(private val botProperties: MatrixBotPrope
             matrixEventHandler: List<MatrixEventHandler>,
             autoJoinService: AutoJoinService
     ): MatrixClientBot {
-        val matrixClientBot = MatrixClientBot(
+        return MatrixClientBot(
                 matrixClient,
                 matrixEventHandler,
                 botProperties,
                 autoJoinService
         )
-        matrixClientBot.start()
-        return matrixClientBot
     }
 
 }
