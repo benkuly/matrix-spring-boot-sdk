@@ -38,14 +38,14 @@ class BotUserInitializerTest {
         every { botProperties.username }.returns("bot")
         every { botProperties.serverName }.returns("server")
         coEvery { userService.saveUser(any()) } just Runs
-        coEvery { userService.getCreateUserParameter(any()) }.returns(CreateUserParameter("DINO"))
+        coEvery { userService.getCreateUserParameter(any()) }.returns(CreateUserParameter())
         coEvery { matrixClient.userApi.register(any(), any(), any(), any(), any(), any(), any(), any()) }
                 .returns(RegisterResponse("someUserId"))
         coEvery { matrixClient.userApi.setDisplayName(any(), any(), any()) } just Runs
     }
 
     @Test
-    fun `should register bot user and set displayname`() {
+    fun `should register bot user`() {
         runBlocking { cut.initializeBotUserAsync() }
 
         coVerifyAll {
@@ -53,9 +53,28 @@ class BotUserInitializerTest {
                     authenticationType = "m.login.application_service",
                     username = "bot"
             )
-            matrixClient.userApi.setDisplayName("@bot:server", "DINO")
+
             userService.saveUser("@bot:server")
             userService.getCreateUserParameter("@bot:server")
+        }
+        coVerify(inverse = true) { matrixClient.userApi.setDisplayName(any(), any()) }
+    }
+
+    @Test
+    fun `should set displayname`() {
+        coEvery { userService.getCreateUserParameter(any()) }.returns(CreateUserParameter("DINO"))
+
+        runBlocking { cut.initializeBotUserAsync() }
+
+        coVerifyAll {
+            matrixClient.userApi.register(
+                    authenticationType = "m.login.application_service",
+                    username = "bot"
+            )
+
+            userService.saveUser("@bot:server")
+            userService.getCreateUserParameter("@bot:server")
+            matrixClient.userApi.setDisplayName("@bot:server", "DINO")
         }
     }
 
@@ -70,7 +89,6 @@ class BotUserInitializerTest {
                     authenticationType = "m.login.application_service",
                     username = "bot"
             )
-            matrixClient.userApi.setDisplayName("@bot:server", "DINO")
             userService.saveUser("@bot:server")
             userService.getCreateUserParameter("@bot:server")
         }
