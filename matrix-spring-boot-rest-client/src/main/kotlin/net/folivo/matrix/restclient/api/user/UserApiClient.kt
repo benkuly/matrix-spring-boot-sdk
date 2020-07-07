@@ -42,6 +42,9 @@ class UserApiClient(private val webClient: WebClient) {
                 .awaitBody()
     }
 
+    /**
+     * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#put-matrix-client-r0-profile-userid-displayname">matrix spec</a>
+     */
     suspend fun setDisplayName(
             userId: String,
             displayName: String? = null,
@@ -57,6 +60,22 @@ class UserApiClient(private val webClient: WebClient) {
                 .bodyValue(mapOf("displayname" to displayName))
                 .retrieve()
                 .awaitBody()
+    }
+
+    /**
+     * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#get-matrix-client-r0-account-whoami">matrix spec</a>
+     */
+    suspend fun whoAmI(asUserId: String? = null): String {
+        return webClient
+                .get().uri {
+                    it.apply {
+                        path("/r0/account/whoami")
+                        if (asUserId != null) queryParam("user_id", asUserId)
+                    }.build()
+                }
+                .retrieve()
+                .awaitBody<WhoAmIResponse>()
+                .userId
     }
 
 }

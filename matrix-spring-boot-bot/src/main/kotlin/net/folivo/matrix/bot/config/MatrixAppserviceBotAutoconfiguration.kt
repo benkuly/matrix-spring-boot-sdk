@@ -75,4 +75,14 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
 
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun botUserInitializer(matrixClient: MatrixClient, userService: MatrixAppserviceUserService): BotUserInitializer {
+        return BotUserInitializer(
+                matrixClient = matrixClient,
+                botProperties = matrixBotProperties,
+                userService = userService
+        )
+    }
 }
