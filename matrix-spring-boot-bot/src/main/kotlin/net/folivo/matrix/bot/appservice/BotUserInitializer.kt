@@ -7,7 +7,7 @@ import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.core.api.MatrixServerException
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
-import org.springframework.context.event.ContextRefreshedEvent
+import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 
 class BotUserInitializer(
@@ -19,7 +19,7 @@ class BotUserInitializer(
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    @EventListener(ContextRefreshedEvent::class)
+    @EventListener(ApplicationReadyEvent::class)
     fun initializeBotUser() {
         GlobalScope.launch {
             initializeBotUserAsync()

@@ -57,7 +57,7 @@ class MatrixClientAutoconfiguration {
     }
 
     @Bean("matrixWebClient")
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(name = ["matrixWebClient"])
     fun matrixWebClient(
             config: MatrixClientProperties,
             webClientBuilder: WebClient.Builder,

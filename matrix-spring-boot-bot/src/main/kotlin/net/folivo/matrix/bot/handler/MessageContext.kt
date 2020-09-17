@@ -23,7 +23,7 @@ class MessageContext(
             asUserId: String? = null
     ): String {
         return try {
-            retry(limitAttempts(3) + binaryExponentialBackoff(LongRange(500, 5000))) {
+            retry(limitAttempts(5) + binaryExponentialBackoff(LongRange(500, 10000))) {
                 matrixClient.roomsApi.sendRoomEvent(
                         roomId = roomId,
                         eventContent = content,
