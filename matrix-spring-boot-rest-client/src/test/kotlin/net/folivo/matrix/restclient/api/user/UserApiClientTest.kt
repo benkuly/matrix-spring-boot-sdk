@@ -97,7 +97,7 @@ class UserApiClientTest {
 
         val request = mockWebServer.takeRequest()
         assertThat(request.path).isEqualTo("/_matrix/client/r0/profile/someUserId/displayname")
-        assertThat(request.body.readUtf8()).isEqualTo(""""displayname":"someDisplayName"""")
+        assertThat(request.body.readUtf8()).isEqualTo("""{"displayname":"someDisplayName"}""")
         assertThat(request.method).isEqualTo(PUT.toString())
     }
 
