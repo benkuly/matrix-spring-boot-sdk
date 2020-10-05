@@ -5,7 +5,7 @@ import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.core.Authentication
 import reactor.core.publisher.Mono
 
-class MatrixHomeServerAuthenticationManager(private val hsToken: String) : ReactiveAuthenticationManager {
+class HomeServerAuthenticationManager(private val hsToken: String) : ReactiveAuthenticationManager {
     override fun authenticate(authentication: Authentication): Mono<Authentication> {
         val credentials = authentication.credentials
         return if (credentials is String && credentials == hsToken) {

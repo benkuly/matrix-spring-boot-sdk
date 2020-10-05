@@ -6,10 +6,11 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.bot.config.MatrixBotProperties
-import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.DISABLED
-import net.folivo.matrix.bot.handler.AutoJoinService
 import net.folivo.matrix.bot.handler.MatrixEventHandler
+import net.folivo.matrix.bot.membership.MembershipHandler
 import net.folivo.matrix.core.model.events.Event
+import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.JOIN
+import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.LEAVE
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
@@ -18,7 +19,7 @@ class MatrixClientBot(
         private val matrixClient: MatrixClient,
         private val eventHandler: List<MatrixEventHandler>,
         private val botProperties: MatrixBotProperties,
-        private val autoJoinService: AutoJoinService
+        private val membershipHandler: MembershipHandler
 ) : CommandLineRunner {
 
     companion object {
@@ -39,28 +40,17 @@ class MatrixClientBot(
                                 joinedRoom.timeline.events.forEach { handleEvent(it, roomId) }
                                 joinedRoom.state.events.forEach { handleEvent(it, roomId) }
                             }
-                            syncResponse.room.invite.keys.forEach { roomId ->
-                                if (botProperties.autoJoin == DISABLED
-                                    || botProperties.autoJoin == MatrixBotProperties.AutoJoinMode.RESTRICTED
-                                    && roomId.substringAfter(":") != botProperties.serverName
-                                ) {
-                                    LOG.warn("reject room invite to $roomId because autoJoin is not allowed to ${botProperties.serverName}")
-                                    matrixClient.roomsApi.leaveRoom(roomId)
-                                } else {
-                                    if (autoJoinService.shouldJoin(
-                                                    roomId,
-                                                    botProperties.username?.let { username ->
-                                                        "@${username}:${botProperties.serverName}"
-                                                    }
-                                            )) {
-                                        LOG.debug("join invitation to roomId: $roomId")
-                                        matrixClient.roomsApi.joinRoom(roomId)
-                                    } else {
-                                        LOG.debug("reject room invite to $roomId because service denied it")
-                                        matrixClient.roomsApi.leaveRoom(roomId)
-                                    }
-
-                                }
+                            syncResponse.room.invite.forEach { (roomId) ->//FIXME test
+                                membershipHandler.handleMembership(
+                                        roomId, "${botProperties.username}:${botProperties.serverName}",
+                                        JOIN
+                                )
+                            }
+                            syncResponse.room.leave.forEach { (roomId) ->//FIXME test
+                                membershipHandler.handleMembership(
+                                        roomId, "${botProperties.username}:${botProperties.serverName}",
+                                        LEAVE
+                                )
                             }
                             LOG.debug("processed sync response")
                         } catch (error: Throwable) {

@@ -6,7 +6,7 @@ import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
 
 class MatrixMessageEventHandler(
-        private val messageContentHandler: List<MatrixMessageContentHandler>,
+        private val messageHandler: List<MatrixMessageHandler>,
         private val matrixClient: MatrixClient
 ) : MatrixEventHandler {
 
@@ -30,7 +30,7 @@ class MatrixMessageEventHandler(
                     roomId
             )
             LOG.debug("handle message event")
-            messageContentHandler
+            messageHandler
                     .forEach {
                         try {
                             it.handleMessage(event.content, messageContext)

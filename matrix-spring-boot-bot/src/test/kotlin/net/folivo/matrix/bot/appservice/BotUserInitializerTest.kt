@@ -5,8 +5,8 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import kotlinx.coroutines.runBlocking
-import net.folivo.matrix.appservice.api.user.CreateUserParameter
-import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
+import net.folivo.matrix.appservice.api.user.AppserviceUserService
+import net.folivo.matrix.appservice.api.user.RegisterUserParameter
 import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.core.api.ErrorResponse
 import net.folivo.matrix.core.api.MatrixServerException
@@ -28,7 +28,7 @@ class BotUserInitializerTest {
     lateinit var botProperties: MatrixBotProperties
 
     @MockK
-    lateinit var userService: MatrixAppserviceUserService
+    lateinit var userService: AppserviceUserService
 
     @InjectMockKs
     lateinit var cut: BotUserInitializer
@@ -37,8 +37,8 @@ class BotUserInitializerTest {
     fun beforeEach() {
         every { botProperties.username }.returns("bot")
         every { botProperties.serverName }.returns("server")
-        coEvery { userService.saveUser(any()) } just Runs
-        coEvery { userService.getCreateUserParameter(any()) }.returns(CreateUserParameter())
+        coEvery { userService.onRegisteredUser(any()) } just Runs
+        coEvery { userService.getRegisterUserParameter(any()) }.returns(RegisterUserParameter())
         coEvery { matrixClient.userApi.register(any(), any(), any(), any(), any(), any(), any(), any()) }
                 .returns(RegisterResponse("someUserId"))
         coEvery { matrixClient.userApi.setDisplayName(any(), any(), any()) } just Runs
@@ -54,15 +54,15 @@ class BotUserInitializerTest {
                     username = "bot"
             )
 
-            userService.saveUser("@bot:server")
-            userService.getCreateUserParameter("@bot:server")
+            userService.onRegisteredUser("@bot:server")
+            userService.getRegisterUserParameter("@bot:server")
         }
         coVerify(inverse = true) { matrixClient.userApi.setDisplayName(any(), any()) }
     }
 
     @Test
     fun `should set displayname`() {
-        coEvery { userService.getCreateUserParameter(any()) }.returns(CreateUserParameter("DINO"))
+        coEvery { userService.getRegisterUserParameter(any()) }.returns(RegisterUserParameter("DINO"))
 
         runBlocking { cut.initializeBotUserAsync() }
 
@@ -72,8 +72,8 @@ class BotUserInitializerTest {
                     username = "bot"
             )
 
-            userService.saveUser("@bot:server")
-            userService.getCreateUserParameter("@bot:server")
+            userService.onRegisteredUser("@bot:server")
+            userService.getRegisterUserParameter("@bot:server")
             matrixClient.userApi.setDisplayName("@bot:server", "DINO")
         }
     }
@@ -89,8 +89,8 @@ class BotUserInitializerTest {
                     authenticationType = "m.login.application_service",
                     username = "bot"
             )
-            userService.saveUser("@bot:server")
-            userService.getCreateUserParameter("@bot:server")
+            userService.onRegisteredUser("@bot:server")
+            userService.getRegisterUserParameter("@bot:server")
         }
     }
 
@@ -113,8 +113,8 @@ class BotUserInitializerTest {
         }
         coVerifyAll(inverse = true) {
             matrixClient.userApi.setDisplayName("@bot:server", "DINO")
-            userService.saveUser("@bot:server")
-            userService.getCreateUserParameter("@bot:server")
+            userService.onRegisteredUser("@bot:server")
+            userService.getRegisterUserParameter("@bot:server")
         }
     }
 }

@@ -1,31 +1,31 @@
 package net.folivo.matrix.bot.appservice
 
-import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
-import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService.EventProcessingState
-import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService.EventProcessingState.NOT_PROCESSED
+import net.folivo.matrix.appservice.api.event.AppserviceEventService
+import net.folivo.matrix.appservice.api.event.AppserviceEventService.EventProcessingState
+import net.folivo.matrix.appservice.api.event.AppserviceEventService.EventProcessingState.NOT_PROCESSED
 import net.folivo.matrix.bot.handler.MatrixEventHandler
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.StateEvent
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import org.slf4j.LoggerFactory
 
-open class DefaultMatrixAppserviceEventService(
+open class DefaultAppserviceEventService(
         private val eventHandler: List<MatrixEventHandler>
-) : MatrixAppserviceEventService {
+) : AppserviceEventService {
     companion object {
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    override suspend fun eventProcessingState(tnxId: String, eventIdOrType: String): EventProcessingState {
+    override suspend fun eventProcessingState(tnxId: String, eventId: String): EventProcessingState {
         return NOT_PROCESSED
     }
 
-    override suspend fun saveEventProcessed(tnxId: String, eventIdOrType: String) {
+    override suspend fun onEventProcessed(tnxId: String, eventId: String) {
     }
 
     override suspend fun processEvent(event: Event<*>) {
         when (event) {
-            is MessageEvent<*>  -> delegateEventHandling(event, event.roomId)
+            is MessageEvent<*> -> delegateEventHandling(event, event.roomId)
             is StateEvent<*, *> -> delegateEventHandling(event, event.roomId)
             else                -> delegateEventHandling(event)
         }

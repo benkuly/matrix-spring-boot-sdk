@@ -1,15 +1,15 @@
-package net.folivo.matrix.bot.appservice
+package net.folivo.matrix.bot.membership
 
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
+import net.folivo.matrix.bot.appservice.DefaultAppserviceRoomService
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.*
 import net.folivo.matrix.bot.config.MatrixBotProperties.TrackMembershipMode
 import net.folivo.matrix.bot.config.MatrixBotProperties.TrackMembershipMode.*
-import net.folivo.matrix.bot.handler.AutoJoinService
 import net.folivo.matrix.core.api.ErrorResponse
 import net.folivo.matrix.core.api.MatrixServerException
 import net.folivo.matrix.core.model.events.m.room.MemberEvent
@@ -25,16 +25,16 @@ import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.I_AM_A_TEAPOT
 
 @ExtendWith(MockKExtension::class)
-class MembershipEventHandlerTest {
+class MembershipHandlerTest {
 
     @MockK(relaxed = true)
     lateinit var matrixClientMock: MatrixClient
 
     @MockK
-    lateinit var autoJoinServiceMock: AutoJoinService
+    lateinit var autoJoinCustomizerMock: AutoJoinCustomizer
 
     @MockK
-    lateinit var roomServiceMock: DefaultMatrixAppserviceRoomService
+    lateinit var roomServiceMock: DefaultAppserviceRoomService
 
     @MockK
     lateinit var helperMock: AppserviceHandlerHelper
@@ -43,10 +43,10 @@ class MembershipEventHandlerTest {
     fun setupMocks() {
         coEvery { matrixClientMock.roomsApi.joinRoom(allAny()) }.returns("!someRoomId:someServerName")
         coEvery { matrixClientMock.roomsApi.leaveRoom(allAny()) } just Runs
-        coEvery { roomServiceMock.saveRoomJoin(any(), any()) } just Runs
-        coEvery { roomServiceMock.saveRoomLeave(any(), any()) } just Runs
-        coEvery { autoJoinServiceMock.shouldJoin(any(), any(), any()) }.returns(true)
-        coEvery { helperMock.registerAndSaveUser(any()) } just Runs
+        coEvery { roomServiceMock.onRoomJoin(any(), any()) } just Runs
+        coEvery { roomServiceMock.onRoomLeave(any(), any()) } just Runs
+        coEvery { autoJoinCustomizerMock.shouldJoin(any(), any(), any()) }.returns(true)
+        coEvery { helperMock.registerManagedUser(any()) } just Runs
     }
 
     private fun doMemberEvent(
@@ -56,8 +56,8 @@ class MembershipEventHandlerTest {
             roomId: String = "!someRoomId:someServerName",
             trackMembershipMode: TrackMembershipMode = NONE
     ) {
-        val cut = MembershipEventHandler(
-                autoJoinService = autoJoinServiceMock,
+        val cut = MembershipHandler(
+                autoJoinService = autoJoinCustomizerMock,
                 matrixClient = matrixClientMock,
                 roomService = roomServiceMock,
                 autoJoin = autoJoinMode,
@@ -76,8 +76,8 @@ class MembershipEventHandlerTest {
 
     @Test
     fun `should support MemberEvent`() {
-        val cut = MembershipEventHandler(
-                autoJoinService = autoJoinServiceMock,
+        val cut = MembershipHandler(
+                autoJoinService = autoJoinCustomizerMock,
                 matrixClient = matrixClientMock,
                 roomService = roomServiceMock,
                 autoJoin = DISABLED,
@@ -166,7 +166,7 @@ class MembershipEventHandlerTest {
     @Test
     fun `should do reject invite when services don't want to join it`() {
         coEvery {
-            autoJoinServiceMock.shouldJoin(
+            autoJoinCustomizerMock.shouldJoin(
                     "!someRoomId:someServerName",
                     "@someAsUsername:someServerName",
                     true
@@ -194,7 +194,7 @@ class MembershipEventHandlerTest {
 
         doMemberEvent(INVITE, "@unicorn_star:someServerName")
         coVerifyAll {
-            helperMock.registerAndSaveUser("@unicorn_star:someServerName")
+            helperMock.registerManagedUser("@unicorn_star:someServerName")
         }
         coVerify(exactly = 2) {
             matrixClientMock.roomsApi.joinRoom(
@@ -215,11 +215,11 @@ class MembershipEventHandlerTest {
                 MatrixServerException(FORBIDDEN, ErrorResponse("FORBIDDEN"))
         ).coAndThen { (_) -> run {} }
 
-        coEvery { autoJoinServiceMock.shouldJoin(any(), any(), any()) }.returns(false)
+        coEvery { autoJoinCustomizerMock.shouldJoin(any(), any(), any()) }.returns(false)
 
         doMemberEvent(INVITE, "@unicorn_star:someServerName")
         coVerify {
-            helperMock.registerAndSaveUser("@unicorn_star:someServerName")
+            helperMock.registerManagedUser("@unicorn_star:someServerName")
         }
         coVerify(exactly = 2) {
             matrixClientMock.roomsApi.leaveRoom(
@@ -239,7 +239,7 @@ class MembershipEventHandlerTest {
         }.throws(
                 MatrixServerException(FORBIDDEN, ErrorResponse("FORBIDDEN"))
         )
-        coEvery { autoJoinServiceMock.shouldJoin(any(), any(), any()) }.returns(false)
+        coEvery { autoJoinCustomizerMock.shouldJoin(any(), any(), any()) }.returns(false)
 
         doMemberEvent(
                 INVITE,
@@ -247,7 +247,7 @@ class MembershipEventHandlerTest {
                 RESTRICTED,
                 "!someRoomId:someOtherServerName"
         )
-        coVerify(exactly = 0) { helperMock.registerAndSaveUser("@unicorn_star:someServerName") }
+        coVerify(exactly = 0) { helperMock.registerManagedUser("@unicorn_star:someServerName") }
         coVerify(exactly = 1) {
             matrixClientMock.roomsApi.leaveRoom(
                     "!someRoomId:someOtherServerName",
@@ -271,8 +271,8 @@ class MembershipEventHandlerTest {
         doMemberEvent(BAN, "@someUser:someServerName", trackMembershipMode = ALL)
         doMemberEvent(LEAVE, "@someUser:someServerName", trackMembershipMode = ALL)
         coVerifyOrder {
-            roomServiceMock.saveRoomLeave("!someRoomId:someServerName", "@someUser:someServerName")
-            roomServiceMock.saveRoomLeave("!someRoomId:someServerName", "@someUser:someServerName")
+            roomServiceMock.onRoomLeave("!someRoomId:someServerName", "@someUser:someServerName")
+            roomServiceMock.onRoomLeave("!someRoomId:someServerName", "@someUser:someServerName")
         }
     }
 
@@ -288,8 +288,8 @@ class MembershipEventHandlerTest {
         doMemberEvent(BAN, "@unicorn_star:someServerName", trackMembershipMode = MANAGED)
         doMemberEvent(LEAVE, "@someAsUsername:someServerName", trackMembershipMode = MANAGED)
         coVerifyOrder {
-            roomServiceMock.saveRoomLeave("!someRoomId:someServerName", "@unicorn_star:someServerName")
-            roomServiceMock.saveRoomLeave("!someRoomId:someServerName", "@someAsUsername:someServerName")
+            roomServiceMock.onRoomLeave("!someRoomId:someServerName", "@unicorn_star:someServerName")
+            roomServiceMock.onRoomLeave("!someRoomId:someServerName", "@someAsUsername:someServerName")
         }
     }
 
@@ -304,7 +304,7 @@ class MembershipEventHandlerTest {
     fun `should save room join when ban or leave and all membership should be tracked`() {
         doMemberEvent(JOIN, "@someUser:someServerName", trackMembershipMode = ALL)
         coVerify {
-            roomServiceMock.saveRoomJoin("!someRoomId:someServerName", "@someUser:someServerName")
+            roomServiceMock.onRoomJoin("!someRoomId:someServerName", "@someUser:someServerName")
         }
     }
 
@@ -319,8 +319,8 @@ class MembershipEventHandlerTest {
         doMemberEvent(JOIN, "@unicorn_star:someServerName", trackMembershipMode = MANAGED)
         doMemberEvent(JOIN, "@someAsUsername:someServerName", trackMembershipMode = MANAGED)
         coVerifyOrder {
-            roomServiceMock.saveRoomJoin("!someRoomId:someServerName", "@unicorn_star:someServerName")
-            roomServiceMock.saveRoomJoin("!someRoomId:someServerName", "@someAsUsername:someServerName")
+            roomServiceMock.onRoomJoin("!someRoomId:someServerName", "@unicorn_star:someServerName")
+            roomServiceMock.onRoomJoin("!someRoomId:someServerName", "@someAsUsername:someServerName")
         }
     }
 

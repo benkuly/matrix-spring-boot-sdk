@@ -10,7 +10,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 
 @SpringBootTest
 @AutoConfigureWebTestClient
-class MatrixAppserviceExceptionHandlerTest {
+class AppserviceExceptionHandlerTest {
 
     @Autowired
     private lateinit var webClient: WebTestClient

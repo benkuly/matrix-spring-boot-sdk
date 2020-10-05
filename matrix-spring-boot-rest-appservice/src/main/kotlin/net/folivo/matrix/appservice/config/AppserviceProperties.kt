@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConstructorBinding
 
 @ConfigurationProperties("matrix.appservice")
 @ConstructorBinding
-data class MatrixAppserviceProperties(
+data class AppserviceProperties(
         val hsToken: String,
         val namespaces: Namespaces = Namespaces()
 ) {

@@ -5,11 +5,11 @@ import org.springframework.security.web.server.authentication.ServerAuthenticati
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
-class MatrixHomeServerAuthenticationConverter : ServerAuthenticationConverter {
+class HomeServerAuthenticationConverter : ServerAuthenticationConverter {
     override fun convert(exchange: ServerWebExchange): Mono<Authentication> {
 
         return Mono.justOrEmpty(exchange.request.queryParams.getFirst("access_token")?.let {
-            MatrixHomeServerAuthenticationToken(it)
+            HomeServerAuthenticationToken(it)
         })
     }
 }

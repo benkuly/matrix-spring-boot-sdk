@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
-class MatrixAppserviceExceptionHandler {
+class AppserviceExceptionHandler {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(this::class.java)

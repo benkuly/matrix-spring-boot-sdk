@@ -9,7 +9,7 @@ data class MatrixBotProperties(
         val autoJoin: AutoJoinMode = AutoJoinMode.RESTRICTED,
         val trackMembership: TrackMembershipMode = TrackMembershipMode.NONE,
         val serverName: String,
-        val username: String? = null,
+        val username: String,
         val mode: BotMode = BotMode.CLIENT
 ) {
     enum class BotMode {

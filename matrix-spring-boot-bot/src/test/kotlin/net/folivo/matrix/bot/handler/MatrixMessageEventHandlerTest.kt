@@ -23,10 +23,10 @@ class MatrixMessageEventHandlerTest {
     lateinit var matrixClientMock: MatrixClient
 
     @RelaxedMockK
-    lateinit var messageContentHandler1: MatrixMessageContentHandler
+    lateinit var messageHandler1: MatrixMessageHandler
 
     @RelaxedMockK
-    lateinit var messageContentHandler2: MatrixMessageContentHandler
+    lateinit var messageHandler2: MatrixMessageHandler
 
     @Test
     fun `should support message events`() {
@@ -38,8 +38,8 @@ class MatrixMessageEventHandlerTest {
     fun `should delegate message events to each handler`() {
         val cut = MatrixMessageEventHandler(
                 listOf(
-                        messageContentHandler1,
-                        messageContentHandler2
+                        messageHandler1,
+                        messageHandler2
                 ), matrixClientMock
         )
         val content = TextMessageEventContent("test")
@@ -56,8 +56,8 @@ class MatrixMessageEventHandlerTest {
             )
         }
         coVerifyAll {
-            messageContentHandler1.handleMessage(content, any())
-            messageContentHandler2.handleMessage(content, any())
+            messageHandler1.handleMessage(content, any())
+            messageHandler2.handleMessage(content, any())
         }
     }
 
@@ -65,8 +65,8 @@ class MatrixMessageEventHandlerTest {
     fun `should not delegate non message events`() {
         val cut = MatrixMessageEventHandler(
                 listOf(
-                        messageContentHandler1,
-                        messageContentHandler2
+                        messageHandler1,
+                        messageHandler2
                 ), matrixClientMock
         )
         runBlocking {
@@ -83,8 +83,8 @@ class MatrixMessageEventHandlerTest {
             )
         }
         coVerifyAll {
-            messageContentHandler1 wasNot Called
-            messageContentHandler2 wasNot Called
+            messageHandler1 wasNot Called
+            messageHandler2 wasNot Called
         }
     }
 }

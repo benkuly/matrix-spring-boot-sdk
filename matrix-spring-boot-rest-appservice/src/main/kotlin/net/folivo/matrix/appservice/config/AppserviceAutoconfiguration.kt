@@ -5,9 +5,9 @@ import net.folivo.matrix.appservice.api.AppserviceController
 import net.folivo.matrix.appservice.api.AppserviceHandler
 import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
 import net.folivo.matrix.appservice.api.DefaultAppserviceHandler
-import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
-import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
-import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
+import net.folivo.matrix.appservice.api.event.AppserviceEventService
+import net.folivo.matrix.appservice.api.room.AppserviceRoomService
+import net.folivo.matrix.appservice.api.user.AppserviceUserService
 import net.folivo.matrix.core.api.ErrorResponse
 import net.folivo.matrix.restclient.MatrixClient
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -35,20 +35,20 @@ import reactor.core.publisher.Mono
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
 @EnableWebFluxSecurity
 @EnableWebFlux
-@EnableConfigurationProperties(MatrixAppserviceProperties::class)
-class MatrixAppserviceAutoconfiguration(private val matrixAppserviceProperties: MatrixAppserviceProperties) {
+@EnableConfigurationProperties(AppserviceProperties::class)
+class AppserviceAutoconfiguration(private val appserviceProperties: AppserviceProperties) {
 
     @Bean
     @ConditionalOnMissingBean
     fun appserviceHandlerHelper(
             matrixClient: MatrixClient,
-            matrixAppserviceUserService: MatrixAppserviceUserService,
-            matrixAppserviceRoomService: MatrixAppserviceRoomService
+            appserviceUserService: AppserviceUserService,
+            appserviceRoomService: AppserviceRoomService
     ): AppserviceHandlerHelper {
         return AppserviceHandlerHelper(
                 matrixClient,
-                matrixAppserviceUserService,
-                matrixAppserviceRoomService
+                appserviceUserService,
+                appserviceRoomService
         )
     }
 
@@ -56,15 +56,15 @@ class MatrixAppserviceAutoconfiguration(private val matrixAppserviceProperties: 
     @ConditionalOnMissingBean
     fun defaultAppserviceHandler(
             matrixClient: MatrixClient,
-            matrixAppserviceEventService: MatrixAppserviceEventService,
-            matrixAppserviceUserService: MatrixAppserviceUserService,
-            matrixAppserviceRoomService: MatrixAppserviceRoomService,
+            appserviceEventService: AppserviceEventService,
+            appserviceUserService: AppserviceUserService,
+            appserviceRoomService: AppserviceRoomService,
             helper: AppserviceHandlerHelper
     ): AppserviceHandler {
         return DefaultAppserviceHandler(
-                matrixAppserviceEventService,
-                matrixAppserviceUserService,
-                matrixAppserviceRoomService,
+                appserviceEventService,
+                appserviceUserService,
+                appserviceRoomService,
                 helper
         )
     }
@@ -75,18 +75,18 @@ class MatrixAppserviceAutoconfiguration(private val matrixAppserviceProperties: 
     }
 
     @Bean
-    fun matrixAppserviceExceptionHandler(): MatrixAppserviceExceptionHandler {
-        return MatrixAppserviceExceptionHandler()
+    fun matrixAppserviceExceptionHandler(): AppserviceExceptionHandler {
+        return AppserviceExceptionHandler()
     }
 
     @Bean
     fun springSecurityFilterChain(
             http: ServerHttpSecurity,
-            matrixHomeServerAuthenticationManager: MatrixHomeServerAuthenticationManager,
+            homeServerAuthenticationManager: HomeServerAuthenticationManager,
             objectMapper: ObjectMapper
     ): SecurityWebFilterChain? {
-        val authenticationWebFilter = AuthenticationWebFilter(matrixHomeServerAuthenticationManager)
-        authenticationWebFilter.setServerAuthenticationConverter(MatrixHomeServerAuthenticationConverter())
+        val authenticationWebFilter = AuthenticationWebFilter(homeServerAuthenticationManager)
+        authenticationWebFilter.setServerAuthenticationConverter(HomeServerAuthenticationConverter())
         authenticationWebFilter.setSecurityContextRepository(NoOpServerSecurityContextRepository.getInstance())
         authenticationWebFilter.setAuthenticationFailureHandler { webFilterExchange, _ ->
             Mono.defer { Mono.just(webFilterExchange.exchange.response) }
@@ -117,7 +117,7 @@ class MatrixAppserviceAutoconfiguration(private val matrixAppserviceProperties: 
 
     @Bean
     fun matrixHomeServerAuthenticationManager(): ReactiveAuthenticationManager {
-        return MatrixHomeServerAuthenticationManager(matrixAppserviceProperties.hsToken)
+        return HomeServerAuthenticationManager(appserviceProperties.hsToken)
     }
 
     @Bean

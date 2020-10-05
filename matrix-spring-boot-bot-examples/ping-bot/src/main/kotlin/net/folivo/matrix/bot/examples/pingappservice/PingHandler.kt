@@ -1,6 +1,6 @@
 package net.folivo.matrix.bot.examples.pingappservice
 
-import net.folivo.matrix.bot.handler.MatrixMessageContentHandler
+import net.folivo.matrix.bot.handler.MatrixMessageHandler
 import net.folivo.matrix.bot.handler.MessageContext
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.NoticeMessageEventContent
@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class PingHandler : MatrixMessageContentHandler {
+class PingHandler : MatrixMessageHandler {
     companion object {
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }

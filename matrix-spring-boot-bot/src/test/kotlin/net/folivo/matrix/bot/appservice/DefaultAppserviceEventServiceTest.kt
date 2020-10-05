@@ -7,7 +7,7 @@ import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
 import org.junit.jupiter.api.Test
 
-class DefaultMatrixAppserviceEventServiceTest {
+class DefaultAppserviceEventServiceTest {
 
     @Test
     fun `should process event and delegate to event handler`() {
@@ -18,7 +18,7 @@ class DefaultMatrixAppserviceEventServiceTest {
         val event = mockk<MessageEvent<TextMessageEventContent>>()
         every { event.roomId } returns "someRoomId"
 
-        val cut = DefaultMatrixAppserviceEventService(listOf(eventHandler1))
+        val cut = DefaultAppserviceEventService(listOf(eventHandler1))
 
         runBlocking { cut.processEvent(event) }
 

@@ -10,8 +10,8 @@ import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.DISABLED
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.RESTRICTED
-import net.folivo.matrix.bot.handler.AutoJoinService
 import net.folivo.matrix.bot.handler.MatrixEventHandler
+import net.folivo.matrix.bot.membership.AutoJoinCustomizer
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
 import net.folivo.matrix.restclient.MatrixClient
@@ -33,11 +33,11 @@ class MatrixClientBotTest {
     lateinit var eventHandlerMock2: MatrixEventHandler
 
     @MockK
-    lateinit var autoJoinServiceMock: AutoJoinService
+    lateinit var autoJoinCustomizerMock: AutoJoinCustomizer
 
     @BeforeEach
     fun beforeEach() {
-        coEvery { autoJoinServiceMock.shouldJoin(any(), any(), any()) }.returns(true)
+        coEvery { autoJoinCustomizerMock.shouldJoin(any(), any(), any()) }.returns(true)
     }
 
     @Test
@@ -49,7 +49,7 @@ class MatrixClientBotTest {
                         eventHandlerMock2
                 ),
                 MatrixBotProperties(serverName = "someServerName"),
-                autoJoinServiceMock
+                autoJoinCustomizerMock
         )
 
         val event1 = mockk<MessageEvent<TextMessageEventContent>>()
@@ -102,7 +102,7 @@ class MatrixClientBotTest {
                 matrixClientMock,
                 listOf(),
                 MatrixBotProperties(autoJoin = AutoJoinMode.ENABLED, serverName = "someServerName"),
-                autoJoinServiceMock
+                autoJoinCustomizerMock
         )
 
         val response1 = mockk<SyncResponse>(relaxed = true) {
@@ -131,7 +131,7 @@ class MatrixClientBotTest {
                 matrixClientMock,
                 listOf(),
                 MatrixBotProperties(autoJoin = DISABLED, serverName = "someServerName"),
-                autoJoinServiceMock
+                autoJoinCustomizerMock
         )
 
         val response1 = mockk<SyncResponse>(relaxed = true) {
@@ -156,7 +156,7 @@ class MatrixClientBotTest {
                 matrixClientMock,
                 listOf(),
                 MatrixBotProperties(autoJoin = RESTRICTED, serverName = "someServerName"),
-                autoJoinServiceMock
+                autoJoinCustomizerMock
         )
 
         val response1 = mockk<SyncResponse>(relaxed = true) {
@@ -184,7 +184,7 @@ class MatrixClientBotTest {
                 matrixClientMock,
                 listOf(),
                 MatrixBotProperties(autoJoin = DISABLED, serverName = "someServerName"),
-                autoJoinServiceMock
+                autoJoinCustomizerMock
         )
 
         val response1 = mockk<SyncResponse>(relaxed = true) {
@@ -192,7 +192,7 @@ class MatrixClientBotTest {
                     "someRoomId1" to mockk(relaxed = true)
             )
         }
-        coEvery { autoJoinServiceMock.shouldJoin("someRoomId", any(), any()) }.returns(false)
+        coEvery { autoJoinCustomizerMock.shouldJoin("someRoomId", any(), any()) }.returns(false)
 
         every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response1))
 
@@ -210,7 +210,7 @@ class MatrixClientBotTest {
                 matrixClientMock,
                 listOf(eventHandlerMock1),
                 MatrixBotProperties(serverName = "someServerName"),
-                autoJoinServiceMock
+                autoJoinCustomizerMock
         )
 
         val response = mockk<SyncResponse>(relaxed = true) {
@@ -239,7 +239,7 @@ class MatrixClientBotTest {
                 matrixClientMock,
                 listOf(eventHandlerMock1),
                 MatrixBotProperties(serverName = "someServerName"),
-                autoJoinServiceMock
+                autoJoinCustomizerMock
         )
 
         val response = mockk<SyncResponse>(relaxed = true) {
@@ -271,7 +271,7 @@ class MatrixClientBotTest {
                         eventHandlerMock2
                 ),
                 MatrixBotProperties(serverName = "someServerName"),
-                autoJoinServiceMock
+                autoJoinCustomizerMock
         )
 
         val event1 = mockk<MessageEvent<TextMessageEventContent>>()
