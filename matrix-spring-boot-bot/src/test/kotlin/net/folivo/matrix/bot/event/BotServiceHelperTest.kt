@@ -1,6 +1,7 @@
-package net.folivo.matrix.bot.handler
+package net.folivo.matrix.bot.event
 
 import kotlinx.coroutines.runBlocking
+import net.folivo.matrix.bot.util.BotServiceHelper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

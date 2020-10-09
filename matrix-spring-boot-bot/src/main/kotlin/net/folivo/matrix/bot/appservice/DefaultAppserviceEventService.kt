@@ -3,7 +3,7 @@ package net.folivo.matrix.bot.appservice
 import net.folivo.matrix.appservice.api.event.AppserviceEventService
 import net.folivo.matrix.appservice.api.event.AppserviceEventService.EventProcessingState
 import net.folivo.matrix.appservice.api.event.AppserviceEventService.EventProcessingState.NOT_PROCESSED
-import net.folivo.matrix.bot.handler.MatrixEventHandler
+import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.StateEvent
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent

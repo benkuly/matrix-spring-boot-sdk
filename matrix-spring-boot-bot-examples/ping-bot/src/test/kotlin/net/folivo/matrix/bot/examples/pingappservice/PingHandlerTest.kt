@@ -6,7 +6,7 @@ import io.mockk.coVerify
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import kotlinx.coroutines.runBlocking
-import net.folivo.matrix.bot.handler.MessageContext
+import net.folivo.matrix.bot.event.MessageContext
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
 import org.junit.jupiter.api.Test

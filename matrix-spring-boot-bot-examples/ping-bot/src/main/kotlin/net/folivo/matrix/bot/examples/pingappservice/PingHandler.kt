@@ -1,7 +1,7 @@
 package net.folivo.matrix.bot.examples.pingappservice
 
-import net.folivo.matrix.bot.handler.MatrixMessageHandler
-import net.folivo.matrix.bot.handler.MessageContext
+import net.folivo.matrix.bot.event.MatrixMessageHandler
+import net.folivo.matrix.bot.event.MessageContext
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.NoticeMessageEventContent
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent

@@ -1,4 +1,4 @@
-package net.folivo.matrix.bot.handler
+package net.folivo.matrix.bot.event
 
 import com.github.michaelbull.retry.policy.binaryExponentialBackoff
 import com.github.michaelbull.retry.policy.limitAttempts

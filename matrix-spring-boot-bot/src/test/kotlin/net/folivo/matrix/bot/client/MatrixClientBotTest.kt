@@ -10,7 +10,7 @@ import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.DISABLED
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.RESTRICTED
-import net.folivo.matrix.bot.handler.MatrixEventHandler
+import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.bot.membership.AutoJoinCustomizer
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent

@@ -1,8 +1,8 @@
 package net.folivo.matrix.bot.config
 
-import net.folivo.matrix.bot.handler.MatrixEventHandler
-import net.folivo.matrix.bot.handler.MatrixMessageEventHandler
-import net.folivo.matrix.bot.handler.MatrixMessageHandler
+import net.folivo.matrix.bot.event.MatrixEventHandler
+import net.folivo.matrix.bot.event.MatrixMessageEventHandler
+import net.folivo.matrix.bot.event.MatrixMessageHandler
 import net.folivo.matrix.bot.membership.AutoJoinCustomizer
 import net.folivo.matrix.bot.membership.DefaultAutoJoinCustomizer
 import net.folivo.matrix.restclient.MatrixClient

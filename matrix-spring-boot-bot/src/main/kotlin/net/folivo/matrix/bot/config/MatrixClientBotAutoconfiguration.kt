@@ -1,7 +1,7 @@
 package net.folivo.matrix.bot.config
 
 import net.folivo.matrix.bot.client.MatrixClientBot
-import net.folivo.matrix.bot.handler.MatrixEventHandler
+import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.bot.membership.AutoJoinCustomizer
 import net.folivo.matrix.restclient.MatrixClient
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean

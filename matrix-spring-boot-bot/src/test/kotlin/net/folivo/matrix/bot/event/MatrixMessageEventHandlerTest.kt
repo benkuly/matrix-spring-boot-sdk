@@ -1,4 +1,4 @@
-package net.folivo.matrix.bot.handler
+package net.folivo.matrix.bot.event
 
 import io.mockk.Called
 import io.mockk.coVerifyAll

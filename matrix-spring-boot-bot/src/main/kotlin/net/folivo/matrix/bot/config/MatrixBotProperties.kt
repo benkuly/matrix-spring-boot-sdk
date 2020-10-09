@@ -10,6 +10,7 @@ data class MatrixBotProperties(
         val trackMembership: TrackMembershipMode = TrackMembershipMode.NONE,
         val serverName: String,
         val username: String,
+        val displayName: String,
         val mode: BotMode = BotMode.CLIENT
 ) {
     enum class BotMode {

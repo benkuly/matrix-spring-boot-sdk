@@ -1,4 +1,4 @@
-package net.folivo.matrix.bot.handler
+package net.folivo.matrix.bot.event
 
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent

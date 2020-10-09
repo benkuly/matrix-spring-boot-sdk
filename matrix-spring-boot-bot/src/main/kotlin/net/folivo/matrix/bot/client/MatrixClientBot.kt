@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.bot.config.MatrixBotProperties
-import net.folivo.matrix.bot.handler.MatrixEventHandler
-import net.folivo.matrix.bot.membership.MembershipHandler
+import net.folivo.matrix.bot.event.MatrixEventHandler
+import net.folivo.matrix.bot.membership.MembershipChangeHandler
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.JOIN
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.LEAVE
@@ -19,7 +19,7 @@ class MatrixClientBot(
         private val matrixClient: MatrixClient,
         private val eventHandler: List<MatrixEventHandler>,
         private val botProperties: MatrixBotProperties,
-        private val membershipHandler: MembershipHandler
+        private val membershipChangeHandler: MembershipChangeHandler
 ) : CommandLineRunner {
 
     companion object {
@@ -41,13 +41,13 @@ class MatrixClientBot(
                                 joinedRoom.state.events.forEach { handleEvent(it, roomId) }
                             }
                             syncResponse.room.invite.forEach { (roomId) ->//FIXME test
-                                membershipHandler.handleMembership(
+                                membershipChangeHandler.handleMembership(
                                         roomId, "${botProperties.username}:${botProperties.serverName}",
                                         JOIN
                                 )
                             }
                             syncResponse.room.leave.forEach { (roomId) ->//FIXME test
-                                membershipHandler.handleMembership(
+                                membershipChangeHandler.handleMembership(
                                         roomId, "${botProperties.username}:${botProperties.serverName}",
                                         LEAVE
                                 )

@@ -3,7 +3,7 @@ package net.folivo.matrix.bot.examples.pingappservice
 import net.folivo.matrix.appservice.api.user.RegisterUserParameter
 import net.folivo.matrix.bot.appservice.DefaultAppserviceUserService
 import net.folivo.matrix.bot.config.MatrixBotProperties
-import net.folivo.matrix.bot.handler.BotServiceHelper
+import net.folivo.matrix.bot.util.BotServiceHelper
 import org.springframework.stereotype.Service
 
 @Service

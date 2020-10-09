@@ -9,10 +9,10 @@ import net.folivo.matrix.bot.appservice.BotUserInitializer
 import net.folivo.matrix.bot.appservice.DefaultAppserviceEventService
 import net.folivo.matrix.bot.appservice.DefaultAppserviceRoomService
 import net.folivo.matrix.bot.appservice.DefaultAppserviceUserService
-import net.folivo.matrix.bot.handler.BotServiceHelper
-import net.folivo.matrix.bot.handler.MatrixEventHandler
+import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.bot.membership.AutoJoinCustomizer
-import net.folivo.matrix.bot.membership.MembershipHandler
+import net.folivo.matrix.bot.membership.MembershipChangeHandler
+import net.folivo.matrix.bot.util.BotServiceHelper
 import net.folivo.matrix.restclient.MatrixClient
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -63,11 +63,11 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
             appserviceRoomService: AppserviceRoomService,
             appserviceProperties: AppserviceProperties,
             appserviceHandlerHelper: AppserviceHandlerHelper
-    ): MembershipHandler {
+    ): MembershipChangeHandler {
         val asUserName = matrixBotProperties.username
                          ?: throw MissingRequiredPropertyException("matrix.bot.username")
 
-        return MembershipHandler(
+        return MembershipChangeHandler(
                 autoJoinService = autoJoinCustomizer,
                 matrixClient = matrixClient,
                 roomService = appserviceRoomService,

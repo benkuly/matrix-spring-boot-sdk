@@ -25,7 +25,7 @@ import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.I_AM_A_TEAPOT
 
 @ExtendWith(MockKExtension::class)
-class MembershipHandlerTest {
+class MembershipChangeHandlerTest {
 
     @MockK(relaxed = true)
     lateinit var matrixClientMock: MatrixClient
@@ -56,7 +56,7 @@ class MembershipHandlerTest {
             roomId: String = "!someRoomId:someServerName",
             trackMembershipMode: TrackMembershipMode = NONE
     ) {
-        val cut = MembershipHandler(
+        val cut = MembershipChangeHandler(
                 autoJoinService = autoJoinCustomizerMock,
                 matrixClient = matrixClientMock,
                 roomService = roomServiceMock,
@@ -76,7 +76,7 @@ class MembershipHandlerTest {
 
     @Test
     fun `should support MemberEvent`() {
-        val cut = MembershipHandler(
+        val cut = MembershipChangeHandler(
                 autoJoinService = autoJoinCustomizerMock,
                 matrixClient = matrixClientMock,
                 roomService = roomServiceMock,

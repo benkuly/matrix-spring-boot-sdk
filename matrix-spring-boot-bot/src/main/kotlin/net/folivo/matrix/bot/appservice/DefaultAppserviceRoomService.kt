@@ -5,11 +5,12 @@ import net.folivo.matrix.appservice.api.room.AppserviceRoomService.RoomExistingS
 import net.folivo.matrix.appservice.api.room.AppserviceRoomService.RoomExistingState.CAN_BE_CREATED
 import net.folivo.matrix.appservice.api.room.AppserviceRoomService.RoomExistingState.EXISTS
 import net.folivo.matrix.appservice.api.room.CreateRoomParameter
-import net.folivo.matrix.bot.handler.BotServiceHelper
+import net.folivo.matrix.bot.util.BotServiceHelper
 
 open class DefaultAppserviceRoomService(
         private val helper: BotServiceHelper
 ) : AppserviceRoomService {
+
     override suspend fun roomExistingState(roomAlias: String): RoomExistingState {
         return if (helper.isManagedUser(roomAlias)) CAN_BE_CREATED else EXISTS
     }

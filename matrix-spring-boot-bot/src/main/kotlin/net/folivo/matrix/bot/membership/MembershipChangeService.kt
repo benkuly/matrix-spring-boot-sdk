@@ -1,6 +1,7 @@
 package net.folivo.matrix.bot.membership
 
-interface MembershipService {
+interface MembershipChangeService {
     suspend fun onRoomJoin(roomId: String, userId: String)
     suspend fun onRoomLeave(roomId: String, userId: String)
+    suspend fun shouldJoinRoom(roomId: String, userId: String): Boolean
 }

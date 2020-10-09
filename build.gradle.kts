@@ -23,6 +23,7 @@ allprojects {
     }
 
     extra["isReleaseVersion"] = version.toString().endsWith("RELEASE")
+
 }
 subprojects {
     apply(plugin = "org.springframework.boot")

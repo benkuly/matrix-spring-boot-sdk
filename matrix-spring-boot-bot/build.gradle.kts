@@ -10,6 +10,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${Versions.kotlinxCoroutines}")
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:${Versions.kotlinRetry}")
+    
+    api("org.springframework.boot:spring-boot-starter-data-r2dbc")
+
+    testImplementation("io.r2dbc:r2dbc-h2")
 
     annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
