@@ -6,10 +6,10 @@ import net.folivo.matrix.appservice.api.room.AppserviceRoomService
 import net.folivo.matrix.appservice.api.user.AppserviceUserService
 import net.folivo.matrix.bot.appservice.event.DefaultAppserviceEventService
 import net.folivo.matrix.bot.appservice.event.MatrixEventTransactionRepository
+import net.folivo.matrix.bot.appservice.membership.AppserviceMemberEventHandler
 import net.folivo.matrix.bot.appservice.membership.DefaultAppserviceMembershipChangeService
 import net.folivo.matrix.bot.appservice.membership.MatrixMembershipRepository
 import net.folivo.matrix.bot.appservice.membership.MatrixMembershipService
-import net.folivo.matrix.bot.appservice.membership.MemberEventHandler
 import net.folivo.matrix.bot.appservice.room.DefaultAppserviceRoomService
 import net.folivo.matrix.bot.appservice.room.MatrixRoomRepository
 import net.folivo.matrix.bot.appservice.room.MatrixRoomService
@@ -35,7 +35,7 @@ import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 @Configuration
 @ConditionalOnProperty(prefix = "matrix.bot", name = ["mode"], havingValue = "APPSERVICE")
 @EnableR2dbcRepositories(basePackages = ["net.folivo.matrix.bot.appservice"])
-class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: MatrixBotProperties) {
+class MatrixAppserviceBotAutoconfiguration {
 
     @Bean
     @ConditionalOnMissingBean
@@ -71,11 +71,11 @@ class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: Matr
     }
 
     @Bean
-    fun memberEventHandler(
+    fun appserviceMemberEventHandler(
             membershipChangeHandler: MembershipChangeHandler,
             appserviceHelper: AppserviceHandlerHelper
-    ): MemberEventHandler {
-        return MemberEventHandler(membershipChangeHandler, appserviceHelper)
+    ): AppserviceMemberEventHandler {
+        return AppserviceMemberEventHandler(membershipChangeHandler, appserviceHelper)
     }
 
     @Bean

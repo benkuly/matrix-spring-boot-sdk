@@ -9,7 +9,7 @@ import net.folivo.matrix.core.model.events.m.room.MemberEvent
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus.FORBIDDEN
 
-class MemberEventHandler(
+class AppserviceMemberEventHandler(
         //FIXME test
         private val membershipChangeHandler: MembershipChangeHandler,
         private val appserviceHelper: AppserviceHandlerHelper,
