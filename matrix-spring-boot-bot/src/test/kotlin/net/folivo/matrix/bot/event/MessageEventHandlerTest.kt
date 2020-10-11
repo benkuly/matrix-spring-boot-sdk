@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
-class MatrixMessageEventHandlerTest {
+class MessageEventHandlerTest {
 
     @MockK
     lateinit var matrixClientMock: MatrixClient
@@ -30,13 +30,13 @@ class MatrixMessageEventHandlerTest {
 
     @Test
     fun `should support message events`() {
-        val cut = MatrixMessageEventHandler(listOf(), matrixClientMock)
+        val cut = MessageEventHandler(listOf(), matrixClientMock)
         assertThat(cut.supports(MessageEvent::class.java)).isTrue()
     }
 
     @Test
     fun `should delegate message events to each handler`() {
-        val cut = MatrixMessageEventHandler(
+        val cut = MessageEventHandler(
                 listOf(
                         messageHandler1,
                         messageHandler2
@@ -63,7 +63,7 @@ class MatrixMessageEventHandlerTest {
 
     @Test
     fun `should not delegate non message events`() {
-        val cut = MatrixMessageEventHandler(
+        val cut = MessageEventHandler(
                 listOf(
                         messageHandler1,
                         messageHandler2

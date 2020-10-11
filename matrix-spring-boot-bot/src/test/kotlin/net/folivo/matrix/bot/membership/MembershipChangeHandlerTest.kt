@@ -5,7 +5,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
-import net.folivo.matrix.bot.appservice.DefaultAppserviceRoomService
+import net.folivo.matrix.bot.appservice.room.DefaultAppserviceRoomService
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.*
 import net.folivo.matrix.bot.config.MatrixBotProperties.TrackMembershipMode

@@ -5,28 +5,34 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.bot.membership.MembershipChangeHandler
+import net.folivo.matrix.bot.util.BotServiceHelper
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.JOIN
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.LEAVE
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
-import org.springframework.boot.CommandLineRunner
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.event.EventListener
 
 class MatrixClientBot(
         private val matrixClient: MatrixClient,
         private val eventHandler: List<MatrixEventHandler>,
-        private val botProperties: MatrixBotProperties,
-        private val membershipChangeHandler: MembershipChangeHandler
-) : CommandLineRunner {
+        private val membershipChangeHandler: MembershipChangeHandler,
+        private val helper: BotServiceHelper
+) {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
     private var syncJob: Job? = null
+
+    @EventListener(ApplicationReadyEvent::class)
+    fun startClientJob() {
+        runBlocking { start().join() }
+    }
 
     fun start(): Job {
         stop()
@@ -42,13 +48,13 @@ class MatrixClientBot(
                             }
                             syncResponse.room.invite.forEach { (roomId) ->//FIXME test
                                 membershipChangeHandler.handleMembership(
-                                        roomId, "${botProperties.username}:${botProperties.serverName}",
+                                        roomId, helper.getBotUserId(),
                                         JOIN
                                 )
                             }
                             syncResponse.room.leave.forEach { (roomId) ->//FIXME test
                                 membershipChangeHandler.handleMembership(
-                                        roomId, "${botProperties.username}:${botProperties.serverName}",
+                                        roomId, helper.getBotUserId(),
                                         LEAVE
                                 )
                             }
@@ -73,9 +79,5 @@ class MatrixClientBot(
         return eventHandler
                 .filter { it.supports(event::class.java) }
                 .forEach { it.handleEvent(event, roomId) }
-    }
-
-    override fun run(vararg args: String?) {
-        runBlocking { start().join() }
     }
 }

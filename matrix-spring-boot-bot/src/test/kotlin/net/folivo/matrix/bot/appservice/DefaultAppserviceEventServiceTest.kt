@@ -2,6 +2,7 @@ package net.folivo.matrix.bot.appservice
 
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
+import net.folivo.matrix.bot.appservice.event.DefaultAppserviceEventService
 import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent

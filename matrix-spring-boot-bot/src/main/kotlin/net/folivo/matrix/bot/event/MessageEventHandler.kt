@@ -5,7 +5,7 @@ import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
 
-class MatrixMessageEventHandler(
+class MessageEventHandler(
         private val messageHandler: List<MatrixMessageHandler>,
         private val matrixClient: MatrixClient
 ) : MatrixEventHandler {

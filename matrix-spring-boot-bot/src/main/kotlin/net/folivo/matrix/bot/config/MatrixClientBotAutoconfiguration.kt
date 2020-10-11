@@ -2,7 +2,8 @@ package net.folivo.matrix.bot.config
 
 import net.folivo.matrix.bot.client.MatrixClientBot
 import net.folivo.matrix.bot.event.MatrixEventHandler
-import net.folivo.matrix.bot.membership.AutoJoinCustomizer
+import net.folivo.matrix.bot.membership.MembershipChangeHandler
+import net.folivo.matrix.bot.util.BotServiceHelper
 import net.folivo.matrix.restclient.MatrixClient
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -18,14 +19,15 @@ class MatrixClientBotAutoconfiguration(private val botProperties: MatrixBotPrope
     @ConditionalOnMissingBean
     fun matrixClientBot(
             matrixClient: MatrixClient,
-            matrixEventHandler: List<MatrixEventHandler>,
-            autoJoinCustomizer: AutoJoinCustomizer
+            eventHandler: List<MatrixEventHandler>,
+            membershipChangeHandler: MembershipChangeHandler,
+            helper: BotServiceHelper
     ): MatrixClientBot {
         return MatrixClientBot(
                 matrixClient,
-                matrixEventHandler,
-                botProperties,
-                autoJoinCustomizer
+                eventHandler,
+                membershipChangeHandler,
+                helper
         )
     }
 

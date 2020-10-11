@@ -7,6 +7,7 @@ import io.mockk.junit5.MockKExtension
 import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.appservice.api.user.AppserviceUserService
 import net.folivo.matrix.appservice.api.user.RegisterUserParameter
+import net.folivo.matrix.bot.appservice.user.BotUserInitializer
 import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.core.api.ErrorResponse
 import net.folivo.matrix.core.api.MatrixServerException

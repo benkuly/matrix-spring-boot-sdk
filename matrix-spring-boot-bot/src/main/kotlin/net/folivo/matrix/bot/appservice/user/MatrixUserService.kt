@@ -4,19 +4,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.util.BotServiceHelper
 
 class MatrixUserService(
         private val userRepository: MatrixUserRepository,
-        private val helper: BotServiceHelper,
-        private val matrixBotProperties: MatrixBotProperties
+        private val helper: BotServiceHelper
 ) {
 
     suspend fun getOrCreateUser(userId: String): MatrixUser {
         return userRepository.findById(userId).awaitFirstOrNull()
-               ?: helper.isManagedUser(userId)
-                       .let { userRepository.save(MatrixUser(userId, it)).awaitFirst() }
+               ?: userRepository.save(MatrixUser(userId, helper.isManagedUser(userId))).awaitFirst()
     }
 
     suspend fun deleteUser(userId: String) {

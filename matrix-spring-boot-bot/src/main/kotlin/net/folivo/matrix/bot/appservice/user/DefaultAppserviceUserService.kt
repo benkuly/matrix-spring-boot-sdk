@@ -1,10 +1,9 @@
-package net.folivo.matrix.bot.appservice
+package net.folivo.matrix.bot.appservice.user
 
 import net.folivo.matrix.appservice.api.user.AppserviceUserService
 import net.folivo.matrix.appservice.api.user.AppserviceUserService.UserExistingState
 import net.folivo.matrix.appservice.api.user.AppserviceUserService.UserExistingState.*
 import net.folivo.matrix.appservice.api.user.RegisterUserParameter
-import net.folivo.matrix.bot.appservice.user.MatrixUserService
 import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.util.BotServiceHelper
 

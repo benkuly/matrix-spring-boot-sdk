@@ -10,7 +10,7 @@ import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
 import org.springframework.transaction.annotation.Transactional
 
-class AppserviceMembershipChangeService(
+class DefaultAppserviceMembershipChangeService(
         private val roomService: MatrixRoomService,
         private val membershipService: MatrixMembershipService,
         private val userService: MatrixUserService,
@@ -57,5 +57,9 @@ class AppserviceMembershipChangeService(
                 userService.deleteUser(userId)
             }
         }
+    }
+
+    override suspend fun shouldJoinRoom(roomId: String, userId: String): Boolean {
+        return true
     }
 }

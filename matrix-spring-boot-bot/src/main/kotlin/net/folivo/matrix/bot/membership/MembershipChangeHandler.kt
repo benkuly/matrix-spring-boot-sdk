@@ -23,7 +23,7 @@ class MembershipChangeHandler(//FIXME test
     }
 
     suspend fun handleMembership(roomId: String, userId: String, membership: Membership) {
-        val isAsUser = userId.trimStart('@').substringBefore(":") == botProperties.username
+        val isAsUser = userId == botHelper.getBotUserId()
         val isManagedUser = botHelper.isManagedUser(userId)
 
         val (autoJoin, trackMembershipMode, serverName) = botProperties

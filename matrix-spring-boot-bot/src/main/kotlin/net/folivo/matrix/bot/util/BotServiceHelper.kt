@@ -1,27 +1,29 @@
 package net.folivo.matrix.bot.util
 
+import net.folivo.matrix.appservice.config.AppserviceProperties
+import net.folivo.matrix.bot.config.MatrixBotProperties
+
 class BotServiceHelper(
-        private val usersRegex: List<String>,
-        private val roomsRegex: List<String>,
-        private val username: String,
-        private val serverName: String
+        private val botProperties: MatrixBotProperties,
+        private val appserviceProperties: AppserviceProperties
 ) {
     fun isManagedUser(userId: String): Boolean {
         val username = userId.trimStart('@').substringBefore(":")
-        return if (userId.substringAfter(":") == serverName)
-            this.username == username || usersRegex.map { username.matches(Regex(it)) }.contains(true)
+        return if (userId.substringAfter(":") == botProperties.serverName)
+            username == botProperties.username || appserviceProperties.namespaces.users.map { username.matches(Regex(it.regex)) }
+                    .contains(true)
         else false
     }
 
     fun isManagedRoom(roomAlias: String): Boolean {
         val roomAliasName = roomAlias.trimStart('#').substringBefore(":")
-        return if (roomAlias.substringAfter(":") == serverName)
-            roomsRegex.map { roomAliasName.matches(Regex(it)) }.contains(true)
+        return if (roomAlias.substringAfter(":") == botProperties.serverName)
+            appserviceProperties.namespaces.rooms.map { roomAliasName.matches(Regex(it.regex)) }.contains(true)
         else false
     }
 
     fun getBotUserId(): String {//FIXME test
-        return "@${username}:${serverName}"
+        return "@${botProperties.username}:${botProperties.serverName}"
     }
 
 }

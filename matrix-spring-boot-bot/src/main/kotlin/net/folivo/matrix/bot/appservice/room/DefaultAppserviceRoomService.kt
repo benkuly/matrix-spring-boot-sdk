@@ -1,4 +1,4 @@
-package net.folivo.matrix.bot.appservice
+package net.folivo.matrix.bot.appservice.room
 
 import net.folivo.matrix.appservice.api.room.AppserviceRoomService
 import net.folivo.matrix.appservice.api.room.AppserviceRoomService.RoomExistingState

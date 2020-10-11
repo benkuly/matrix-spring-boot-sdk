@@ -5,10 +5,8 @@ import net.folivo.matrix.bot.appservice.room.MatrixRoomService
 import net.folivo.matrix.bot.appservice.user.MatrixUserService
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.event.ApplicationReadyEvent
-import org.springframework.context.annotation.Profile
 import org.springframework.context.event.EventListener
 
-@Profile("initialsync")
 class InitialSyncService(
         private val userService: MatrixUserService,
         private val roomService: MatrixRoomService,
