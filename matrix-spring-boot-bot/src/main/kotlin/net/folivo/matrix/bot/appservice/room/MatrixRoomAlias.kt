@@ -1,19 +1,18 @@
-package net.folivo.matrix.bot.appservice.membership
+package net.folivo.matrix.bot.appservice.room
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Version
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 
-
-@Table("MatrixMembership")
-class MatrixMembership(
-        @Column("fk_MatrixMembership_MatrixUser")
-        val userId: String,
-        @Column("fk_MatrixMembership_MatrixRoom")
-        val roomId: String,
+@Table("MatrixRoomAlias")
+data class MatrixRoomAlias(
         @Id
-        val id: String = "$userId-$roomId",
+        val alias: String,
+
+        @Column("fk_MatrixRoomAlias_MatrixRoom")
+        val roomId: String,
+
         @Version
         val version: Int = 1
 )

@@ -15,11 +15,9 @@ open class DefaultAppserviceUserService(
 
     override suspend fun userExistingState(userId: String): UserExistingState {
         val userExists = matrixUserService.existsUser(userId)
-        return if (userExists) {
-            EXISTS
-        } else {
-            if (helper.isManagedUser(userId)) CAN_BE_CREATED else DOES_NOT_EXISTS
-        }
+        return if (userExists) EXISTS
+        else if (helper.isManagedUser(userId)) CAN_BE_CREATED else DOES_NOT_EXISTS
+
     }
 
     override suspend fun getRegisterUserParameter(userId: String): RegisterUserParameter {

@@ -26,6 +26,7 @@ class AppserviceMembershipChangeService(
     @Transactional
     override suspend fun onRoomJoin(userId: String, roomId: String) {
         LOG.debug("saveRoomJoin in room $roomId of user $userId")
+        // it's important to run his first, because is synchronizes all members in this room
         roomService.getOrCreateRoom(roomId)
         userService.getOrCreateUser(userId)
         membershipService.getOrCreateMembership(userId = userId, roomId = roomId)

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory
 
 class MatrixRoomService(
         private val roomRepository: MatrixRoomRepository,
+        private val roomAliasRepository: MatrixRoomAliasRepository,
         private val matrixClient: MatrixClient,
         private val membershipService: MatrixMembershipService
 ) {
@@ -17,7 +18,7 @@ class MatrixRoomService(
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    suspend fun getOrCreateRoom(roomId: String): MatrixRoom { //FIXME test
+    suspend fun getOrCreateRoom(roomId: String): MatrixRoom {
         val room = roomRepository.findById(roomId).awaitFirstOrNull()
                    ?: roomRepository.save(MatrixRoom(roomId)).awaitFirst()
         val membershipsSize = membershipService.getMembershipsSizeByRoomId(roomId)
@@ -29,6 +30,18 @@ class MatrixRoomService(
                     }
         }
         return room
+    }
+
+    suspend fun getOrCreateRoomAlias(roomAlias: String, roomId: String): MatrixRoomAlias { //FIXME test
+        val existingRoomAlias = roomAliasRepository.findById(roomAlias).awaitFirstOrNull()
+        return if (existingRoomAlias != null) {
+            if (existingRoomAlias.roomId == roomId) existingRoomAlias
+            else roomAliasRepository.save(existingRoomAlias.copy(roomId = roomId)).awaitFirst()
+        } else roomAliasRepository.save(MatrixRoomAlias(roomAlias, roomId)).awaitFirst()
+    }
+
+    suspend fun existsByRoomAlias(roomAlias: String): Boolean {
+        return roomAliasRepository.existsById(roomAlias).awaitFirst()
     }
 
     fun getRoomsByUserId(userId: String): Flow<MatrixRoom> {

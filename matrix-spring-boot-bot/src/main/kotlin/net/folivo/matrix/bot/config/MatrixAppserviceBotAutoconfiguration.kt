@@ -12,6 +12,7 @@ import net.folivo.matrix.bot.appservice.membership.AppserviceMembershipChangeSer
 import net.folivo.matrix.bot.appservice.membership.MatrixMembershipRepository
 import net.folivo.matrix.bot.appservice.membership.MatrixMembershipService
 import net.folivo.matrix.bot.appservice.room.DefaultAppserviceRoomService
+import net.folivo.matrix.bot.appservice.room.MatrixRoomAliasRepository
 import net.folivo.matrix.bot.appservice.room.MatrixRoomRepository
 import net.folivo.matrix.bot.appservice.room.MatrixRoomService
 import net.folivo.matrix.bot.appservice.sync.InitialSyncService
@@ -86,17 +87,18 @@ class MatrixAppserviceBotAutoconfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    fun defaultAppserviceRoomService(helper: BotServiceHelper): AppserviceRoomService {
-        return DefaultAppserviceRoomService(helper)
+    fun defaultAppserviceRoomService(roomService: MatrixRoomService, helper: BotServiceHelper): AppserviceRoomService {
+        return DefaultAppserviceRoomService(roomService, helper)
     }
 
     @Bean
     fun matrixRoomService(
             roomRepository: MatrixRoomRepository,
+            roomAliasRepository: MatrixRoomAliasRepository,
             matrixClient: MatrixClient,
             membershipService: MatrixMembershipService
     ): MatrixRoomService {
-        return MatrixRoomService(roomRepository, matrixClient, membershipService)
+        return MatrixRoomService(roomRepository, roomAliasRepository, matrixClient, membershipService)
     }
 
     @Bean
