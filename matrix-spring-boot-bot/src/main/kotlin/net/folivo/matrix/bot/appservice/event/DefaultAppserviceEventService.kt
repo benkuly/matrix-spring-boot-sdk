@@ -1,6 +1,5 @@
 package net.folivo.matrix.bot.appservice.event
 
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import net.folivo.matrix.appservice.api.event.AppserviceEventService
 import net.folivo.matrix.appservice.api.event.AppserviceEventService.EventProcessingState
 import net.folivo.matrix.bot.event.MatrixEventHandler
@@ -10,23 +9,22 @@ import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import org.slf4j.LoggerFactory
 
 open class DefaultAppserviceEventService(
-        private val eventHandler: List<MatrixEventHandler>,
-        private val eventTransactionRepository: MatrixEventTransactionRepository
+        private val eventTransactionService: MatrixEventTransactionService,
+        private val eventHandler: List<MatrixEventHandler>
 ) : AppserviceEventService {
     companion object {
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    override suspend fun eventProcessingState(tnxId: String, eventId: String): EventProcessingState {
-        return if (eventTransactionRepository.findByTnxIdAndEventIdElseType(tnxId, eventId)
-                        .awaitFirstOrNull() != null)
+    override suspend fun eventProcessingState(tnxId: String, eventIdOrHash: String): EventProcessingState {
+        return if (eventTransactionService.hasEvent(tnxId, eventIdOrHash))
             EventProcessingState.PROCESSED
         else
             EventProcessingState.NOT_PROCESSED
     }
 
-    override suspend fun onEventProcessed(tnxId: String, eventId: String) {
-        eventTransactionRepository.save(MatrixEventTransaction(tnxId, eventId)).awaitFirstOrNull()
+    override suspend fun onEventProcessed(tnxId: String, eventIdOrHash: String) {
+        eventTransactionService.saveEvent(MatrixEventTransaction(tnxId, eventIdOrHash))
     }
 
     override suspend fun processEvent(event: Event<*>) {

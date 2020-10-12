@@ -37,6 +37,12 @@ subprojects {
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
+        testImplementation("io.kotest:kotest-runner-junit5:${Versions.kotest}")
+        testImplementation("io.kotest:kotest-assertions-core:${Versions.kotest}")
+        testImplementation("io.kotest:kotest-property:${Versions.kotest}")
+        testImplementation("io.kotest:kotest-extensions-spring:${Versions.kotest}")
+        testImplementation("io.kotest:kotest-extensions-mockserver:${Versions.kotest}")
+
         testImplementation("com.ninja-squad:springmockk:${Versions.springMockk}")
 
         testImplementation("org.springframework.boot:spring-boot-starter-test") {
@@ -44,6 +50,7 @@ subprojects {
             exclude(group = "org.mockito", module = "mockito-core")
             exclude(group = "org.mockito", module = "mockito-junit-jupiter")
         }
+
     }
 
     the<DependencyManagementExtension>().apply {

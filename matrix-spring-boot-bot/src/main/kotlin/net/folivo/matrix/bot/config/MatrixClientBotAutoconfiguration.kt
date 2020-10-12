@@ -1,7 +1,7 @@
 package net.folivo.matrix.bot.config
 
 import net.folivo.matrix.bot.client.ClientMemberEventHandler
-import net.folivo.matrix.bot.client.DefaultClientMembershipChangeService
+import net.folivo.matrix.bot.client.ClientMembershipChangeService
 import net.folivo.matrix.bot.client.MatrixClientBot
 import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.bot.membership.MembershipChangeHandler
@@ -41,7 +41,7 @@ class MatrixClientBotAutoconfiguration {
     @Bean
     @ConditionalOnMissingBean
     fun defaultClientMembershipChangeService(): MembershipChangeService {
-        return DefaultClientMembershipChangeService()
+        return ClientMembershipChangeService()
     }
 
 }

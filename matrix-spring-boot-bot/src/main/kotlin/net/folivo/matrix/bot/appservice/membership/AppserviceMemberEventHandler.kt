@@ -33,28 +33,19 @@ class AppserviceMemberEventHandler(
             val userId = event.stateKey
             try {
                 membershipChangeHandler.handleMembership(roomId, userId, event.content.membership)
-            } catch (error: Throwable) {
-                registerOnMatrixException(userId, error)
+            } catch (error: MatrixServerException) {
+                if (error.statusCode == FORBIDDEN) {
+                    LOG.warn("try to register user because of ${error.errorResponse}")
+                    try {
+                        appserviceHelper.registerManagedUser(userId)
+                        membershipChangeHandler.handleMembership(roomId, userId, event.content.membership)
+                    } catch (registerError: MatrixServerException) {
+                        if (registerError.statusCode == FORBIDDEN) {
+                            LOG.warn("could not register user due to: ${error.errorResponse}")
+                        }
+                    }
+                }
             }
-        }
-    }
-
-    private suspend fun registerOnMatrixException(userId: String, error: Throwable) {
-        if (error is MatrixServerException && error.statusCode == FORBIDDEN) {
-            LOG.warn("try to register user because of ${error.errorResponse}")
-            try {
-                appserviceHelper.registerManagedUser(userId)
-            } catch (registerError: Throwable) {
-                handleForbidden(registerError, "register user")
-            }
-        } else throw error
-    }
-
-    private fun handleForbidden(error: Throwable, failedAction: String) {
-        if (error is MatrixServerException && error.statusCode == FORBIDDEN) {
-            LOG.warn("could not $failedAction due to: ${error.errorResponse}")
-        } else {
-            throw error
         }
     }
 }

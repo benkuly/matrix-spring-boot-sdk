@@ -6,8 +6,9 @@ import net.folivo.matrix.appservice.api.room.AppserviceRoomService
 import net.folivo.matrix.appservice.api.user.AppserviceUserService
 import net.folivo.matrix.bot.appservice.event.DefaultAppserviceEventService
 import net.folivo.matrix.bot.appservice.event.MatrixEventTransactionRepository
+import net.folivo.matrix.bot.appservice.event.MatrixEventTransactionService
 import net.folivo.matrix.bot.appservice.membership.AppserviceMemberEventHandler
-import net.folivo.matrix.bot.appservice.membership.DefaultAppserviceMembershipChangeService
+import net.folivo.matrix.bot.appservice.membership.AppserviceMembershipChangeService
 import net.folivo.matrix.bot.appservice.membership.MatrixMembershipRepository
 import net.folivo.matrix.bot.appservice.membership.MatrixMembershipService
 import net.folivo.matrix.bot.appservice.room.DefaultAppserviceRoomService
@@ -41,9 +42,14 @@ class MatrixAppserviceBotAutoconfiguration {
     @ConditionalOnMissingBean
     fun defaultAppserviceEventService(
             eventHandler: List<MatrixEventHandler>,
-            eventTransactionRepository: MatrixEventTransactionRepository
+            eventTransactionService: MatrixEventTransactionService
     ): AppserviceEventService {
-        return DefaultAppserviceEventService(eventHandler, eventTransactionRepository)
+        return DefaultAppserviceEventService(eventTransactionService, eventHandler)
+    }
+
+    @Bean
+    fun matrixEventTransactionService(eventTransactionRepository: MatrixEventTransactionRepository): MatrixEventTransactionService {
+        return MatrixEventTransactionService(eventTransactionRepository)
     }
 
 
@@ -56,7 +62,7 @@ class MatrixAppserviceBotAutoconfiguration {
             matrixClient: MatrixClient,
             helper: BotServiceHelper
     ): MembershipChangeService {
-        return DefaultAppserviceMembershipChangeService(
+        return AppserviceMembershipChangeService(
                 roomService,
                 membershipService,
                 userService,

@@ -8,8 +8,8 @@ interface AppserviceEventService {
         PROCESSED, NOT_PROCESSED
     }
 
-    suspend fun eventProcessingState(tnxId: String, event: String): EventProcessingState
-    suspend fun onEventProcessed(tnxId: String, eventId: String)
+    suspend fun eventProcessingState(tnxId: String, eventIdOrHash: String): EventProcessingState
+    suspend fun onEventProcessed(tnxId: String, eventIdOrHash: String)
 
     suspend fun processEvent(event: Event<*>)
 }
