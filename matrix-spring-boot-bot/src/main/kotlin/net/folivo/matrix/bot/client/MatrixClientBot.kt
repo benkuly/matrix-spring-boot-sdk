@@ -9,7 +9,7 @@ import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.bot.membership.MembershipChangeHandler
 import net.folivo.matrix.bot.util.BotServiceHelper
 import net.folivo.matrix.core.model.events.Event
-import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.JOIN
+import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.INVITE
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.LEAVE
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
@@ -46,17 +46,11 @@ class MatrixClientBot(
                                 joinedRoom.timeline.events.forEach { handleEvent(it, roomId) }
                                 joinedRoom.state.events.forEach { handleEvent(it, roomId) }
                             }
-                            syncResponse.room.invite.forEach { (roomId) ->//FIXME test
-                                membershipChangeHandler.handleMembership(
-                                        roomId, helper.getBotUserId(),
-                                        JOIN
-                                )
+                            syncResponse.room.invite.forEach { (roomId) ->
+                                membershipChangeHandler.handleMembership(roomId, helper.getBotUserId(), INVITE)
                             }
-                            syncResponse.room.leave.forEach { (roomId) ->//FIXME test
-                                membershipChangeHandler.handleMembership(
-                                        roomId, helper.getBotUserId(),
-                                        LEAVE
-                                )
+                            syncResponse.room.leave.forEach { (roomId) ->
+                                membershipChangeHandler.handleMembership(roomId, helper.getBotUserId(), LEAVE)
                             }
                             LOG.debug("processed sync response")
                         } catch (error: Throwable) {

@@ -2,8 +2,7 @@ package net.folivo.matrix.bot.client
 
 import net.folivo.matrix.bot.membership.MembershipChangeService
 
-class ClientMembershipChangeService(
-) : MembershipChangeService {
+class ClientMembershipChangeService : MembershipChangeService {
 
     override suspend fun onRoomJoin(userId: String, roomId: String) {
     }

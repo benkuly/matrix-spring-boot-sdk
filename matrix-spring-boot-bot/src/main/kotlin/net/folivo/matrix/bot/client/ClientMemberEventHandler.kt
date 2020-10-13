@@ -21,7 +21,7 @@ class ClientMemberEventHandler(
     override suspend fun handleEvent(event: Event<*>, roomId: String?) {
         if (event is MemberEvent) {
             if (roomId == null) {
-                LOG.warn("could not handle join event due to missing roomId")
+                LOG.warn("could not handle member event due to missing roomId")
                 return
             }
 
