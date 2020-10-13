@@ -21,7 +21,7 @@ class MessageEventHandler(
     override suspend fun handleEvent(event: Event<*>, roomId: String?) {
         if (event is MessageEvent<*>) {
             if (roomId == null) {
-                LOG.info("could not handle event due to missing roomId")
+                LOG.info("could not handle message event due to missing roomId")
                 return
             }
             val messageContext = MessageContext(

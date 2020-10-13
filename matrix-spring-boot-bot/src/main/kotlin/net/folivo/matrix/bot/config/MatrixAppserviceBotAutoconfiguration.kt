@@ -43,9 +43,10 @@ class MatrixAppserviceBotAutoconfiguration {
     @ConditionalOnMissingBean
     fun defaultAppserviceEventService(
             eventHandler: List<MatrixEventHandler>,
+            syncService: MatrixSyncService,
             eventTransactionService: MatrixEventTransactionService
     ): AppserviceEventService {
-        return DefaultAppserviceEventService(eventTransactionService, eventHandler)
+        return DefaultAppserviceEventService(eventTransactionService, syncService, eventHandler)
     }
 
     @Bean
@@ -73,8 +74,12 @@ class MatrixAppserviceBotAutoconfiguration {
     }
 
     @Bean
-    fun matrixMembershipService(membershipRepository: MatrixMembershipRepository): MatrixMembershipService {
-        return MatrixMembershipService(membershipRepository)
+    fun matrixMembershipService(
+            membershipRepository: MatrixMembershipRepository,
+            userService: MatrixUserService,
+            roomService: MatrixRoomService
+    ): MatrixMembershipService {
+        return MatrixMembershipService(membershipRepository, userService, roomService)
     }
 
     @Bean
@@ -94,11 +99,9 @@ class MatrixAppserviceBotAutoconfiguration {
     @Bean
     fun matrixRoomService(
             roomRepository: MatrixRoomRepository,
-            roomAliasRepository: MatrixRoomAliasRepository,
-            matrixClient: MatrixClient,
-            membershipService: MatrixMembershipService
+            roomAliasRepository: MatrixRoomAliasRepository
     ): MatrixRoomService {
-        return MatrixRoomService(roomRepository, roomAliasRepository, matrixClient, membershipService)
+        return MatrixRoomService(roomRepository, roomAliasRepository)
     }
 
     @Bean
@@ -113,12 +116,10 @@ class MatrixAppserviceBotAutoconfiguration {
 
     @Bean
     fun matrixSyncService(
-            roomService: MatrixRoomService,
-            helper: BotServiceHelper,
             matrixClient: MatrixClient,
-            membershipChangeService: MembershipChangeService
+            membershipService: MatrixMembershipService
     ): MatrixSyncService {
-        return MatrixSyncService(roomService, helper, matrixClient, membershipChangeService)
+        return MatrixSyncService(matrixClient, membershipService)
     }
 
     @Bean

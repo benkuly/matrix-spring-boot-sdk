@@ -8,6 +8,7 @@ import io.mockk.every
 import io.mockk.mockk
 import net.folivo.matrix.appservice.api.event.AppserviceEventService.EventProcessingState.NOT_PROCESSED
 import net.folivo.matrix.appservice.api.event.AppserviceEventService.EventProcessingState.PROCESSED
+import net.folivo.matrix.bot.appservice.sync.MatrixSyncService
 import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 
@@ -17,11 +18,13 @@ private fun testBody(): DescribeSpec.() -> Unit {
     return {
 
         val eventTransactionServiceMock = mockk<MatrixEventTransactionService>(relaxed = true)
+        val syncServiceMock = mockk<MatrixSyncService>(relaxed = true)
         val eventHandlerMock1 = mockk<MatrixEventHandler>(relaxed = true)
         val eventHandlerMock2 = mockk<MatrixEventHandler>(relaxed = true)
 
         val cut = DefaultAppserviceEventService(
                 eventTransactionServiceMock,
+                syncServiceMock,
                 listOf(eventHandlerMock1, eventHandlerMock2)
         )
 
@@ -60,6 +63,9 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 every { roomId } returns "someRoomId"
             }
             cut.processEvent(event)
+            it("should sync room") {
+                coVerify { syncServiceMock.syncRoomMemberships("someRoomId") }
+            }
             it("should delegate to matching event handler") {
                 coVerify { eventHandlerMock1.handleEvent(event, "someRoomId") }
             }

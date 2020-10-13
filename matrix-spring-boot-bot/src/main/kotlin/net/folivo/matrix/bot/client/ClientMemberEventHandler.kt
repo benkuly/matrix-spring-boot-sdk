@@ -26,7 +26,7 @@ class ClientMemberEventHandler(
             }
 
             val userId = event.stateKey
-            membershipChangeHandler.handleMembership(roomId, userId, event.content.membership)
+            membershipChangeHandler.handleMembership(userId, roomId, event.content.membership)
         }
     }
 }

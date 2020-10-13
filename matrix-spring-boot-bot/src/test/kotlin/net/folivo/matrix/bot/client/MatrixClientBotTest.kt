@@ -5,7 +5,6 @@ import io.mockk.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.bot.membership.MembershipChangeHandler
 import net.folivo.matrix.bot.util.BotServiceHelper
@@ -66,7 +65,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
 
                 every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response1, response2))
 
-                runBlocking { cut.start().join() }
+                cut.start().join()
 
                 coVerifyOrder {
                     eventHandlerMock1.handleEvent(event1, "someRoomId1")
@@ -77,7 +76,6 @@ private fun testBody(): DescribeSpec.() -> Unit {
                     eventHandlerMock2.handleEvent(event2, "someRoomId1")
                     eventHandlerMock2.handleEvent(event3, "someRoomId2")
                 }
-
             }
 
             it("should delegate invites and leaves to ${MembershipChangeHandler::class}") {
@@ -95,7 +93,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 coEvery { helperMock.getBotUserId() }.returns("@bot:someServer")
                 every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response1))
 
-                runBlocking { cut.start().join() }
+                cut.start().join()
 
                 coVerify {
                     membershipChangeHandlerMock.handleMembership("inviteRoom1", "@bot:someServer", INVITE)
@@ -119,10 +117,14 @@ private fun testBody(): DescribeSpec.() -> Unit {
 
                 every { eventHandlerMock1.supports(any()) } returns true
 
-                every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response))
+                val channel = Channel<SyncResponse>()
+                every { matrixClientMock.syncApi.syncLoop() }.returns(channel.consumeAsFlow())
 
-                runBlocking { cut.start().join() }
-                runBlocking { cut.start().join() }
+                cut.start()
+                cut.start()
+                channel.send(response)
+                channel.send(response)
+                cut.stop()
 
                 coVerify(exactly = 2) { eventHandlerMock1.handleEvent(any(), any()) }
             }
@@ -148,7 +150,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
 
                 every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response1))
 
-                runBlocking { cut.start().join() }
+                cut.start().join()
 
                 coVerifyOrder {
                     eventHandlerMock1.handleEvent(event1, "someRoomId1")
@@ -174,7 +176,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 val channel = Channel<SyncResponse>()
                 every { matrixClientMock.syncApi.syncLoop() }.returns(channel.consumeAsFlow())
 
-                runBlocking { cut.start().join() }
+                cut.start()
                 channel.send(response)
                 cut.stop()
                 channel.send(response)

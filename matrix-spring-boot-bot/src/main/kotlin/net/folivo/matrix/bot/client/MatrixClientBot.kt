@@ -47,10 +47,10 @@ class MatrixClientBot(
                                 joinedRoom.state.events.forEach { handleEvent(it, roomId) }
                             }
                             syncResponse.room.invite.forEach { (roomId) ->
-                                membershipChangeHandler.handleMembership(roomId, helper.getBotUserId(), INVITE)
+                                membershipChangeHandler.handleMembership(helper.getBotUserId(), roomId, INVITE)
                             }
                             syncResponse.room.leave.forEach { (roomId) ->
-                                membershipChangeHandler.handleMembership(roomId, helper.getBotUserId(), LEAVE)
+                                membershipChangeHandler.handleMembership(helper.getBotUserId(), roomId, LEAVE)
                             }
                             LOG.debug("processed sync response")
                         } catch (error: Throwable) {
