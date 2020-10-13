@@ -56,6 +56,6 @@ class AppserviceHandlerHelper(
                         powerLevelContentOverride = createRoomParameter.powerLevelContentOverride,
                         preset = createRoomParameter.preset
                 )
-        appserviceRoomService.onCreateRoom(roomAlias, roomId)
+        appserviceRoomService.onCreatedRoom(roomAlias, roomId)
     }
 }

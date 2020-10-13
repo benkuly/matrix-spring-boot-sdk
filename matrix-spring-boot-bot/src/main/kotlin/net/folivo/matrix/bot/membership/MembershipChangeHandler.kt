@@ -53,13 +53,13 @@ class MembershipChangeHandler(//FIXME test
             JOIN -> {
                 if (trackMembershipMode == MANAGED && (isAsUser || isManagedUser) || trackMembershipMode == ALL) {
                     LOG.debug("save room join of user $userId and room $roomId")
-                    membershipChangeService.onRoomJoin(roomId, userId)
+                    membershipChangeService.onRoomJoin(userId, roomId)
                 }
             }
             LEAVE, BAN -> {
                 if (trackMembershipMode == MANAGED && (isAsUser || isManagedUser) || trackMembershipMode == ALL) {
                     LOG.debug("save room leave of user $userId and room $roomId")
-                    membershipChangeService.onRoomLeave(roomId, userId)
+                    membershipChangeService.onRoomLeave(userId, roomId)
                 }
             }
             else       -> {

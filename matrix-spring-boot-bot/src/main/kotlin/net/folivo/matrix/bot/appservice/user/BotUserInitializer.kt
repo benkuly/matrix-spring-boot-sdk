@@ -1,7 +1,6 @@
 package net.folivo.matrix.bot.appservice.user
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
 import net.folivo.matrix.bot.util.BotServiceHelper
 import org.slf4j.LoggerFactory
@@ -18,15 +17,12 @@ class BotUserInitializer(
 
     @EventListener(ApplicationReadyEvent::class)
     fun initializeBotUser() {
-        GlobalScope.launch {
-            initializeBotUserAsync()
+        runBlocking {
+            LOG.info("Initializing appservice bot")
+            
+            val userId = botServiceHelper.getBotUserId()
+
+            appserviceHandlerHelper.registerManagedUser(userId)
         }
-    }
-
-    suspend fun initializeBotUserAsync() {
-        LOG.info("Initializing appservice bot")
-        val userId = botServiceHelper.getBotUserId()
-
-        appserviceHandlerHelper.registerManagedUser(userId)
     }
 }

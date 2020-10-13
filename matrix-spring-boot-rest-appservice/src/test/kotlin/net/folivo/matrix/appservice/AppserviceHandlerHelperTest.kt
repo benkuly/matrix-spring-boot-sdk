@@ -48,7 +48,7 @@ class AppserviceHandlerHelperTest {
         coEvery { appserviceUserServiceMock.getRegisterUserParameter(allAny()) }
                 .returns(RegisterUserParameter())
         coEvery { appserviceUserServiceMock.onRegisteredUser(allAny()) } just Runs
-        coEvery { appserviceRoomServiceMock.onCreateRoom(any(), any()) } just Runs
+        coEvery { appserviceRoomServiceMock.onCreatedRoom(any(), any()) } just Runs
         coEvery { appserviceRoomServiceMock.getCreateRoomParameter(any()) }
                 .returns(CreateRoomParameter())
     }
@@ -199,7 +199,7 @@ class AppserviceHandlerHelperTest {
                     visibility = Visibility.PUBLIC,
                     name = "someName"
             )
-            appserviceRoomServiceMock.onCreateRoom("#someRoomAlias:example.com", any())
+            appserviceRoomServiceMock.onCreatedRoom("#someRoomAlias:example.com", any())
         }
     }
 
@@ -220,12 +220,12 @@ class AppserviceHandlerHelperTest {
 
         }
 
-        coVerify(exactly = 0) { appserviceRoomServiceMock.onCreateRoom(any(), any()) }
+        coVerify(exactly = 0) { appserviceRoomServiceMock.onCreatedRoom(any(), any()) }
     }
 
     @Test
     fun `should have error when saving by room service fails`() {
-        coEvery { appserviceRoomServiceMock.onCreateRoom("#someRoomAlias:example.com", any()) }
+        coEvery { appserviceRoomServiceMock.onCreatedRoom("#someRoomAlias:example.com", any()) }
                 .throws(RuntimeException())
 
         coEvery { matrixClientMock.roomsApi.createRoom(allAny()) }
@@ -237,7 +237,7 @@ class AppserviceHandlerHelperTest {
         } catch (error: Throwable) {
         }
 
-        coVerify { appserviceRoomServiceMock.onCreateRoom(any(), any()) }
+        coVerify { appserviceRoomServiceMock.onCreatedRoom(any(), any()) }
     }
 
 }

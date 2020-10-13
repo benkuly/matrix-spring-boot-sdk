@@ -8,5 +8,5 @@ interface AppserviceRoomService {
 
     suspend fun roomExistingState(roomAlias: String): RoomExistingState
     suspend fun getCreateRoomParameter(roomAlias: String): CreateRoomParameter
-    suspend fun onCreateRoom(roomAlias: String, roomId: String)
+    suspend fun onCreatedRoom(roomAlias: String, roomId: String)
 }

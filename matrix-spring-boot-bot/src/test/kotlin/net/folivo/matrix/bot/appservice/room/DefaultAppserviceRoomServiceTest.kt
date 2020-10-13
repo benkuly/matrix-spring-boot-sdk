@@ -41,9 +41,9 @@ private fun testBody(): DescribeSpec.() -> Unit {
             }
         }
 
-        describe(DefaultAppserviceRoomService::onCreateRoom.name) {
+        describe(DefaultAppserviceRoomService::onCreatedRoom.name) {
             it("should save room alias") {
-                cut.onCreateRoom("someRoomAlias", "someRoomId")
+                cut.onCreatedRoom("someRoomAlias", "someRoomId")
                 coVerify { roomServiceMock.getOrCreateRoomAlias("someRoomAlias", "someRoomId") }
             }
         }

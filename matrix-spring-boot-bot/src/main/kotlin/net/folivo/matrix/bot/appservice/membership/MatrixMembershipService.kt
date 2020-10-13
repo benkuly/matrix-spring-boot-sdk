@@ -4,17 +4,25 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import net.folivo.matrix.bot.appservice.room.MatrixRoomService
+import net.folivo.matrix.bot.appservice.user.MatrixUserService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
-class MatrixMembershipService(private val membershipRepository: MatrixMembershipRepository) {
+class MatrixMembershipService(
+        private val membershipRepository: MatrixMembershipRepository,
+        private val userService: MatrixUserService,
+        private val roomService: MatrixRoomService
+) {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    suspend fun getOrCreateMembership(userId: String, roomId: String): MatrixMembership {//FIXME test
+    suspend fun getOrCreateMembership(userId: String, roomId: String): MatrixMembership {
+        roomService.getOrCreateRoom(roomId)//FIXME test
+        userService.getOrCreateUser(userId)//FIXME test
         return membershipRepository.findByUserIdAndRoomId(userId, roomId).awaitFirstOrNull()
                ?: membershipRepository.save(MatrixMembership(userId, roomId)).awaitFirst()
     }

@@ -2,6 +2,7 @@ package net.folivo.matrix.bot.appservice.event
 
 import net.folivo.matrix.appservice.api.event.AppserviceEventService
 import net.folivo.matrix.appservice.api.event.AppserviceEventService.EventProcessingState
+import net.folivo.matrix.bot.appservice.sync.MatrixSyncService
 import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.StateEvent
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory
 
 open class DefaultAppserviceEventService(
         private val eventTransactionService: MatrixEventTransactionService,
+        private val syncService: MatrixSyncService,
         private val eventHandler: List<MatrixEventHandler>
 ) : AppserviceEventService {
     companion object {
@@ -36,6 +38,7 @@ open class DefaultAppserviceEventService(
     }
 
     private suspend fun delegateEventHandling(event: Event<*>, roomId: String? = null) {
+        if (roomId != null) syncService.syncRoomMemberships(roomId) // FIXME test
         LOG.debug("delegate event $event to event handlers")
         eventHandler
                 .filter { it.supports(event::class.java) }

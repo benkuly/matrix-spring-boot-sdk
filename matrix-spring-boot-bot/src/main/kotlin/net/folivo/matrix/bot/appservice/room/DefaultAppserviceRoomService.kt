@@ -21,7 +21,7 @@ open class DefaultAppserviceRoomService(
         return CreateRoomParameter()
     }
 
-    override suspend fun onCreateRoom(roomAlias: String, roomId: String) {
+    override suspend fun onCreatedRoom(roomAlias: String, roomId: String) {
         roomService.getOrCreateRoomAlias(roomAlias, roomId)
     }
 }
