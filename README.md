@@ -23,9 +23,11 @@ matrix:
   bot:
     # The domain-part of matrix-ids. E. g. example.org when your userIds look like @unicorn:example.org
     serverName: example.org
-    # (optional in mode CLIENT) The localpart (username) of the user associated with the application service
+    # The localpart (username) of the user associated with the application service
     # or just the username of your bot.
     username: superAppservice
+    # (optional) Display name for the bot user.
+    displayname: SUPER BOT
     # (optional) The mode you want to use to create a bot. Default is CLIENT. The other is APPSERVICE.
     mode: CLIENT
     # (optional) Configure how users managed by your bot do automatically join rooms.
@@ -36,6 +38,11 @@ matrix:
     # (optional) Configure if ALL membership changes should be tracked/saved with help of MatrixAppserviceRoomService 
     # or only membership changes of users, which are MANAGED by the bridge. Default is NONE (no tracking/saving).
     trackMembership: ALL
+    # Connection settings for the database.
+    database:
+      url: h2:mem:dbName
+      username: sa
+      password: password
   client:
     homeServer:
       # The hostname of your Homeserver.
@@ -90,10 +97,6 @@ Implement [`MatrixEventHandler`](./matrix-spring-boot-bot/src/main/kotlin/net/fo
 
 #### Interact with Homeserver
 A Bean of type [`MatrixClient`](./matrix-spring-boot-rest-client/src/main/kotlin/net/folivo/matrix/restclient/MatrixClient.kt) is created, which can be autowired and used to interact with the matrix API. Currently not all endpoints of the [Client-Server API](https://matrix.org/docs/spec/client_server/r0.6.0) are implemented.
-
-#### Customize auto join behaviour
-
-You can customize the auto join behaviour by implementing [`AutoJoinService`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/appservice/event/AutoJoinService.kt). Make it available as bean (annotate it with `@Component`).
 
 ## Examples
 

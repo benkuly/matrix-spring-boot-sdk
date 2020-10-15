@@ -5,7 +5,7 @@ import kotlinx.coroutines.reactive.awaitFirst
 class MatrixEventTransactionService(private val eventTransactionRepository: MatrixEventTransactionRepository) {
 
     suspend fun hasEvent(tnxId: String, eventIdOrHash: String): Boolean {
-        return eventTransactionRepository.containsByTnxIdAndEventIdOrHash(tnxId, eventIdOrHash).awaitFirst()
+        return eventTransactionRepository.existsByTnxIdAndEventId(tnxId, eventIdOrHash).awaitFirst()
     }
 
     suspend fun saveEvent(event: MatrixEventTransaction): MatrixEventTransaction {

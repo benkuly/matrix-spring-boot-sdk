@@ -6,14 +6,16 @@ import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 
 
-@Table("MatrixMembership")
+@Table("matrix_membership")
 class MatrixMembership(
-        @Column("fk_MatrixMembership_MatrixUser")
+        @Column("user_id")
         val userId: String,
-        @Column("fk_MatrixMembership_MatrixRoom")
+        @Column("room_id")
         val roomId: String,
         @Id
+        @Column("id")
         val id: String = "$userId-$roomId",
         @Version
+        @Column("version")
         val version: Int = 1
 )

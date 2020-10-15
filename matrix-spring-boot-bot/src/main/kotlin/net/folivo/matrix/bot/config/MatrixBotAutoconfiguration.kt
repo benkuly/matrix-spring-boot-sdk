@@ -30,5 +30,4 @@ class MatrixBotAutoconfiguration {
     ): BotServiceHelper {
         return BotServiceHelper(botProperties, appserviceProperties)
     }
-
 }

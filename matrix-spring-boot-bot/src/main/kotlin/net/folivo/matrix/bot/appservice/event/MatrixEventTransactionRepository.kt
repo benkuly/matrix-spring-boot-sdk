@@ -6,5 +6,5 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface MatrixEventTransactionRepository : ReactiveCrudRepository<MatrixEventTransaction, Long> {
-    fun containsByTnxIdAndEventIdOrHash(tnxId: String, eventIdOrHash: String): Mono<Boolean>
+    fun existsByTnxIdAndEventId(tnxId: String, eventId: String): Mono<Boolean>
 }

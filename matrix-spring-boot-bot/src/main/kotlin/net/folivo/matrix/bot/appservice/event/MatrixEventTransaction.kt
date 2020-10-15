@@ -5,14 +5,16 @@ import org.springframework.data.annotation.Version
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 
-@Table("EventTransaction")
+@Table("matrix_event_transaction")
 data class MatrixEventTransaction(
-        @Column("tnxId")
+        @Column("tnx_id")
         var tnxId: String,
-        @Column("eventIdOrHash")
-        var eventIdOrHash: String,
+        @Column("event_id")
+        var eventId: String,
         @Id
-        val id: String = "$tnxId-$eventIdOrHash",
+        @Column("id")
+        val id: String = "$tnxId-$eventId",
         @Version
+        @Column("version")
         val version: Int = 1
 )

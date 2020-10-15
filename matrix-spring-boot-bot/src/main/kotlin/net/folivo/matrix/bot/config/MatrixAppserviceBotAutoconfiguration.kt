@@ -31,12 +31,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
-import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 
 
 @Configuration
 @ConditionalOnProperty(prefix = "matrix.bot", name = ["mode"], havingValue = "APPSERVICE")
-@EnableR2dbcRepositories(basePackages = ["net.folivo.matrix.bot.appservice"])
 class MatrixAppserviceBotAutoconfiguration {
 
     @Bean
@@ -148,5 +146,4 @@ class MatrixAppserviceBotAutoconfiguration {
     ): MatrixUserService {
         return MatrixUserService(userRepository, helper)
     }
-
 }
