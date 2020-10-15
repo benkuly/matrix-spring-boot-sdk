@@ -5,9 +5,7 @@ import liquibase.integration.spring.SpringLiquibase
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.r2dbc.ConnectionFactoryBuilder
 import org.springframework.boot.autoconfigure.r2dbc.EmbeddedDatabaseConnection
-import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.boot.jdbc.DataSourceBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.ResourceLoader
@@ -23,10 +21,9 @@ class MatrixBotDatabaseAutoconfiguration(
         private val resourceLoader: ResourceLoader
 ) : AbstractR2dbcConfiguration() {
 
-    @ConfigurationProperties(prefix = "matrix.bot.migration")
     @Bean("liquibaseDatasource")
     fun liquibaseDatasource(): DataSource {
-        return DataSourceBuilder.create().build()
+        return botProperties.migration.initializeDataSourceBuilder().build();
     }
 
     @Bean

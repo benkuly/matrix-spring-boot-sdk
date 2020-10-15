@@ -5,13 +5,9 @@ matrix:
     username: ping
     mode: APPSERVICE
     migration:
-      jdbc-url: jdbc:h2:mem:testdb
-      username: sa
-      password: password
+      url: jdbc:h2:mem:testdb
     database:
       url: r2dbc:h2:mem:///testdb
-      username: sa
-      password: password
   client:
     homeServer:
       hostname: localhost

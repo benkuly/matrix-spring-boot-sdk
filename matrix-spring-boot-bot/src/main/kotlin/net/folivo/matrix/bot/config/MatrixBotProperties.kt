@@ -1,5 +1,6 @@
 package net.folivo.matrix.bot.config
 
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
@@ -13,7 +14,8 @@ data class MatrixBotProperties(
         val username: String,
         val displayName: String? = null,
         val mode: BotMode = BotMode.CLIENT,
-        val database: R2dbcProperties
+        val database: R2dbcProperties,
+        val migration: DataSourceProperties
 ) {
     enum class BotMode {
         APPSERVICE, CLIENT

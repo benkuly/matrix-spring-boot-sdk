@@ -3,16 +3,17 @@ package net.folivo.matrix.bot.appservice.event
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import net.folivo.matrix.bot.config.MatrixBotDatabaseAutoconfiguration
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest
-import org.springframework.context.annotation.Import
 import org.springframework.data.r2dbc.core.DatabaseClient
 import org.springframework.data.r2dbc.core.from
 import org.springframework.data.r2dbc.core.into
 import org.springframework.data.relational.core.query.CriteriaDefinition
 
 @DataR2dbcTest
-@Import(MatrixBotDatabaseAutoconfiguration::class)
+@ImportAutoConfiguration(MatrixBotDatabaseAutoconfiguration::class)
 class MatrixEventTransactionRepositoryTest(
         cut: MatrixEventTransactionRepository,
         dbClient: DatabaseClient
@@ -20,13 +21,12 @@ class MatrixEventTransactionRepositoryTest(
 
 private fun testBody(cut: MatrixEventTransactionRepository, dbClient: DatabaseClient): DescribeSpec.() -> Unit {
     return {
-        beforeTest {//FIXME does this work?
+        beforeTest {
             println("beforeEach")
             dbClient.delete()
                     .from<MatrixEventTransaction>()
                     .matching(CriteriaDefinition.empty())
-                    .fetch()
-                    .rowsUpdated()
+                    .then().awaitFirstOrNull()
         }
 
         describe(MatrixEventTransactionRepository::existsByTnxIdAndEventId.name) {
@@ -35,13 +35,13 @@ private fun testBody(cut: MatrixEventTransactionRepository, dbClient: DatabaseCl
                 dbClient.insert()
                         .into<MatrixEventTransaction>()
                         .using(MatrixEventTransaction("someTnxId", "someIdOrHash"))
-                        .fetch().rowsUpdated()
+                        .then().awaitFirstOrNull()
                 println("cut")
                 cut.existsByTnxIdAndEventId("someTnxId", "someIdOrHash").shouldBeTrue()
                 println("finish")
             }
             it("when transaction does not exists in database it should return false") {
-                cut.existsByTnxIdAndEventId("unknown", "unknown").shouldBeFalse()
+                cut.existsByTnxIdAndEventId("someTnxId", "someIdOrHash").shouldBeFalse()
             }
         }
     }

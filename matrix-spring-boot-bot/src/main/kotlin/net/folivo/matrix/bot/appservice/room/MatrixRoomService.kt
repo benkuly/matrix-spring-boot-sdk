@@ -17,11 +17,14 @@ class MatrixRoomService(
     }
 
     suspend fun getOrCreateRoomAlias(roomAlias: String, roomId: String): MatrixRoomAlias { //FIXME test
+        roomRepository.findById(roomId) ?: roomRepository.save(MatrixRoom(roomId, true))
         val existingRoomAlias = roomAliasRepository.findById(roomAlias)
         return if (existingRoomAlias != null) {
             if (existingRoomAlias.roomId == roomId) existingRoomAlias
             else roomAliasRepository.save(existingRoomAlias.copy(roomId = roomId))
-        } else roomAliasRepository.save(MatrixRoomAlias(roomAlias, roomId))
+        } else {
+            roomAliasRepository.save(MatrixRoomAlias(roomAlias, roomId))
+        }
     }
 
     suspend fun existsByRoomAlias(roomAlias: String): Boolean {
