@@ -1,13 +1,12 @@
 package net.folivo.matrix.bot.appservice.room
 
+import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
-import org.springframework.data.repository.reactive.ReactiveCrudRepository
+import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 
 @Repository
-interface MatrixRoomRepository : ReactiveCrudRepository<MatrixRoom, String> { //FIXME test queries
+interface MatrixRoomRepository : CoroutineCrudRepository<MatrixRoom, String> { //FIXME test queries
 
     @Query(
             """
@@ -19,7 +18,7 @@ interface MatrixRoomRepository : ReactiveCrudRepository<MatrixRoom, String> { //
             WHERE countedRooms.memberSize = :#{#members.size}
             """
     )
-    fun findByContainingMembers(members: Set<String>): Flux<MatrixRoom>
+    fun findByContainingMembers(members: Set<String>): Flow<MatrixRoom>
 
     @Query(
             """
@@ -28,7 +27,7 @@ interface MatrixRoomRepository : ReactiveCrudRepository<MatrixRoom, String> { //
             WHERE m.fk_Membership_MatrixUser = :userId AND m.mappingToken = :mappingToken
             """
     )
-    fun findByMemberAndMappingToken(userId: String, mappingToken: Int): Mono<MatrixRoom>
+    suspend fun findByMemberAndMappingToken(userId: String, mappingToken: Int): MatrixRoom?
 
     @Query(
             """
@@ -37,5 +36,5 @@ interface MatrixRoomRepository : ReactiveCrudRepository<MatrixRoom, String> { //
             WHERE m.fk_Membership_MatrixUser = :userId
             """
     )
-    fun findByMember(userId: String): Flux<MatrixRoom>
+    fun findByMember(userId: String): Flow<MatrixRoom>
 }

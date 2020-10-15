@@ -1,10 +1,9 @@
 package net.folivo.matrix.bot.appservice.event
 
-import org.springframework.data.repository.reactive.ReactiveCrudRepository
+import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
-import reactor.core.publisher.Mono
 
 @Repository
-interface MatrixEventTransactionRepository : ReactiveCrudRepository<MatrixEventTransaction, Long> {
-    fun existsByTnxIdAndEventId(tnxId: String, eventId: String): Mono<Boolean>
+interface MatrixEventTransactionRepository : CoroutineCrudRepository<MatrixEventTransaction, Long> {
+    suspend fun existsByTnxIdAndEventId(tnxId: String, eventId: String): Boolean
 }

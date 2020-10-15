@@ -1,6 +1,5 @@
 package net.folivo.matrix.bot.client
 
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import net.folivo.matrix.bot.util.BotServiceHelper
 import net.folivo.matrix.restclient.api.sync.SyncBatchTokenService
 
@@ -10,12 +9,12 @@ class PersistentSyncBatchTokenService(
 ) : SyncBatchTokenService { //FIXME test
 
     override suspend fun getBatchToken(userId: String?): String? {
-        return syncBatchTokenRepository.findByUserId(userId ?: helper.getBotUserId()).awaitFirstOrNull()?.token
+        return syncBatchTokenRepository.findByUserId(userId ?: helper.getBotUserId())?.token
     }
 
     override suspend fun setBatchToken(value: String?, userId: String?) {
         val realUserId = userId ?: helper.getBotUserId()
-        val token = syncBatchTokenRepository.findByUserId(realUserId).awaitFirstOrNull()
+        val token = syncBatchTokenRepository.findByUserId(realUserId)
         if (token != null) {
             syncBatchTokenRepository.save(token.copy(token = value))
         } else {

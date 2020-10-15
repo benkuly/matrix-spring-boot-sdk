@@ -1,9 +1,6 @@
 package net.folivo.matrix.bot.appservice.user
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import net.folivo.matrix.bot.util.BotServiceHelper
 
 class MatrixUserService(
@@ -12,23 +9,23 @@ class MatrixUserService(
 ) {
 
     suspend fun getOrCreateUser(userId: String): MatrixUser {
-        return userRepository.findById(userId).awaitFirstOrNull()
-               ?: userRepository.save(MatrixUser(userId, helper.isManagedUser(userId))).awaitFirst()
+        return userRepository.findById(userId)
+               ?: userRepository.save(MatrixUser(userId, helper.isManagedUser(userId)))
     }
 
     suspend fun deleteUser(userId: String) {
-        userRepository.deleteById(userId).awaitFirst()
+        userRepository.deleteById(userId)
     }
 
     suspend fun deleteAllUsers() {
-        userRepository.deleteAll().awaitFirstOrNull()
+        userRepository.deleteAll()
     }
 
     suspend fun existsUser(userId: String): Boolean {
-        return userRepository.existsById(userId).awaitFirst()
+        return userRepository.existsById(userId)
     }
 
     fun getUsers(roomId: String): Flow<MatrixUser> {
-        return userRepository.findByRoomId(roomId).asFlow()
+        return userRepository.findByRoomId(roomId)
     }
 }

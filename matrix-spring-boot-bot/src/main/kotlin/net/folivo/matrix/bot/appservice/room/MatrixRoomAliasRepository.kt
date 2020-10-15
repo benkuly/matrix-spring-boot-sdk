@@ -1,9 +1,9 @@
 package net.folivo.matrix.bot.appservice.room
 
-import org.springframework.data.repository.reactive.ReactiveCrudRepository
+import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface MatrixRoomAliasRepository : ReactiveCrudRepository<MatrixRoomAlias, String> {
+interface MatrixRoomAliasRepository : CoroutineCrudRepository<MatrixRoomAlias, String> {
 
 }

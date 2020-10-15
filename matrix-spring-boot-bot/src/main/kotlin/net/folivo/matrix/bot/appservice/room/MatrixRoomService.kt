@@ -1,9 +1,6 @@
 package net.folivo.matrix.bot.appservice.room
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 
 class MatrixRoomService(
@@ -15,35 +12,35 @@ class MatrixRoomService(
     }
 
     suspend fun getOrCreateRoom(roomId: String): MatrixRoom { //FIXME test
-        return roomRepository.findById(roomId).awaitFirstOrNull()
-               ?: roomRepository.save(MatrixRoom(roomId)).awaitFirst()
+        return roomRepository.findById(roomId)
+               ?: roomRepository.save(MatrixRoom(roomId))
     }
 
     suspend fun getOrCreateRoomAlias(roomAlias: String, roomId: String): MatrixRoomAlias { //FIXME test
-        val existingRoomAlias = roomAliasRepository.findById(roomAlias).awaitFirstOrNull()
+        val existingRoomAlias = roomAliasRepository.findById(roomAlias)
         return if (existingRoomAlias != null) {
             if (existingRoomAlias.roomId == roomId) existingRoomAlias
-            else roomAliasRepository.save(existingRoomAlias.copy(roomId = roomId)).awaitFirst()
-        } else roomAliasRepository.save(MatrixRoomAlias(roomAlias, roomId)).awaitFirst()
+            else roomAliasRepository.save(existingRoomAlias.copy(roomId = roomId))
+        } else roomAliasRepository.save(MatrixRoomAlias(roomAlias, roomId))
     }
 
     suspend fun existsByRoomAlias(roomAlias: String): Boolean {
-        return roomAliasRepository.existsById(roomAlias).awaitFirst()
+        return roomAliasRepository.existsById(roomAlias)
     }
 
     fun getRoomsByUserId(userId: String): Flow<MatrixRoom> {
-        return roomRepository.findByMember(userId).asFlow()
+        return roomRepository.findByMember(userId)
     }
 
     fun getRoomsByMembers(members: Set<String>): Flow<MatrixRoom> {
-        return roomRepository.findByContainingMembers(members).asFlow()
+        return roomRepository.findByContainingMembers(members)
     }
 
     suspend fun deleteRoom(roomId: String) {
-        roomRepository.deleteById(roomId).awaitFirstOrNull()
+        roomRepository.deleteById(roomId)
     }
 
     suspend fun deleteAllRooms() {
-        roomRepository.deleteAll().awaitFirstOrNull()
+        roomRepository.deleteAll()
     }
 }

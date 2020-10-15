@@ -2,10 +2,9 @@ package net.folivo.matrix.bot.appservice.room
 
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import io.mockk.every
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.verify
-import reactor.core.publisher.Mono
 
 class MatrixRoomServiceTest : DescribeSpec(testBody())
 
@@ -23,15 +22,15 @@ private fun testBody(): DescribeSpec.() -> Unit {
             val room = MatrixRoom("someRoomId")
 
             it("should save new room when room does not exist") {
-                every { roomRepositoryMock.findById(any<String>()) }.returns(Mono.empty())
-                every { roomRepositoryMock.save(any()) }.returns(Mono.just(room))
+                coEvery { roomRepositoryMock.findById(any<String>()) }.returns(null)
+                coEvery { roomRepositoryMock.save(any()) }.returns(room)
                 cut.getOrCreateRoom("someRoomId").shouldBe(room)
-                verify { roomRepositoryMock.save(room) }
+                coVerify { roomRepositoryMock.save(room) }
             }
             it("should use existing room") {
-                every { roomRepositoryMock.findById(any<String>()) }.returns(Mono.just(room))
+                coEvery { roomRepositoryMock.findById(any<String>()) }.returns(room)
                 cut.getOrCreateRoom("someRoomId").shouldBe(room)
-                verify(exactly = 0) { roomRepositoryMock.save(any()) }
+                coVerify(exactly = 0) { roomRepositoryMock.save(any()) }
             }
         }
 
@@ -39,22 +38,22 @@ private fun testBody(): DescribeSpec.() -> Unit {
             val roomAlias = MatrixRoomAlias("someAlias", "someRoomId")
 
             it("should save new room alias when it does not exist") {
-                every { roomAliasRepositoryMock.findById(any<String>()) }.returns(Mono.empty())
-                every { roomAliasRepositoryMock.save(any()) }.returns(Mono.just(roomAlias))
+                coEvery { roomAliasRepositoryMock.findById(any<String>()) }.returns(null)
+                coEvery { roomAliasRepositoryMock.save(any()) }.returns(roomAlias)
                 cut.getOrCreateRoomAlias("someRoomAlias", "someRoomId").shouldBe(roomAlias)
-                verify { roomAliasRepositoryMock.save(roomAlias) }
+                coVerify { roomAliasRepositoryMock.save(roomAlias) }
             }
             it("should use existing room alias") {
-                every { roomAliasRepositoryMock.findById(any<String>()) }.returns(Mono.just(roomAlias))
+                coEvery { roomAliasRepositoryMock.findById(any<String>()) }.returns(roomAlias)
                 cut.getOrCreateRoomAlias("someRoomAlias", "someRoomId").shouldBe(roomAlias)
-                verify(exactly = 0) { roomAliasRepositoryMock.save(roomAlias) }
+                coVerify(exactly = 0) { roomAliasRepositoryMock.save(roomAlias) }
             }
             it("should change existing room alias") {
                 val oldRoomAlias = MatrixRoomAlias("someAlias", "someOldRoomId")
-                every { roomAliasRepositoryMock.findById(any<String>()) }.returns(Mono.just(oldRoomAlias))
-                every { roomAliasRepositoryMock.save(any()) }.returns(Mono.just(roomAlias))
+                coEvery { roomAliasRepositoryMock.findById(any<String>()) }.returns(oldRoomAlias)
+                coEvery { roomAliasRepositoryMock.save(any()) }.returns(roomAlias)
                 cut.getOrCreateRoomAlias("someRoomAlias", "someRoomId").shouldBe(roomAlias)
-                verify { roomAliasRepositoryMock.save(roomAlias) }
+                coVerify { roomAliasRepositoryMock.save(roomAlias) }
             }
         }
     }

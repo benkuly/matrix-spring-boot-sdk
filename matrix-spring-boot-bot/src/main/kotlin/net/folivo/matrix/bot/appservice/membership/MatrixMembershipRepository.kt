@@ -1,25 +1,24 @@
 package net.folivo.matrix.bot.appservice.membership
 
+import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
-import org.springframework.data.repository.reactive.ReactiveCrudRepository
+import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 
 @Repository
-interface MatrixMembershipRepository : ReactiveCrudRepository<MatrixMembership, String> {
+interface MatrixMembershipRepository : CoroutineCrudRepository<MatrixMembership, String> {
 
-    fun findByRoomId(roomId: String): Flux<MatrixMembership>
+    fun findByRoomId(roomId: String): Flow<MatrixMembership>
 
-    fun findByUserId(userId: String): Flux<MatrixMembership>
+    fun findByUserId(userId: String): Flow<MatrixMembership>
 
-    fun countByRoomId(roomId: String): Flux<Long>
+    suspend fun countByRoomId(roomId: String): Long
 
-    fun countByUserId(userId: String): Flux<Long>
+    suspend fun countByUserId(userId: String): Long
 
-    fun findByUserIdAndRoomId(userId: String, roomId: String): Mono<MatrixMembership>
+    suspend fun findByUserIdAndRoomId(userId: String, roomId: String): MatrixMembership?
 
-    fun deleteByUserIdAndRoomId(userId: String, roomId: String): Mono<Void>
+    suspend fun deleteByUserIdAndRoomId(userId: String, roomId: String)
 
     @Query(
             """
@@ -28,7 +27,7 @@ interface MatrixMembershipRepository : ReactiveCrudRepository<MatrixMembership, 
             WHERE m.fk_Membership_AppserviceRoom = :roomId AND m.fk_Membership_AppserviceUser IN :members
             """
     )
-    fun containsMembersByRoomId(roomId: String, members: Set<String>): Mono<Boolean>
+    suspend fun containsMembersByRoomId(roomId: String, members: Set<String>): Boolean
 
     @Query(
             """
@@ -38,6 +37,6 @@ interface MatrixMembershipRepository : ReactiveCrudRepository<MatrixMembership, 
             WHERE m.fk_Membership_AppserviceRoom = :roomId AND u.isManaged = false
             """
     )
-    fun containsOnlyManagedMembersByRoomId(roomId: String): Mono<Boolean>
+    suspend fun containsOnlyManagedMembersByRoomId(roomId: String): Boolean
 
 }

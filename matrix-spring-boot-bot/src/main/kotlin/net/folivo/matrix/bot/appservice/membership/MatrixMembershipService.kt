@@ -1,9 +1,6 @@
 package net.folivo.matrix.bot.appservice.membership
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import net.folivo.matrix.bot.appservice.room.MatrixRoomService
 import net.folivo.matrix.bot.appservice.user.MatrixUserService
 import org.slf4j.LoggerFactory
@@ -23,35 +20,35 @@ class MatrixMembershipService(
     suspend fun getOrCreateMembership(userId: String, roomId: String): MatrixMembership {
         roomService.getOrCreateRoom(roomId)//FIXME test
         userService.getOrCreateUser(userId)//FIXME test
-        return membershipRepository.findByUserIdAndRoomId(userId, roomId).awaitFirstOrNull()
-               ?: membershipRepository.save(MatrixMembership(userId, roomId)).awaitFirst()
+        return membershipRepository.findByUserIdAndRoomId(userId, roomId)
+               ?: membershipRepository.save(MatrixMembership(userId, roomId))
     }
 
     suspend fun getMembershipsByRoomId(roomId: String): Flow<MatrixMembership> {
-        return membershipRepository.findByRoomId(roomId).asFlow()
+        return membershipRepository.findByRoomId(roomId)
     }
 
     suspend fun getMembershipsByUserId(userId: String): Flow<MatrixMembership> {
-        return membershipRepository.findByUserId(userId).asFlow()
+        return membershipRepository.findByUserId(userId)
     }
 
     suspend fun getMembershipsSizeByUserId(userId: String): Long {
-        return membershipRepository.countByUserId(userId).awaitFirst()
+        return membershipRepository.countByUserId(userId)
     }
 
     suspend fun getMembershipsSizeByRoomId(roomId: String): Long {
-        return membershipRepository.countByRoomId(roomId).awaitFirst()
+        return membershipRepository.countByRoomId(roomId)
     }
 
     suspend fun hasRoomOnlyManagedUsersLeft(roomId: String): Boolean {
-        return membershipRepository.containsOnlyManagedMembersByRoomId(roomId).awaitFirst()
+        return membershipRepository.containsOnlyManagedMembersByRoomId(roomId)
     }
 
     suspend fun deleteMembership(userId: String, roomId: String) {
-        membershipRepository.deleteByUserIdAndRoomId(userId, roomId).awaitFirstOrNull()
+        membershipRepository.deleteByUserIdAndRoomId(userId, roomId)
     }
 
     suspend fun doesRoomContainsMembers(roomId: String, members: Set<String>): Boolean {
-        return membershipRepository.containsMembersByRoomId(roomId, members).awaitFirst()
+        return membershipRepository.containsMembersByRoomId(roomId, members)
     }
 }
