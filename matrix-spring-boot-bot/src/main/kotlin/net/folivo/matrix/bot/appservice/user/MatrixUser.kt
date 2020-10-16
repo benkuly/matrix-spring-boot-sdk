@@ -12,7 +12,7 @@ data class MatrixUser(
         @Column("id")
         val id: String,
 
-        @Column("isManaged")
+        @Column("is_managed")
         val isManaged: Boolean = false,
 
         @Version

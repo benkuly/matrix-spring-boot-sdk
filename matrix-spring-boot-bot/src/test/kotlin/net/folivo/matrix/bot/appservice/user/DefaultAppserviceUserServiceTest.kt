@@ -44,7 +44,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 coEvery { botPropertiesMock.displayName }.returns("BOT")
                 cut.getRegisterUserParameter("@bot:server").shouldBe(RegisterUserParameter(displayName = "BOT"))
             }
-            it("should return empty ${CreateRoomParameter::class}") {
+            it("should return empty ${CreateRoomParameter::class.simpleName}") {
                 coEvery { helperMock.getBotUserId() }.returns("@bot:server")
                 cut.getRegisterUserParameter("bla").shouldBe(RegisterUserParameter())
             }

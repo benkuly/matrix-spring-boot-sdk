@@ -22,7 +22,6 @@ class MatrixEventTransactionRepositoryTest(
 private fun testBody(cut: MatrixEventTransactionRepository, dbClient: DatabaseClient): DescribeSpec.() -> Unit {
     return {
         beforeTest {
-            println("beforeEach")
             dbClient.delete()
                     .from<MatrixEventTransaction>()
                     .matching(CriteriaDefinition.empty())
@@ -31,14 +30,11 @@ private fun testBody(cut: MatrixEventTransactionRepository, dbClient: DatabaseCl
 
         describe(MatrixEventTransactionRepository::existsByTnxIdAndEventId.name) {
             it("when transaction exists in database it should return true") {
-                println("insert")
                 dbClient.insert()
                         .into<MatrixEventTransaction>()
                         .using(MatrixEventTransaction("someTnxId", "someIdOrHash"))
                         .then().awaitFirstOrNull()
-                println("cut")
                 cut.existsByTnxIdAndEventId("someTnxId", "someIdOrHash").shouldBeTrue()
-                println("finish")
             }
             it("when transaction does not exists in database it should return false") {
                 cut.existsByTnxIdAndEventId("someTnxId", "someIdOrHash").shouldBeFalse()

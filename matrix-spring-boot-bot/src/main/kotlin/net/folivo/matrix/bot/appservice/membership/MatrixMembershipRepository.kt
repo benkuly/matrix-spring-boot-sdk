@@ -22,19 +22,19 @@ interface MatrixMembershipRepository : CoroutineCrudRepository<MatrixMembership,
 
     @Query(
             """
-            SELECT CASE WHEN COUNT(*) = :#{#members.size} THEN 'true' ELSE 'false' END 
-            FROM Membership m 
-            WHERE m.fk_Membership_AppserviceRoom = :roomId AND m.fk_Membership_AppserviceUser IN :members
-            """
+        SELECT CASE WHEN COUNT(*) = :#{#members.size()} THEN true ELSE false END
+        FROM matrix_membership
+        WHERE room_id = :roomId AND user_id IN (:members)
+        """
     )
     suspend fun containsMembersByRoomId(roomId: String, members: Set<String>): Boolean
 
     @Query(
             """
-            SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END 
-            FROM Membership m 
-            JOIN AppserviceUser u ON m.fk_Membership_AppserviceUser = u.id 
-            WHERE m.fk_Membership_AppserviceRoom = :roomId AND u.isManaged = false
+            SELECT CASE WHEN COUNT(*) = 0 THEN true ELSE false END 
+            FROM matrix_membership 
+            JOIN matrix_user u ON user_id = u.id 
+            WHERE room_id = :roomId AND is_managed = false
             """
     )
     suspend fun containsOnlyManagedMembersByRoomId(roomId: String): Boolean

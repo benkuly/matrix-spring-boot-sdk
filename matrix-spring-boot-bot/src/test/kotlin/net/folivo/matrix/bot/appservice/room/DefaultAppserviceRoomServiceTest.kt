@@ -36,7 +36,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
         }
 
         describe(DefaultAppserviceRoomService::getCreateRoomParameter.name) {
-            it("should return empty ${CreateRoomParameter::class}") {
+            it("should return empty ${CreateRoomParameter::class.simpleName}") {
                 cut.getCreateRoomParameter("bla").shouldBe(CreateRoomParameter())
             }
         }

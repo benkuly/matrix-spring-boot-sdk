@@ -21,7 +21,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
         val cut = ClientMemberEventHandler(membershipChangeHandlerMock)
 
         describe(ClientMemberEventHandler::supports.name) {
-            it("should only support ${MemberEvent::class}") {
+            it("should only support ${MemberEvent::class.simpleName}") {
                 cut.supports(MemberEvent::class.java).shouldBeTrue()
                 cut.supports(MessageEvent::class.java).shouldBeFalse()
             }
@@ -37,7 +37,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                     MemberUnsignedData(),
                     "someInvitedUserId"
             )
-            it("should delegate to ${MembershipChangeHandler::class}") {
+            it("should delegate to ${MembershipChangeHandler::class.simpleName}") {
                 cut.handleEvent(event, "someRoomId")
                 coVerify { membershipChangeHandlerMock.handleMembership("someRoomId", "someInvitedUserId", INVITE) }
             }

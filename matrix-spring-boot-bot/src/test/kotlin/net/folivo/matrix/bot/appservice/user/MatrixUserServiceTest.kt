@@ -17,15 +17,28 @@ private fun testBody(): DescribeSpec.() -> Unit {
         val cut = MatrixUserService(userRepositoryMock, helperMock)
 
         describe(MatrixUserService::getOrCreateUser.name) {
-            val user = MatrixUser("userId")
 
             it("should save new user when user does not exist") {
+                val user1 = MatrixUser("userId1", true)
+                val user2 = MatrixUser("userId2", false)
+
                 coEvery { userRepositoryMock.findById(any<String>()) }.returns(null)
-                coEvery { userRepositoryMock.save(any()) }.returns(user)
-                cut.getOrCreateUser("userId").shouldBe(user)
-                coVerify { userRepositoryMock.save(user) }
+                coEvery { userRepositoryMock.save(user1) }.returns(user1)
+                coEvery { userRepositoryMock.save(user2) }.returns(user2)
+                coEvery { helperMock.isManagedUser("userId1") }.returns(true)
+                coEvery { helperMock.isManagedUser("userId2") }.returns(false)
+
+                cut.getOrCreateUser("userId1").shouldBe(user1)
+                cut.getOrCreateUser("userId2").shouldBe(user2)
+
+                coVerify {
+                    userRepositoryMock.save(user1)
+                    userRepositoryMock.save(user2)
+                }
             }
             it("should use existing room") {
+                val user = MatrixUser("userId")
+
                 coEvery { userRepositoryMock.findById(any<String>()) }.returns(user)
                 cut.getOrCreateUser("userId").shouldBe(user)
                 coVerify(exactly = 0) { userRepositoryMock.save(any()) }

@@ -16,7 +16,7 @@ class AppserviceMembershipChangeService(
         private val userService: MatrixUserService,
         private val matrixClient: MatrixClient,
         private val helper: BotServiceHelper
-) : MembershipChangeService { //FIXME test
+) : MembershipChangeService {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -30,7 +30,6 @@ class AppserviceMembershipChangeService(
 
     @Transactional
     override suspend fun onRoomLeave(userId: String, roomId: String) {
-        // we do this here because it also syncs the room if it is not in database
         if (membershipService.doesRoomContainsMembers(roomId, setOf(userId))) {
 
             LOG.debug("save room leave in room $roomId of user $userId")
@@ -51,13 +50,11 @@ class AppserviceMembershipChangeService(
                                 matrixClient.roomsApi.leaveRoom(roomId)
                             else matrixClient.roomsApi.leaveRoom(roomId, joinedUserId)
                             membershipService.deleteMembership(joinedUserId, roomId)
-                            deleteUserWhenNotManaged(joinedUserId)
                         }
             }
             if (!roomService.getOrCreateRoom(roomId).isManaged && (onlyManagedUsersLeft || noMembersLeft)) {
                 roomService.deleteRoom(roomId)
             }
-
         }
     }
 

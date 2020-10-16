@@ -26,10 +26,10 @@ private fun testBody(): DescribeSpec.() -> Unit {
         val cut = AppserviceMemberEventHandler(membershipChangeHandlerMock, appserviceHelperMock)
 
         describe(AppserviceMemberEventHandler::supports.name) {
-            it("should support ${MemberEvent::class}") {
+            it("should support ${MemberEvent::class.simpleName}") {
                 cut.supports(MemberEvent::class.java).shouldBeTrue()
             }
-            it("should not support ${MessageEvent::class}") {
+            it("should not support ${MessageEvent::class.simpleName}") {
                 cut.supports(MessageEvent::class.java).shouldBeFalse()
             }
         }
@@ -44,18 +44,18 @@ private fun testBody(): DescribeSpec.() -> Unit {
                     MemberUnsignedData(),
                     "someInvitedUserId"
             )
-            it("should delegate to ${MembershipChangeHandler::class}") {
+            it("should delegate to ${MembershipChangeHandler::class.simpleName}") {
                 cut.handleEvent(event, "someRoomId")
-                coVerify { membershipChangeHandlerMock.handleMembership("someRoomId", "someInvitedUserId", INVITE) }
+                coVerify { membershipChangeHandlerMock.handleMembership("someInvitedUserId", "someRoomId", INVITE) }
             }
-            describe("delegate to ${MembershipChangeHandler::class} fails with ${MatrixServerException::class} and $FORBIDDEN") {
+            describe("delegate to ${MembershipChangeHandler::class.simpleName} fails with ${MatrixServerException::class.simpleName} and $FORBIDDEN") {
                 coEvery { membershipChangeHandlerMock.handleMembership(any(), any(), any()) }
                         .throws(MatrixServerException(FORBIDDEN, ErrorResponse("FORBIDDEN")))
                 it("should try to register user") {
                     cut.handleEvent(event, "someRoomId")
                     coVerify {
                         appserviceHelperMock.registerManagedUser("someInvitedUserId")
-                        membershipChangeHandlerMock.handleMembership("someRoomId", "someInvitedUserId", INVITE)
+                        membershipChangeHandlerMock.handleMembership("someInvitedUserId", "someRoomId", INVITE)
                     }
                 }
             }

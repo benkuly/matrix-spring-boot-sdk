@@ -78,7 +78,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 }
             }
 
-            it("should delegate invites and leaves to ${MembershipChangeHandler::class}") {
+            it("should delegate invites and leaves to ${MembershipChangeHandler::class.simpleName}") {
                 val response1 = mockk<SyncResponse>(relaxed = true) {
                     every { room.invite } returns mapOf(
                             "inviteRoom1" to mockk(relaxed = true),
