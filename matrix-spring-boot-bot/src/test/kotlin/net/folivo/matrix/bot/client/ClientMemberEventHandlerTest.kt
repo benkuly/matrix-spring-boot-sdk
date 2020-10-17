@@ -3,6 +3,7 @@ package net.folivo.matrix.bot.client
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
+import io.mockk.clearMocks
 import io.mockk.coVerify
 import io.mockk.mockk
 import net.folivo.matrix.bot.membership.MembershipChangeHandler
@@ -16,7 +17,7 @@ class ClientMemberEventHandlerTest : DescribeSpec(testBody())
 
 private fun testBody(): DescribeSpec.() -> Unit {
     return {
-        val membershipChangeHandlerMock: MembershipChangeHandler = mockk()
+        val membershipChangeHandlerMock: MembershipChangeHandler = mockk(relaxed = true)
 
         val cut = ClientMemberEventHandler(membershipChangeHandlerMock)
 
@@ -39,8 +40,10 @@ private fun testBody(): DescribeSpec.() -> Unit {
             )
             it("should delegate to ${MembershipChangeHandler::class.simpleName}") {
                 cut.handleEvent(event, "someRoomId")
-                coVerify { membershipChangeHandlerMock.handleMembership("someRoomId", "someInvitedUserId", INVITE) }
+                coVerify { membershipChangeHandlerMock.handleMembership("someInvitedUserId", "someRoomId", INVITE) }
             }
         }
+
+        afterTest { clearMocks(membershipChangeHandlerMock) }
     }
 }

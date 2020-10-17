@@ -18,8 +18,8 @@ class MatrixMembershipService(
     }
 
     suspend fun getOrCreateMembership(userId: String, roomId: String): MatrixMembership {
-        roomService.getOrCreateRoom(roomId)//FIXME test
-        userService.getOrCreateUser(userId)//FIXME test
+        roomService.getOrCreateRoom(roomId)
+        userService.getOrCreateUser(userId)
         return membershipRepository.findByUserIdAndRoomId(userId, roomId)
                ?: membershipRepository.save(MatrixMembership(userId, roomId))
     }

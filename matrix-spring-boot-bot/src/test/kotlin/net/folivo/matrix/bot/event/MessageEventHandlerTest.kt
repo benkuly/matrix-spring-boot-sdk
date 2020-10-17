@@ -4,6 +4,7 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.mockk.Called
+import io.mockk.clearMocks
 import io.mockk.coVerifyAll
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -73,5 +74,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 }
             }
         }
+
+        afterTest { clearMocks(messageHandlerMock1, messageHandlerMock2, matrixClientMock) }
     }
 }

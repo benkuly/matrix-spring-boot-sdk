@@ -24,10 +24,6 @@ private fun testBody(cut: MatrixRoomRepository, dbClient: DatabaseClient): Descr
         val h = RepositoryTestHelper(dbClient)
 
         beforeSpec {
-            h.deleteAllMemberships()
-            h.deleteAllRooms()
-            h.deleteAllUsers()
-
             h.insertUser(MatrixUser("userId1"))
             h.insertUser(MatrixUser("userId2"))
             h.insertRoom(MatrixRoom("roomId1"))
@@ -51,6 +47,12 @@ private fun testBody(cut: MatrixRoomRepository, dbClient: DatabaseClient): Descr
             it("should not find matching room") {
                 cut.findByMembers(setOf("unknownUser")).toList().shouldBeEmpty()
             }
+        }
+
+        afterSpec {
+            h.deleteAllMemberships()
+            h.deleteAllRooms()
+            h.deleteAllUsers()
         }
     }
 }

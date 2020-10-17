@@ -24,18 +24,18 @@ class MembershipChangeHandler(
 
     suspend fun handleMembership(userId: String, roomId: String, membership: Membership) {
         val isManagedUser = botHelper.isManagedUser(userId)
-
-        val (autoJoin, trackMembershipMode, serverName) = botProperties
+        val serverName = botProperties.serverName
 
         when (membership) {
             INVITE -> {
+                val autoJoin = botProperties.autoJoin
                 if (isManagedUser && autoJoin != DISABLED) {
                     val asUserId = if (userId == botHelper.getBotUserId()) null else userId
                     if (autoJoin == RESTRICTED && roomId.substringAfter(":") != serverName) {
                         LOG.warn("reject room invite of $userId to $roomId because autoJoin is restricted to $serverName")
                         matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)
                     } else {
-                        if (membershipChangeService.shouldJoinRoom(roomId, userId)) {
+                        if (membershipChangeService.shouldJoinRoom(userId, roomId)) {
                             LOG.debug("join room $roomId with $userId")
                             matrixClient.roomsApi.joinRoom(roomIdOrAlias = roomId, asUserId = asUserId)
                         } else {
@@ -48,12 +48,14 @@ class MembershipChangeHandler(
                 }
             }
             JOIN -> {
+                val trackMembershipMode = botProperties.trackMembership
                 if (trackMembershipMode == MANAGED && isManagedUser || trackMembershipMode == ALL) {
                     LOG.debug("save room join of user $userId and room $roomId")
                     membershipChangeService.onRoomJoin(userId, roomId)
                 }
             }
             LEAVE, BAN -> {
+                val trackMembershipMode = botProperties.trackMembership
                 if (trackMembershipMode == MANAGED && isManagedUser || trackMembershipMode == ALL) {
                     LOG.debug("save room leave of user $userId and room $roomId")
                     membershipChangeService.onRoomLeave(userId, roomId)

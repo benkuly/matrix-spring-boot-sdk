@@ -24,10 +24,6 @@ private fun testBody(cut: MatrixUserRepository, dbClient: DatabaseClient): Descr
         val h = RepositoryTestHelper(dbClient)
 
         beforeSpec {
-            h.deleteAllMemberships()
-            h.deleteAllRooms()
-            h.deleteAllUsers()
-
             h.insertUser(MatrixUser("userId1"))
             h.insertUser(MatrixUser("userId2"))
             h.insertUser(MatrixUser("userId3"))
@@ -52,6 +48,12 @@ private fun testBody(cut: MatrixUserRepository, dbClient: DatabaseClient): Descr
                 cut.findByRoomId("roomId3").toList().map { it.id }
                         .shouldBeEmpty()
             }
+        }
+
+        afterSpec {
+            h.deleteAllMemberships()
+            h.deleteAllRooms()
+            h.deleteAllUsers()
         }
     }
 }

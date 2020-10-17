@@ -14,7 +14,7 @@ class ClientMemberEventHandler(
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    override fun supports(clazz: Class<*>): Boolean {
+    override suspend fun supports(clazz: Class<*>): Boolean {
         return clazz == MemberEvent::class.java
     }
 

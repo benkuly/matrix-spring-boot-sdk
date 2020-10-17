@@ -16,7 +16,9 @@ private fun testBody(): DescribeSpec.() -> Unit {
         val matrixClientMock: MatrixClient = mockk(relaxed = true)
         val membershipChangeServiceMock: MembershipChangeService = mockk(relaxed = true)
         val botHelperMock: BotServiceHelper = mockk()
-        val botPropertiesMock: MatrixBotProperties = mockk()
+        val botPropertiesMock: MatrixBotProperties = mockk {
+            every { serverName } returns "server"
+        }
 
         val cut = MembershipChangeHandler(
                 matrixClientMock,
@@ -53,7 +55,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                     every { botPropertiesMock.autoJoin }.returns(RESTRICTED)
                     cut.handleMembership("@user:server", "!room:foreignServer", INVITE)
                     coVerify {
-                        matrixClientMock.roomsApi.leaveRoom("!room:server", asUserId = "@user:foreignServer")
+                        matrixClientMock.roomsApi.leaveRoom("!room:foreignServer", asUserId = "@user:server")
                     }
                 }
                 it("should join room when autoJoin is $RESTRICTED, but server is allowed") {

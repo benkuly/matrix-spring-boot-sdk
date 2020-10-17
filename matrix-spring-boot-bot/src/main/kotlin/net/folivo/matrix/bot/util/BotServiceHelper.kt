@@ -10,19 +10,18 @@ class BotServiceHelper(
     fun isManagedUser(userId: String): Boolean {
         val username = userId.trimStart('@').substringBefore(":")
         return if (userId.substringAfter(":") == botProperties.serverName)
-            username == botProperties.username || appserviceProperties.namespaces.users.map { username.matches(Regex(it.regex)) }
-                    .contains(true)
+            username == botProperties.username || appserviceProperties.namespaces.users
+                    .map { userId.matches(Regex(it.regex)) }.contains(true)
         else false
     }
 
     fun isManagedRoom(roomAlias: String): Boolean {
-        val roomAliasName = roomAlias.trimStart('#').substringBefore(":")
         return if (roomAlias.substringAfter(":") == botProperties.serverName)
-            appserviceProperties.namespaces.rooms.map { roomAliasName.matches(Regex(it.regex)) }.contains(true)
+            appserviceProperties.namespaces.rooms.map { roomAlias.matches(Regex(it.regex)) }.contains(true)
         else false
     }
 
-    fun getBotUserId(): String {//FIXME test
+    fun getBotUserId(): String {
         return "@${botProperties.username}:${botProperties.serverName}"
     }
 

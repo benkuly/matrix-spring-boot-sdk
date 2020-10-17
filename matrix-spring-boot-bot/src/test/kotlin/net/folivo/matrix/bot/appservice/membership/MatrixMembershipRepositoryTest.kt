@@ -28,10 +28,6 @@ private fun testBody(cut: MatrixMembershipRepository, dbClient: DatabaseClient):
         val h = RepositoryTestHelper(dbClient)
 
         beforeSpec {
-            h.deleteAllMemberships()
-            h.deleteAllRooms()
-            h.deleteAllUsers()
-
             h.insertUser(MatrixUser("userId1"))
             h.insertUser(MatrixUser("userId2"))
             h.insertRoom(MatrixRoom("roomId1"))
@@ -125,6 +121,12 @@ private fun testBody(cut: MatrixMembershipRepository, dbClient: DatabaseClient):
             it("should not contain only managed members") {
                 cut.containsOnlyManagedMembersByRoomId("roomId1").shouldBeFalse()
             }
+        }
+
+        afterSpec {
+            h.deleteAllMemberships()
+            h.deleteAllRooms()
+            h.deleteAllUsers()
         }
     }
 }

@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus.FORBIDDEN
 
 class AppserviceMemberEventHandler(
-        //FIXME test
         private val membershipChangeHandler: MembershipChangeHandler,
         private val appserviceHelper: AppserviceHandlerHelper,
 ) : MatrixEventHandler {
@@ -19,7 +18,7 @@ class AppserviceMemberEventHandler(
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    override fun supports(clazz: Class<*>): Boolean {
+    override suspend fun supports(clazz: Class<*>): Boolean {
         return clazz == MemberEvent::class.java
     }
 

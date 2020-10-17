@@ -1,10 +1,9 @@
 package net.folivo.matrix.bot.client
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.filter
 import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.bot.membership.MembershipChangeHandler
 import net.folivo.matrix.bot.util.BotServiceHelper
@@ -34,44 +33,45 @@ class MatrixClientBot(
         runBlocking { start().join() }
     }
 
-    fun start(): Job {
+    suspend fun start(): Job {
         stop()
         LOG.info("started syncLoop")
         val job = GlobalScope.launch {
-            matrixClient.syncApi
-                    .syncLoop()
-                    .collect { syncResponse ->
-                        try {
-                            syncResponse.room.join.forEach { (roomId, joinedRoom) ->
-                                joinedRoom.timeline.events.forEach { handleEvent(it, roomId) }
-                                joinedRoom.state.events.forEach { handleEvent(it, roomId) }
+            try {
+                matrixClient.syncApi
+                        .syncLoop()
+                        .collect { syncResponse ->
+                            try {
+                                syncResponse.room.join.forEach { (roomId, joinedRoom) ->
+                                    joinedRoom.timeline.events.forEach { handleEvent(it, roomId) }
+                                    joinedRoom.state.events.forEach { handleEvent(it, roomId) }
+                                }
+                                syncResponse.room.invite.forEach { (roomId) ->
+                                    membershipChangeHandler.handleMembership(helper.getBotUserId(), roomId, INVITE)
+                                }
+                                syncResponse.room.leave.forEach { (roomId) ->
+                                    membershipChangeHandler.handleMembership(helper.getBotUserId(), roomId, LEAVE)
+                                }
+                                LOG.debug("processed sync response")
+                            } catch (error: Throwable) {
+                                LOG.error("some error while processing response", error.message)
                             }
-                            syncResponse.room.invite.forEach { (roomId) ->
-                                membershipChangeHandler.handleMembership(helper.getBotUserId(), roomId, INVITE)
-                            }
-                            syncResponse.room.leave.forEach { (roomId) ->
-                                membershipChangeHandler.handleMembership(helper.getBotUserId(), roomId, LEAVE)
-                            }
-                            LOG.debug("processed sync response")
-                        } catch (error: Throwable) {
-                            LOG.error("some error while processing response", error.message)
                         }
-                    }
+            } catch (error: CancellationException) {
+                LOG.info("stopped syncLoop")
+            }
         }
         syncJob = job
         return job
     }
 
-    fun stop() {
-        syncJob?.apply {
-            LOG.info("stopped syncLoop")
-            cancel()
-        }
+    suspend fun stop() {
+        syncJob?.cancelAndJoin()
     }
 
     private suspend fun handleEvent(event: Event<*>, roomId: String) {
-        return eventHandler
+        return eventHandler.asFlow()
                 .filter { it.supports(event::class.java) }
-                .forEach { it.handleEvent(event, roomId) }
+                .collect { it.handleEvent(event, roomId) }
     }
 }

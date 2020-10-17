@@ -38,7 +38,7 @@ open class DefaultAppserviceEventService(
     }
 
     private suspend fun delegateEventHandling(event: Event<*>, roomId: String? = null) {
-        if (roomId != null) syncService.syncRoomMemberships(roomId) // FIXME test
+        if (roomId != null) syncService.syncRoomMemberships(roomId)
         LOG.debug("delegate event $event to event handlers")
         eventHandler
                 .filter { it.supports(event::class.java) }

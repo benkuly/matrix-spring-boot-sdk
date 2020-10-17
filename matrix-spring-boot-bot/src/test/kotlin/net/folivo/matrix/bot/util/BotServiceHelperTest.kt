@@ -43,10 +43,10 @@ private fun testBody(): DescribeSpec.() -> Unit {
         }
         describe(BotServiceHelper::isManagedRoom.name) {
             it("it should return true when room alias is in namespace") {
-                cut.isManagedUser("#dino_large:server").shouldBeTrue()
+                cut.isManagedRoom("#dino_large:server").shouldBeTrue()
             }
             it("it should return false when room alias is not in namespace") {
-                cut.isManagedUser("#cat_buhu:server").shouldBeFalse()
+                cut.isManagedRoom("#cat_buhu:server").shouldBeFalse()
             }
         }
     }

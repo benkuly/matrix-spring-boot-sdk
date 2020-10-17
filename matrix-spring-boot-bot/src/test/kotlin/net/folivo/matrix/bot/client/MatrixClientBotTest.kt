@@ -1,13 +1,16 @@
 package net.folivo.matrix.bot.client
 
+import io.kotest.assertions.fail
 import io.kotest.core.spec.style.DescribeSpec
 import io.mockk.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.flowOf
 import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.bot.membership.MembershipChangeHandler
 import net.folivo.matrix.bot.util.BotServiceHelper
+import net.folivo.matrix.core.model.events.m.room.MemberEvent
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.INVITE
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.LEAVE
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
@@ -20,14 +23,14 @@ class MatrixClientBotTest : DescribeSpec(testBody())
 private fun testBody(): DescribeSpec.() -> Unit {
     return {
         val matrixClientMock: MatrixClient = mockk(relaxed = true)
-        val eventHandlerMock1: MatrixEventHandler = mockk(relaxed = true)
-        val eventHandlerMock2: MatrixEventHandler = mockk(relaxed = true)
+        val eventHandlerMock1: MatrixEventHandler = mockk(relaxed = true, name = "eventHandlerMock1")
+        val eventHandlerMock2: MatrixEventHandler = mockk(relaxed = true, name = "eventHandlerMock2")
         val membershipChangeHandlerMock: MembershipChangeHandler = mockk(relaxed = true)
         val helperMock: BotServiceHelper = mockk(relaxed = true)
 
         val cut = MatrixClientBot(
                 matrixClientMock,
-                listOf(eventHandlerMock1, eventHandlerMock1),
+                listOf(eventHandlerMock1, eventHandlerMock2),
                 membershipChangeHandlerMock,
                 helperMock
         )
@@ -35,7 +38,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
         describe(MatrixClientBot::start.name) {
             it("should delegate events to event handlers") {
                 val event1 = mockk<MessageEvent<TextMessageEventContent>>()
-                val event2 = mockk<MessageEvent<TextMessageEventContent>>()
+                val event2 = mockk<MemberEvent>()
                 val event3 = mockk<MessageEvent<TextMessageEventContent>>()
 
                 val response1 = mockk<SyncResponse>(relaxed = true) {
@@ -58,10 +61,11 @@ private fun testBody(): DescribeSpec.() -> Unit {
                     )
                 }
 
-                every { eventHandlerMock1.supports(any()) } returns true
-                every { eventHandlerMock1.supports(any()) } returns false
-                every { eventHandlerMock1.supports(any()) } returns true
-                every { eventHandlerMock2.supports(any()) } returns true
+                coEvery { eventHandlerMock1.supports(MessageEvent::class.java) } returns true
+                coEvery { eventHandlerMock1.supports(MemberEvent::class.java) } returns false
+                coEvery { eventHandlerMock2.supports(MessageEvent::class.java) } returns true
+                coEvery { eventHandlerMock2.supports(MemberEvent::class.java) } returns true
+
 
                 every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response1, response2))
 
@@ -69,11 +73,9 @@ private fun testBody(): DescribeSpec.() -> Unit {
 
                 coVerifyOrder {
                     eventHandlerMock1.handleEvent(event1, "someRoomId1")
-                    eventHandlerMock1.handleEvent(event3, "someRoomId2")
-                }
-                coVerifyOrder {
                     eventHandlerMock2.handleEvent(event1, "someRoomId1")
                     eventHandlerMock2.handleEvent(event2, "someRoomId1")
+                    eventHandlerMock1.handleEvent(event3, "someRoomId2")
                     eventHandlerMock2.handleEvent(event3, "someRoomId2")
                 }
             }
@@ -96,10 +98,10 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 cut.start().join()
 
                 coVerify {
-                    membershipChangeHandlerMock.handleMembership("inviteRoom1", "@bot:someServer", INVITE)
-                    membershipChangeHandlerMock.handleMembership("inviteRoom2", "@bot:someServer", INVITE)
-                    membershipChangeHandlerMock.handleMembership("leaveRoom1", "@bot:someServer", LEAVE)
-                    membershipChangeHandlerMock.handleMembership("leaveRoom2", "@bot:someServer", LEAVE)
+                    membershipChangeHandlerMock.handleMembership("@bot:someServer", "inviteRoom1", INVITE)
+                    membershipChangeHandlerMock.handleMembership("@bot:someServer", "inviteRoom2", INVITE)
+                    membershipChangeHandlerMock.handleMembership("@bot:someServer", "leaveRoom1", LEAVE)
+                    membershipChangeHandlerMock.handleMembership("@bot:someServer", "leaveRoom2", LEAVE)
                 }
             }
 
@@ -115,10 +117,13 @@ private fun testBody(): DescribeSpec.() -> Unit {
                     )
                 }
 
-                every { eventHandlerMock1.supports(any()) } returns true
+                coEvery { eventHandlerMock1.supports(any()) } returns true
 
                 val channel = Channel<SyncResponse>()
-                every { matrixClientMock.syncApi.syncLoop() }.returns(channel.consumeAsFlow())
+                every { matrixClientMock.syncApi.syncLoop() }.returnsMany(
+                        channel.consumeAsFlow(),
+                        channel.consumeAsFlow()
+                )
 
                 cut.start()
                 cut.start()
@@ -144,8 +149,8 @@ private fun testBody(): DescribeSpec.() -> Unit {
                     )
                 }
 
-                every { eventHandlerMock1.supports(any()) } returns true
-                every { eventHandlerMock2.supports(any()) } returns true
+                coEvery { eventHandlerMock1.supports(any()) } returns true
+                coEvery { eventHandlerMock2.supports(any()) } returns true
                 coEvery { eventHandlerMock1.handleEvent(any()) }.throws(RuntimeException())
 
                 every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response1))
@@ -171,7 +176,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                     )
                 }
 
-                every { eventHandlerMock1.supports(any()) } returns true
+                coEvery { eventHandlerMock1.supports(any()) } returns true
 
                 val channel = Channel<SyncResponse>()
                 every { matrixClientMock.syncApi.syncLoop() }.returns(channel.consumeAsFlow())
@@ -179,7 +184,12 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 cut.start()
                 channel.send(response)
                 cut.stop()
-                channel.send(response)
+                try {
+                    channel.send(response)
+                    fail("should throw exception")
+                } catch (error: CancellationException) {
+
+                }
 
                 coVerify(exactly = 1) { eventHandlerMock1.handleEvent(any(), any()) }
             }
