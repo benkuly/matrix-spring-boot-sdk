@@ -10,10 +10,10 @@ interface MatrixUserRepository : CoroutineCrudRepository<MatrixUser, String> {
 
     @Query(
             """
-            SELECT * FROM MatrixUser a 
-            JOIN Membership m ON m.fk_Membership_MatrixUser = a.id 
-            WHERE m.fk_Membership_MatrixRoom = :roomId
-            """
+        SELECT * FROM matrix_user u
+        JOIN matrix_membership m ON m.user_id = u.id
+        WHERE m.room_id = :roomId
+        """
     )
     fun findByRoomId(roomId: String): Flow<MatrixUser>
 }

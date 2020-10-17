@@ -1,6 +1,7 @@
 package net.folivo.matrix.bot.appservice.sync
 
 import io.kotest.core.spec.style.DescribeSpec
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -30,28 +31,29 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 cut.syncBotMemberships()
 
                 coVerify {
-                    membershipService.getOrCreateMembership("roomId1", "userId1")
-                    membershipService.getOrCreateMembership("roomId2", "userId1")
-                    membershipService.getOrCreateMembership("roomId2", "userId2")
+                    membershipService.getOrCreateMembership("userId1", "roomId1")
+                    membershipService.getOrCreateMembership("userId1", "roomId2")
+                    membershipService.getOrCreateMembership("userId2", "roomId2")
                 }
             }
         }
 
         describe(MatrixSyncService::syncRoomMemberships.name) {
-            describe("there are memberships for this rooms") {
-                coEvery { membershipService.getMembershipsSizeByRoomId("roomId") }.returns(2L)
-                coEvery { matrixClientMock.roomsApi.getJoinedMembers("someRoomId").joined.keys }
+            it("should fetch members when there are no memberships for this rooms") {
+                coEvery { membershipService.getMembershipsSizeByRoomId("roomId") }.returns(0L)
+                coEvery { matrixClientMock.roomsApi.getJoinedMembers("roomId").joined.keys }
                         .returns(setOf("userId1", "userId2"))
+                coEvery { membershipService.getOrCreateMembership(any(), any()) }.returns(mockk())
 
                 cut.syncRoomMemberships("roomId")
 
                 coVerify {
-                    membershipService.getOrCreateMembership("roomId", "userId1")
-                    membershipService.getOrCreateMembership("roomId", "userId2")
+                    membershipService.getOrCreateMembership("userId1", "roomId")
+                    membershipService.getOrCreateMembership("userId2", "roomId")
                 }
             }
-            describe("there are no memberships for this rooms") {
-                coEvery { membershipService.getMembershipsSizeByRoomId("roomId") }.returns(0L)
+            it("should not fetch members when there are memberships for this rooms") {
+                coEvery { membershipService.getMembershipsSizeByRoomId("roomId") }.returns(2L)
 
                 cut.syncRoomMemberships("roomId")
 
@@ -60,5 +62,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 }
             }
         }
+
+        afterTest { clearMocks(matrixClientMock, membershipService) }
     }
 }

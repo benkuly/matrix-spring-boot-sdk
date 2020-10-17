@@ -2,6 +2,7 @@ package net.folivo.matrix.bot.appservice.user
 
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -44,5 +45,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 coVerify(exactly = 0) { userRepositoryMock.save(any()) }
             }
         }
+
+        afterTest { clearMocks(userRepositoryMock, helperMock) }
     }
 }

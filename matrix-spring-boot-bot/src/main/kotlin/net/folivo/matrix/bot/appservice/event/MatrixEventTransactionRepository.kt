@@ -9,8 +9,8 @@ interface MatrixEventTransactionRepository : CoroutineCrudRepository<MatrixEvent
     @Query(
             """
         SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END
-        FROM matrix_event_transaction
-        WHERE tnx_id = :tnxId AND event_id = :eventId
+        FROM matrix_event_transaction t
+        WHERE t.tnx_id = :tnxId AND t.event_id = :eventId
     """
     )
     suspend fun existsByTnxIdAndEventId(tnxId: String, eventId: String): Boolean

@@ -4,20 +4,17 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldBeEmpty
-import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.reactive.awaitFirstOrNull
+import net.folivo.matrix.bot.RepositoryTestHelper
 import net.folivo.matrix.bot.appservice.room.MatrixRoom
 import net.folivo.matrix.bot.appservice.user.MatrixUser
 import net.folivo.matrix.bot.config.MatrixBotDatabaseAutoconfiguration
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest
 import org.springframework.data.r2dbc.core.DatabaseClient
-import org.springframework.data.r2dbc.core.from
-import org.springframework.data.r2dbc.core.into
-import org.springframework.data.relational.core.query.CriteriaDefinition
 
 @DataR2dbcTest
 @ImportAutoConfiguration(MatrixBotDatabaseAutoconfiguration::class)
@@ -28,54 +25,29 @@ class MatrixMembershipRepositoryTest(
 
 private fun testBody(cut: MatrixMembershipRepository, dbClient: DatabaseClient): DescribeSpec.() -> Unit {
     return {
-        val insertMembership = { membership: MatrixMembership ->
-            dbClient.insert()
-                    .into<MatrixMembership>()
-                    .using(membership)
-                    .then().block()
-        }
+        val h = RepositoryTestHelper(dbClient)
 
-        val insertUser = { user: MatrixUser ->
-            dbClient.insert()
-                    .into<MatrixUser>()
-                    .using(user)
-                    .then().block()
-        }
-        val insertRoom = { room: MatrixRoom ->
-            dbClient.insert()
-                    .into<MatrixRoom>()
-                    .using(room)
-                    .then().block()
-        }
         beforeSpec {
-            dbClient.delete()
-                    .from<MatrixRoom>()
-                    .matching(CriteriaDefinition.empty())
-                    .then().awaitFirstOrNull()
-            dbClient.delete()
-                    .from<MatrixUser>()
-                    .matching(CriteriaDefinition.empty())
-                    .then().awaitFirstOrNull()
-            dbClient.delete()
-                    .from<MatrixMembership>()
-                    .matching(CriteriaDefinition.empty())
-                    .then().awaitFirstOrNull()
+            h.deleteAllMemberships()
+            h.deleteAllRooms()
+            h.deleteAllUsers()
 
-            insertUser(MatrixUser("userId1"))
-            insertUser(MatrixUser("userId2"))
-            insertRoom(MatrixRoom("roomId1"))
-            insertRoom(MatrixRoom("roomId2"))
-            insertMembership(MatrixMembership("userId1", "roomId1"))
-            insertMembership(MatrixMembership("userId2", "roomId1"))
-            insertMembership(MatrixMembership("userId2", "roomId2"))
+            h.insertUser(MatrixUser("userId1"))
+            h.insertUser(MatrixUser("userId2"))
+            h.insertRoom(MatrixRoom("roomId1"))
+            h.insertRoom(MatrixRoom("roomId2"))
+            h.insertMembership(MatrixMembership("userId1", "roomId1"))
+            h.insertMembership(MatrixMembership("userId2", "roomId1"))
+            h.insertMembership(MatrixMembership("userId2", "roomId2"))
         }
 
         describe(MatrixMembershipRepository::findByRoomId.name) {
             it("should return multiple memberships") {
-                cut.findByRoomId("roomId1").toList().map { it.userId to it.roomId }.shouldContainAll(
-                        "userId1" to "roomId1",
-                        "userId2" to "roomId1"
-                )
+                cut.findByRoomId("roomId1").toList().map { it.userId to it.roomId }
+                        .shouldContainExactlyInAnyOrder(
+                                "userId1" to "roomId1",
+                                "userId2" to "roomId1"
+                        )
             }
             it("should return no memberships") {
                 cut.findByRoomId("unknownRoom").toList().shouldBeEmpty()
@@ -83,10 +55,11 @@ private fun testBody(cut: MatrixMembershipRepository, dbClient: DatabaseClient):
         }
         describe(MatrixMembershipRepository::findByUserId.name) {
             it("should return multiple memberships") {
-                cut.findByUserId("userId2").toList().map { it.userId to it.roomId }.shouldContainAll(
-                        "userId2" to "roomId1",
-                        "userId2" to "roomId2"
-                )
+                cut.findByUserId("userId2").toList().map { it.userId to it.roomId }
+                        .shouldContainExactlyInAnyOrder(
+                                "userId2" to "roomId1",
+                                "userId2" to "roomId2"
+                        )
             }
             it("should return no memberships") {
                 cut.findByUserId("unknownUser").toList().shouldBeEmpty()
@@ -120,7 +93,7 @@ private fun testBody(cut: MatrixMembershipRepository, dbClient: DatabaseClient):
         }
         describe(MatrixMembershipRepository::deleteByUserIdAndRoomId.name) {
             it("should delete membership") {
-                insertMembership(MatrixMembership("userId1", "roomId2"))
+                h.insertMembership(MatrixMembership("userId1", "roomId2"))
                 cut.deleteByUserIdAndRoomId("userId1", "roomId2")
                 cut.findByUserIdAndRoomId("userId1", "userId2").shouldBeNull()
             }
@@ -141,11 +114,11 @@ private fun testBody(cut: MatrixMembershipRepository, dbClient: DatabaseClient):
         }
         describe(MatrixMembershipRepository::containsOnlyManagedMembersByRoomId.name) {
             it("should contain only managed members") {
-                insertUser(MatrixUser("managedUserId1", true))
-                insertUser(MatrixUser("managedUserId2", true))
-                insertRoom(MatrixRoom("managedUserRoomId"))
-                insertMembership(MatrixMembership("managedUserId1", "managedUserRoomId"))
-                insertMembership(MatrixMembership("managedUserId2", "managedUserRoomId"))
+                h.insertUser(MatrixUser("managedUserId1", true))
+                h.insertUser(MatrixUser("managedUserId2", true))
+                h.insertRoom(MatrixRoom("managedUserRoomId"))
+                h.insertMembership(MatrixMembership("managedUserId1", "managedUserRoomId"))
+                h.insertMembership(MatrixMembership("managedUserId2", "managedUserRoomId"))
 
                 cut.containsOnlyManagedMembersByRoomId("managedUserRoomId").shouldBeTrue()
             }

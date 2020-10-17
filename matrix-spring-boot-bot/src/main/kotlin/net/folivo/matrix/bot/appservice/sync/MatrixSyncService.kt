@@ -29,8 +29,7 @@ class MatrixSyncService(
     }
 
     suspend fun syncRoomMemberships(roomId: String) { // FIXME this is user specific. we need to find a way to use the right userId
-        val membershipsSize = membershipService.getMembershipsSizeByRoomId(roomId)
-        if (membershipsSize == 0L) {// this is needed to get all members, e.g. when managed user joins a new room
+        if (membershipService.getMembershipsSizeByRoomId(roomId) == 0L) {// this is needed to get all members, e.g. when managed user joins a new room
             LOG.debug("collect all members in room $roomId because we didn't saved it yet")
             try {
                 matrixClient.roomsApi.getJoinedMembers(roomId).joined.keys

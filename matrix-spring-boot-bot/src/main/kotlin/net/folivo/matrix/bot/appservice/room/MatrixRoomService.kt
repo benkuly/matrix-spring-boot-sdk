@@ -11,12 +11,12 @@ class MatrixRoomService(
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    suspend fun getOrCreateRoom(roomId: String): MatrixRoom { //FIXME test
+    suspend fun getOrCreateRoom(roomId: String): MatrixRoom {
         return roomRepository.findById(roomId)
                ?: roomRepository.save(MatrixRoom(roomId))
     }
 
-    suspend fun getOrCreateRoomAlias(roomAlias: String, roomId: String): MatrixRoomAlias { //FIXME test
+    suspend fun getOrCreateRoomAlias(roomAlias: String, roomId: String): MatrixRoomAlias {
         roomRepository.findById(roomId) ?: roomRepository.save(MatrixRoom(roomId, true))
         val existingRoomAlias = roomAliasRepository.findById(roomAlias)
         return if (existingRoomAlias != null) {
@@ -31,12 +31,8 @@ class MatrixRoomService(
         return roomAliasRepository.existsById(roomAlias)
     }
 
-    fun getRoomsByUserId(userId: String): Flow<MatrixRoom> {
-        return roomRepository.findByMember(userId)
-    }
-
     fun getRoomsByMembers(members: Set<String>): Flow<MatrixRoom> {
-        return roomRepository.findByContainingMembers(members)
+        return roomRepository.findByMembers(members)
     }
 
     suspend fun deleteRoom(roomId: String) {
