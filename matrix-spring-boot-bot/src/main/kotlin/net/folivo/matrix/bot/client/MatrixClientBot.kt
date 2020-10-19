@@ -55,7 +55,7 @@ class MatrixClientBot(
                                 }
                                 LOG.debug("processed sync response")
                             } catch (error: Throwable) {
-                                LOG.error("some error while processing response", error.message)
+                                LOG.error("some error while processing response: ${error.message}")
                             }
                         }
             } catch (error: CancellationException) {

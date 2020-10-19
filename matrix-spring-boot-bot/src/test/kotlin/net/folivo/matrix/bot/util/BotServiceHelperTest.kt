@@ -6,8 +6,6 @@ import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import net.folivo.matrix.appservice.config.AppserviceProperties
-import net.folivo.matrix.appservice.config.AppserviceProperties.Namespace
 import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.core.model.MatrixId.RoomAliasId
 import net.folivo.matrix.core.model.MatrixId.UserId
@@ -20,12 +18,8 @@ private fun testBody(): DescribeSpec.() -> Unit {
             every { serverName } returns "server"
             every { username } returns "bot"
         }
-        val appservicePropertiesMock: AppserviceProperties = mockk {
-            every { namespaces.users } returns listOf(Namespace("unicorn_.+"))
-            every { namespaces.rooms } returns listOf(Namespace("dino_.+"))
-        }
 
-        val cut = BotServiceHelper(botPropertiesMock, appservicePropertiesMock)
+        val cut = BotServiceHelper(botPropertiesMock, setOf(Regex("unicorn_.+")), setOf(Regex("dino_.+")))
 
         describe(BotServiceHelper::getBotUserId.name) {
             it("should return bot userId") {

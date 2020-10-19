@@ -6,6 +6,7 @@ import com.github.michaelbull.retry.policy.plus
 import com.github.michaelbull.retry.retry
 import net.folivo.matrix.core.model.MatrixId.*
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
+import net.folivo.matrix.core.model.events.m.room.message.NoticeMessageEventContent
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
 
@@ -35,5 +36,12 @@ class MessageContext(
             LOG.warn("could not answer to $roomId", error)
             throw error
         }
+    }
+
+    suspend fun answer(
+            content: String,
+            asUserId: UserId? = null
+    ): EventId {
+        return answer(NoticeMessageEventContent(content), asUserId)
     }
 }

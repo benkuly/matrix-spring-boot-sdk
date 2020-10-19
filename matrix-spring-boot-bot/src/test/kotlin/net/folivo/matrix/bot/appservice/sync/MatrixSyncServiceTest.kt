@@ -6,7 +6,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
-import net.folivo.matrix.bot.appservice.membership.MatrixMembershipService
+import net.folivo.matrix.bot.membership.MatrixMembershipService
 import net.folivo.matrix.core.model.MatrixId.RoomId
 import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.restclient.MatrixClient

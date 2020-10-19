@@ -3,8 +3,8 @@ package net.folivo.matrix.bot.appservice.sync
 import io.kotest.core.spec.style.DescribeSpec
 import io.mockk.coVerify
 import io.mockk.mockk
-import net.folivo.matrix.bot.appservice.room.MatrixRoomService
-import net.folivo.matrix.bot.appservice.user.MatrixUserService
+import net.folivo.matrix.bot.room.MatrixRoomService
+import net.folivo.matrix.bot.user.MatrixUserService
 
 class InitialSyncServiceTest : DescribeSpec(testBody())
 

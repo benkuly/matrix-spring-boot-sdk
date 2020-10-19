@@ -1,8 +1,8 @@
 package net.folivo.matrix.bot.appservice.sync
 
 import kotlinx.coroutines.runBlocking
-import net.folivo.matrix.bot.appservice.room.MatrixRoomService
-import net.folivo.matrix.bot.appservice.user.MatrixUserService
+import net.folivo.matrix.bot.room.MatrixRoomService
+import net.folivo.matrix.bot.user.MatrixUserService
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener

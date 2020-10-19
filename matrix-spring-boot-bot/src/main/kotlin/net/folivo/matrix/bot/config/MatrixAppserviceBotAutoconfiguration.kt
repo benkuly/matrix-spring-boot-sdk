@@ -4,26 +4,21 @@ import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
 import net.folivo.matrix.appservice.api.event.AppserviceEventService
 import net.folivo.matrix.appservice.api.room.AppserviceRoomService
 import net.folivo.matrix.appservice.api.user.AppserviceUserService
+import net.folivo.matrix.appservice.config.AppserviceProperties
+import net.folivo.matrix.bot.appservice.AppserviceMemberEventHandler
+import net.folivo.matrix.bot.appservice.BotUserInitializer
+import net.folivo.matrix.bot.appservice.DefaultAppserviceRoomService
+import net.folivo.matrix.bot.appservice.DefaultAppserviceUserService
 import net.folivo.matrix.bot.appservice.event.DefaultAppserviceEventService
 import net.folivo.matrix.bot.appservice.event.MatrixEventTransactionRepository
 import net.folivo.matrix.bot.appservice.event.MatrixEventTransactionService
-import net.folivo.matrix.bot.appservice.membership.AppserviceMemberEventHandler
-import net.folivo.matrix.bot.appservice.membership.AppserviceMembershipChangeService
-import net.folivo.matrix.bot.appservice.membership.MatrixMembershipRepository
-import net.folivo.matrix.bot.appservice.membership.MatrixMembershipService
-import net.folivo.matrix.bot.appservice.room.DefaultAppserviceRoomService
-import net.folivo.matrix.bot.appservice.room.MatrixRoomAliasRepository
-import net.folivo.matrix.bot.appservice.room.MatrixRoomRepository
-import net.folivo.matrix.bot.appservice.room.MatrixRoomService
 import net.folivo.matrix.bot.appservice.sync.InitialSyncService
 import net.folivo.matrix.bot.appservice.sync.MatrixSyncService
-import net.folivo.matrix.bot.appservice.user.BotUserInitializer
-import net.folivo.matrix.bot.appservice.user.DefaultAppserviceUserService
-import net.folivo.matrix.bot.appservice.user.MatrixUserRepository
-import net.folivo.matrix.bot.appservice.user.MatrixUserService
 import net.folivo.matrix.bot.event.MatrixEventHandler
+import net.folivo.matrix.bot.membership.MatrixMembershipService
 import net.folivo.matrix.bot.membership.MembershipChangeHandler
-import net.folivo.matrix.bot.membership.MembershipChangeService
+import net.folivo.matrix.bot.room.MatrixRoomService
+import net.folivo.matrix.bot.user.MatrixUserService
 import net.folivo.matrix.bot.util.BotServiceHelper
 import net.folivo.matrix.restclient.MatrixClient
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -52,34 +47,6 @@ class MatrixAppserviceBotAutoconfiguration {
         return MatrixEventTransactionService(eventTransactionRepository)
     }
 
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun defaultAppserviceMembershipChangeService(
-            roomService: MatrixRoomService,
-            membershipService: MatrixMembershipService,
-            userService: MatrixUserService,
-            matrixClient: MatrixClient,
-            helper: BotServiceHelper
-    ): MembershipChangeService {
-        return AppserviceMembershipChangeService(
-                roomService,
-                membershipService,
-                userService,
-                matrixClient,
-                helper
-        )
-    }
-
-    @Bean
-    fun matrixMembershipService(
-            membershipRepository: MatrixMembershipRepository,
-            userService: MatrixUserService,
-            roomService: MatrixRoomService
-    ): MatrixMembershipService {
-        return MatrixMembershipService(membershipRepository, userService, roomService)
-    }
-
     @Bean
     fun appserviceMemberEventHandler(
             membershipChangeHandler: MembershipChangeHandler,
@@ -92,14 +59,6 @@ class MatrixAppserviceBotAutoconfiguration {
     @ConditionalOnMissingBean
     fun defaultAppserviceRoomService(roomService: MatrixRoomService, helper: BotServiceHelper): AppserviceRoomService {
         return DefaultAppserviceRoomService(roomService, helper)
-    }
-
-    @Bean
-    fun matrixRoomService(
-            roomRepository: MatrixRoomRepository,
-            roomAliasRepository: MatrixRoomAliasRepository
-    ): MatrixRoomService {
-        return MatrixRoomService(roomRepository, roomAliasRepository)
     }
 
     @Bean
@@ -140,10 +99,14 @@ class MatrixAppserviceBotAutoconfiguration {
     }
 
     @Bean
-    fun matrixUserService(
-            userRepository: MatrixUserRepository,
-            helper: BotServiceHelper
-    ): MatrixUserService {
-        return MatrixUserService(userRepository, helper)
+    fun botServiceHelper(
+            botProperties: MatrixBotProperties,
+            appserviceProperties: AppserviceProperties
+    ): BotServiceHelper {
+        return BotServiceHelper(
+                botProperties,
+                appserviceProperties.namespaces.users.map { Regex(it.regex) }.toSet(),
+                appserviceProperties.namespaces.rooms.map { Regex(it.regex) }.toSet()
+        )
     }
 }

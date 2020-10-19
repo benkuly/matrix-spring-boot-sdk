@@ -1,9 +1,9 @@
 package net.folivo.matrix.bot
 
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import net.folivo.matrix.bot.appservice.membership.MatrixMembership
-import net.folivo.matrix.bot.appservice.room.MatrixRoom
-import net.folivo.matrix.bot.appservice.user.MatrixUser
+import net.folivo.matrix.bot.membership.MatrixMembership
+import net.folivo.matrix.bot.room.MatrixRoom
+import net.folivo.matrix.bot.user.MatrixUser
 import org.springframework.data.r2dbc.core.DatabaseClient
 import org.springframework.data.r2dbc.core.from
 import org.springframework.data.r2dbc.core.into

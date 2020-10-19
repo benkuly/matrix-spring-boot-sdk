@@ -17,6 +17,11 @@ logging:
 matrix:
   bot:
     serverName: example.org
+    username: ping
+    migration:
+      url: jdbc:h2:mem:testdb
+    database:
+      url: r2dbc:h2:mem:///testdb
   client:
     homeServer:
       hostname: matrix.example.org

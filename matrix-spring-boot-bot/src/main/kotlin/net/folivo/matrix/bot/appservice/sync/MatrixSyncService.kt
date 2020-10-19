@@ -1,7 +1,7 @@
 package net.folivo.matrix.bot.appservice.sync
 
 import kotlinx.coroutines.flow.collect
-import net.folivo.matrix.bot.appservice.membership.MatrixMembershipService
+import net.folivo.matrix.bot.membership.MatrixMembershipService
 import net.folivo.matrix.core.model.MatrixId.RoomId
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
