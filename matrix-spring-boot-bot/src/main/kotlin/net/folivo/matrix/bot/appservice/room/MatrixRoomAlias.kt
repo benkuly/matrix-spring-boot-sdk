@@ -9,10 +9,10 @@ import org.springframework.data.relational.core.mapping.Table
 data class MatrixRoomAlias(
         @Id
         @Column("alias")
-        val alias: String,
+        val alias: MatrixRoomAliasId,
 
         @Column("room_id")
-        val roomId: String,
+        val roomId: MatrixRoomId,
 
         @Version
         @Column("version")

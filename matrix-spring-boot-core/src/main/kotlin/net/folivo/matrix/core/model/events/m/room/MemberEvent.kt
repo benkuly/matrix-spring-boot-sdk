@@ -2,6 +2,7 @@ package net.folivo.matrix.core.model.events.m.room
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import net.folivo.matrix.core.annotation.MatrixEvent
+import net.folivo.matrix.core.model.MatrixId.*
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.StateEvent
 import net.folivo.matrix.core.model.events.StateEventContent
@@ -15,12 +16,12 @@ class MemberEvent : StateEvent<MemberEvent.MemberEventContent, MemberEvent.Membe
 
     constructor(
             content: MemberEventContent,
-            id: String,
-            sender: String,
+            id: EventId,
+            sender: UserId,
             originTimestamp: Long,
-            roomId: String? = null,
+            roomId: RoomId? = null,
             unsigned: MemberUnsignedData,
-            stateKey: String,
+            relatedUser: UserId,
             previousContent: MemberEventContent? = null
     ) : super(
             type = "m.room.member",
@@ -30,13 +31,18 @@ class MemberEvent : StateEvent<MemberEvent.MemberEventContent, MemberEvent.Membe
             originTimestamp = originTimestamp,
             roomId = roomId,
             unsigned = unsigned,
-            stateKey = stateKey,
+            stateKey = relatedUser.full,
             previousContent = previousContent
-    )
+    ) {
+        this.relatedUser = relatedUser
+    }
+
+    @JsonProperty("state_key")
+    val relatedUser: UserId
 
     class MemberUnsignedData : UnsignedData {
         constructor(
-                inviteRoomState: List<StrippedStateEvent> = emptyList(),
+                inviteRoomState: List<StrippedStateEvent> = listOf(),
                 age: Long? = null,
                 redactedBecause: Event<*>? = null,
                 transactionId: String? = null
@@ -89,7 +95,7 @@ class MemberEvent : StateEvent<MemberEvent.MemberEventContent, MemberEvent.Membe
         ) {
             data class Signed(
                     @JsonProperty("mxid")
-                    val mxid: String,
+                    val mxid: UserId,
                     @JsonProperty("signatures")
                     val signatures: Any, // TODO signatures
                     @JsonProperty("token")

@@ -10,7 +10,6 @@ class DefaultMatrixConfigurer : MatrixConfigurer {
         // TODO search in package for annotations
         config.configure {
             registerMatrixEvents(
-                    AliasesEvent::class.java,
                     CanonicalAliasEvent::class.java,
                     CreateEvent::class.java,
                     JoinRulesEvent::class.java,

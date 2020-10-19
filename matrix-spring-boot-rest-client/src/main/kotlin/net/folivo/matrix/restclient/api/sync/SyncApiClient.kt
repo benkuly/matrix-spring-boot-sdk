@@ -7,6 +7,7 @@ import com.github.michaelbull.retry.policy.plus
 import com.github.michaelbull.retry.retry
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import net.folivo.matrix.core.model.MatrixId.UserId
 import org.slf4j.LoggerFactory
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
@@ -26,7 +27,7 @@ class SyncApiClient(
             fullState: Boolean = false,
             setPresence: Presence? = null,
             timeout: Long = 0,
-            asUserId: String? = null
+            asUserId: UserId? = null
     ): SyncResponse {
         return webClient
                 .get().uri {
@@ -37,7 +38,7 @@ class SyncApiClient(
                         if (setPresence != null) queryParam("set_presence", setPresence.value)
                         if (since != null) queryParam("since", since)
                         queryParam("timeout", timeout)
-                        if (asUserId != null) queryParam("user_id", asUserId)
+                        if (asUserId != null) queryParam("user_id", asUserId.full)
                     }.build()
                 }
                 .retrieve()
@@ -55,7 +56,7 @@ class SyncApiClient(
     fun syncLoop(
             filter: String? = null,
             setPresence: Presence? = null,
-            asUserId: String? = null
+            asUserId: UserId? = null
     ): Flow<SyncResponse> {
         return flow {
             while (true) {

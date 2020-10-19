@@ -9,7 +9,7 @@ import org.springframework.data.relational.core.mapping.Table
 data class MatrixRoom(
         @Id
         @Column("id")
-        val id: String, // FIXME switch to extra type with conversion
+        val id: MatrixRoomId,
 
         @Column("is_managed")
         val isManaged: Boolean = false,

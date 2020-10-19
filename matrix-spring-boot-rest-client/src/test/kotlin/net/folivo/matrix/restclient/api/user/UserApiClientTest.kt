@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.netty.handler.codec.http.HttpMethod.PUT
 import kotlinx.coroutines.runBlocking
+import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.restclient.MatrixClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -41,7 +42,7 @@ class UserApiClientTest {
 
     @Test
     fun `should register`() {
-        val response = RegisterResponse("someUserId")
+        val response = RegisterResponse(UserId("user", "server"))
         mockWebServer.enqueue(
                 MockResponse()
                         .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -93,17 +94,17 @@ class UserApiClientTest {
                         .setBody("{}")
         )
 
-        runBlocking { matrixClient.userApi.setDisplayName("someUserId", "someDisplayName") }
+        runBlocking { matrixClient.userApi.setDisplayName(UserId("user", "server"), "someDisplayName") }
 
         val request = mockWebServer.takeRequest()
-        assertThat(request.path).isEqualTo("/_matrix/client/r0/profile/someUserId/displayname")
+        assertThat(request.path).isEqualTo("/_matrix/client/r0/profile/%40user%3Aserver/displayname")
         assertThat(request.body.readUtf8()).isEqualTo("""{"displayname":"someDisplayName"}""")
         assertThat(request.method).isEqualTo(PUT.toString())
     }
 
     @Test
     fun `should get whoami`() {
-        val response = WhoAmIResponse("someUserId")
+        val response = WhoAmIResponse(UserId("user", "server"))
         mockWebServer.enqueue(
                 MockResponse()
                         .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -112,7 +113,7 @@ class UserApiClientTest {
 
         val result = runBlocking { matrixClient.userApi.whoAmI() }
 
-        assertThat(result).isEqualTo("someUserId")
+        assertThat(result).isEqualTo(UserId("user", "server"))
 
         val request = mockWebServer.takeRequest()
         assertThat(request.path).isEqualTo("/_matrix/client/r0/account/whoami")

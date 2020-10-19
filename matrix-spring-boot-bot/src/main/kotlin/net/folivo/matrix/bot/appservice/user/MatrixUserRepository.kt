@@ -1,12 +1,13 @@
 package net.folivo.matrix.bot.appservice.user
 
 import kotlinx.coroutines.flow.Flow
+import net.folivo.matrix.core.model.MatrixUserId
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface MatrixUserRepository : CoroutineCrudRepository<MatrixUser, String> {
+interface MatrixUserRepository : CoroutineCrudRepository<MatrixUser, MatrixUserId> {
 
     @Query(
             """

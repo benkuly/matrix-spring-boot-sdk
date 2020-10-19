@@ -1,5 +1,6 @@
 package net.folivo.matrix.bot.appservice.user
 
+import net.folivo.matrix.core.model.MatrixUserId
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Version
 import org.springframework.data.relational.core.mapping.Column
@@ -10,7 +11,7 @@ import org.springframework.data.relational.core.mapping.Table
 data class MatrixUser(
         @Id
         @Column("id")
-        val id: String,
+        val id: MatrixUserId,
 
         @Column("is_managed")
         val isManaged: Boolean = false,

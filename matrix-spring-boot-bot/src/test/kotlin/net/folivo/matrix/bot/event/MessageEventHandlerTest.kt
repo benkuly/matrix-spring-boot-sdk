@@ -10,8 +10,8 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.core.model.events.RoomEvent
 import net.folivo.matrix.core.model.events.StateEvent
-import net.folivo.matrix.core.model.events.m.room.AliasesEvent
-import net.folivo.matrix.core.model.events.m.room.AliasesEvent.AliasesEventContent
+import net.folivo.matrix.core.model.events.m.room.CanonicalAliasEvent
+import net.folivo.matrix.core.model.events.m.room.CanonicalAliasEvent.CanonicalAliasEventContent
 import net.folivo.matrix.core.model.events.m.room.MemberEvent
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
@@ -57,8 +57,8 @@ private fun testBody(): DescribeSpec.() -> Unit {
             it("should not delegate non message events") {
                 runBlocking {
                     cut.handleEvent(
-                            AliasesEvent(
-                                    content = AliasesEventContent(),
+                            CanonicalAliasEvent(
+                                    content = CanonicalAliasEventContent(),
                                     roomId = "someRoomId",
                                     id = "someMessageId",
                                     sender = "someSender",

@@ -6,7 +6,7 @@ import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface MatrixRoomRepository : CoroutineCrudRepository<MatrixRoom, String> {
+interface MatrixRoomRepository : CoroutineCrudRepository<MatrixRoom, MatrixRoomId> {
 
     @Query(
             """

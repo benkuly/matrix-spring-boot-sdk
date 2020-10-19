@@ -1,5 +1,6 @@
 package net.folivo.matrix.core.config
 
+import net.folivo.matrix.core.jackson.MatrixEventJacksonModule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.boot.autoconfigure.AutoConfigurations

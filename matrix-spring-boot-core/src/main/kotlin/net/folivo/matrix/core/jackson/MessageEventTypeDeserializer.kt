@@ -1,9 +1,10 @@
-package net.folivo.matrix.core.config
+package net.folivo.matrix.core.jackson
 
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.JsonNode
+import net.folivo.matrix.core.model.MatrixId.*
 import net.folivo.matrix.core.model.events.RoomEvent
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.UnknownMessageEventContent
@@ -26,10 +27,10 @@ class MessageEventTypeDeserializer(
 
         return MessageEvent(
                 content = context.readValue(contentParser, javaType),
-                id = node.get("event_id").asText(),
-                sender = node.get("sender").asText(),
+                id = EventId(node.get("event_id").asText()),
+                sender = UserId(node.get("sender").asText()),
                 originTimestamp = node.get("origin_server_ts").asLong(),
-                roomId = node.get("room_id")?.asText(),
+                roomId = node.get("room_id")?.asText()?.let { RoomId(it) },
                 unsigned = context.readValue(unsignedParser, RoomEvent.UnsignedData::class.java)
         )
     }

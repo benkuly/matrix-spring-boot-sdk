@@ -1,8 +1,10 @@
 package net.folivo.matrix.core.config
 
+import net.folivo.matrix.core.model.MatrixId.RoomAliasId
+import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.UnknownEvent
-import net.folivo.matrix.core.model.events.m.room.AliasesEvent
+import net.folivo.matrix.core.model.events.m.room.CanonicalAliasEvent
 import net.folivo.matrix.core.model.events.m.room.CreateEvent
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
@@ -29,46 +31,46 @@ class MatrixAutoconfigurationJsonTest {
         val content = """
         {
             "content": {
-                "aliases": [
-                    "#somewhere:example.org",
-                    "#another:example.org"
-                ]
+                "alias": "#somewhere:example.org"
             },
             "event_id": "$143273582443PhrSn:example.org",
             "origin_server_ts": 1432735824653,
             "room_id": "!jEsUZKDJdhlrceRyVU:example.org",
             "sender": "@example:example.org",
-            "state_key": "example.org",
-            "type": "m.room.aliases",
+            "state_key": "",
+            "type": "m.room.canonical_alias",
             "unsigned": {
                 "age": 1234
             }
         }
     """.trimIndent()
         val result = json.parseObject(content)
-        if (result is AliasesEvent) {
-            assertThat(result.content.aliases).contains("#somewhere:example.org", "#another:example.org")
+        if (result is CanonicalAliasEvent) {
+            assertThat(result.content.alias).isEqualTo(
+                    RoomAliasId("somewhere", "example.org")
+            )
             assertThat(result.unsigned?.age).isEqualTo(1234)
-            assertThat(result.type).isEqualTo("m.room.aliases")
+            assertThat(result.type).isEqualTo("m.room.canonical_alias")
         } else {
-            fail("result should be of type ${AliasesEvent::class}")
+            fail("result should be of type ${CanonicalAliasEvent::class} but was ${result::class}")
         }
     }
 
     @Test
     fun `should create subtype from room event`() {
+        val eventId = "\$something:example.org"
         val content = """
         {
             "content": {
                 "creator": "@example:example.org",
                 "m.federate": true,
                 "predecessor": {
-                    "event_id": "something:example.org",
+                    "event_id": "$eventId",
                     "room_id": "!oldroom:example.org"
                 },
                 "room_version": "1"
             },
-            "event_id": "!143273582443PhrSn:example.org",
+            "event_id": "$143273582443PhrSn:example.org",
             "origin_server_ts": 1432735824653,
             "room_id": "!jEsUZKDJdhlrceRyVU:example.org",
             "sender": "@example:example.org",
@@ -81,7 +83,7 @@ class MatrixAutoconfigurationJsonTest {
     """.trimIndent()
         val result = json.parseObject(content)
         if (result is CreateEvent) {
-            assertThat(result.content.creator).isEqualTo("@example:example.org")
+            assertThat(result.content.creator).isEqualTo(UserId("example", "example.org"))
             assertThat(result.unsigned?.age).isEqualTo(1234)
             assertThat(result.type).isEqualTo("m.room.create")
         } else {

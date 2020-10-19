@@ -1,12 +1,13 @@
 package net.folivo.matrix.restclient.api.rooms
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import net.folivo.matrix.core.model.MatrixId.UserId
 
 data class ThirdPartySigned(
         @JsonProperty("sender")
-        val sender: String,
+        val sender: UserId,
         @JsonProperty("mxid")
-        val mxid: String,
+        val mxid: UserId,
         @JsonProperty("token")
         val token: String,
         @JsonProperty("signatures")

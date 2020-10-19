@@ -2,6 +2,7 @@ package net.folivo.matrix.core.model.events.m.room
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import net.folivo.matrix.core.annotation.MatrixEvent
+import net.folivo.matrix.core.model.MatrixId.*
 import net.folivo.matrix.core.model.events.StandardStateEvent
 import net.folivo.matrix.core.model.events.StateEventContent
 
@@ -13,10 +14,10 @@ class NameEvent : StandardStateEvent<NameEvent.NameEventContent> {
 
     constructor(
             content: NameEventContent,
-            id: String,
-            sender: String,
+            id: EventId,
+            sender: UserId,
             originTimestamp: Long,
-            roomId: String? = null,
+            roomId: RoomId? = null,
             unsigned: UnsignedData,
             previousContent: NameEventContent? = null
     ) : super(
@@ -33,6 +34,6 @@ class NameEvent : StandardStateEvent<NameEvent.NameEventContent> {
 
     data class NameEventContent(
             @JsonProperty("name")
-            val name: String
+            val name: String = ""
     ) : StateEventContent
 }
