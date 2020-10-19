@@ -285,7 +285,7 @@ class RoomsApiClient(
                 .bodyValue(
                         mapOf(
                                 "visibility" to visibility.value,
-                                "room_alias_name" to roomAliasId?.full,
+                                "room_alias_name" to roomAliasId?.localpart,
                                 "name" to name,
                                 "topic" to topic,
                                 "invite" to invite,

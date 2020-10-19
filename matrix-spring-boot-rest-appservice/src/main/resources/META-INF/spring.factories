@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  net.folivo.matrix.appservice.config.MatrixAppserviceAutoconfiguration
+  net.folivo.matrix.appservice.config.AppserviceAutoconfiguration

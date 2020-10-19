@@ -7,6 +7,8 @@ import net.folivo.matrix.appservice.api.room.AppserviceRoomService
 import net.folivo.matrix.appservice.api.room.AppserviceRoomService.RoomExistingState
 import net.folivo.matrix.appservice.api.user.AppserviceUserService
 import net.folivo.matrix.appservice.api.user.AppserviceUserService.UserExistingState
+import net.folivo.matrix.core.model.MatrixId.RoomAliasId
+import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.RoomEvent
 import net.folivo.matrix.core.model.events.StateEvent
@@ -29,10 +31,13 @@ class DefaultAppserviceHandler(
                 val eventId = when (event) {
                     is RoomEvent<*, *> -> event.id
                     is StateEvent<*, *> -> event.id
-                    else                -> event.hashCode().toString() //FIXME test
+                    else                -> null
                 }
                 LOG.debug("incoming event $eventId in transaction $tnxId")
-                when (appserviceEventService.eventProcessingState(tnxId, eventId)) {
+                if (eventId == null) { //FIXME test
+                    LOG.debug("process event $eventId in transaction $tnxId")
+                    appserviceEventService.processEvent(event)
+                } else when (appserviceEventService.eventProcessingState(tnxId, eventId)) {
                     AppserviceEventService.EventProcessingState.NOT_PROCESSED -> {
                         LOG.debug("process event $eventId in transaction $tnxId")
                         appserviceEventService.processEvent(event)
@@ -52,7 +57,7 @@ class DefaultAppserviceHandler(
         }
     }
 
-    override suspend fun hasUser(userId: String): Boolean {
+    override suspend fun hasUser(userId: UserId): Boolean {
         return when (appserviceUserService.userExistingState(userId)) {
             UserExistingState.EXISTS -> true
             UserExistingState.DOES_NOT_EXISTS -> false
@@ -64,7 +69,7 @@ class DefaultAppserviceHandler(
         }
     }
 
-    override suspend fun hasRoomAlias(roomAlias: String): Boolean {
+    override suspend fun hasRoomAlias(roomAlias: RoomAliasId): Boolean {
         return when (appserviceRoomService.roomExistingState(roomAlias)) {
             RoomExistingState.EXISTS -> true
             RoomExistingState.DOES_NOT_EXISTS -> false

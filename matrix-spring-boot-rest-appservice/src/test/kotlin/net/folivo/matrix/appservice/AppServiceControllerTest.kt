@@ -6,6 +6,7 @@ import io.mockk.coEvery
 import io.mockk.junit5.MockKExtension
 import io.mockk.just
 import net.folivo.matrix.appservice.api.AppserviceHandler
+import net.folivo.matrix.core.model.MatrixId.*
 import net.folivo.matrix.core.model.events.RoomEvent
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.core.model.events.m.room.message.TextMessageEventContent
@@ -39,10 +40,10 @@ class AppServiceControllerTest {
                                 "events" to listOf(
                                         MessageEvent<TextMessageEventContent>(
                                                 TextMessageEventContent("hello"),
-                                                "someId",
-                                                "someSender",
+                                                EventId("event", "server"),
+                                                UserId("sender", "server"),
                                                 123,
-                                                "someRoomId",
+                                                RoomId("room", "server"),
                                                 RoomEvent.UnsignedData()
                                         )
                                 )
@@ -65,10 +66,10 @@ class AppServiceControllerTest {
                                 "events" to listOf(
                                         MessageEvent<TextMessageEventContent>(
                                                 TextMessageEventContent("hello"),
-                                                "someId",
-                                                "someSender",
+                                                EventId("event", "server"),
+                                                UserId("sender", "server"),
                                                 123,
-                                                "someRoomId",
+                                                RoomId("room", "server"),
                                                 RoomEvent.UnsignedData()
                                         )
                                 )
@@ -82,10 +83,10 @@ class AppServiceControllerTest {
 
     @Test
     fun `addTransactions should return 404 when handler is false`() {
-        coEvery { appserviceHandlerMock.hasRoomAlias("someRoomAlias") } returns false
+        coEvery { appserviceHandlerMock.hasRoomAlias(RoomAliasId("alias", "server")) } returns false
 
         webTestClient.get()
-                .uri("/_matrix/app/v1/rooms/someRoomAlias?access_token=validToken")
+                .uri("/_matrix/app/v1/rooms/{alias}?access_token=validToken", "#alias:server")
                 .accept(APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isNotFound
@@ -95,10 +96,10 @@ class AppServiceControllerTest {
 
     @Test
     fun `hasUser should return 200 when handler is true`() {
-        coEvery { appserviceHandlerMock.hasUser("someUserId") } returns true
+        coEvery { appserviceHandlerMock.hasUser(UserId("user", "server")) } returns true
 
         webTestClient.get()
-                .uri("/_matrix/app/v1/users/someUserId?access_token=validToken")
+                .uri("/_matrix/app/v1/users/{user}?access_token=validToken", "@user:server")
                 .accept(APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk
@@ -107,10 +108,10 @@ class AppServiceControllerTest {
 
     @Test
     fun `hasUser should return 404 when handler is false`() {
-        coEvery { appserviceHandlerMock.hasUser("someUserId") } returns false
+        coEvery { appserviceHandlerMock.hasUser(UserId("user", "server")) } returns false
 
         webTestClient.get()
-                .uri("/_matrix/app/v1/users/someUserId?access_token=validToken")
+                .uri("/_matrix/app/v1/users/{user}}?access_token=validToken", "@user:server")
                 .accept(APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isNotFound
@@ -120,10 +121,10 @@ class AppServiceControllerTest {
 
     @Test
     fun `hasRoomAlias should return 200 when handler is true`() {
-        coEvery { appserviceHandlerMock.hasRoomAlias("someRoomAlias") } returns true
+        coEvery { appserviceHandlerMock.hasRoomAlias(RoomAliasId("alias", "server")) } returns true
 
         webTestClient.get()
-                .uri("/_matrix/app/v1/rooms/someRoomAlias?access_token=validToken")
+                .uri("/_matrix/app/v1/rooms/{alias}?access_token=validToken", "#alias:server")
                 .accept(APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk
@@ -132,10 +133,10 @@ class AppServiceControllerTest {
 
     @Test
     fun `hasRoomAlias should return 404 when handler is false`() {
-        coEvery { appserviceHandlerMock.hasRoomAlias("someRoomAlias") } returns false
+        coEvery { appserviceHandlerMock.hasRoomAlias(RoomAliasId("alias", "server")) } returns false
 
         webTestClient.get()
-                .uri("/_matrix/app/v1/rooms/someRoomAlias?access_token=validToken")
+                .uri("/_matrix/app/v1/rooms/{alias}?access_token=validToken", "#alias:server")
                 .accept(APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isNotFound

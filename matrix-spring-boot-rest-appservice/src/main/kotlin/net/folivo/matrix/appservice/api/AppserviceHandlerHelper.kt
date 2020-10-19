@@ -3,6 +3,8 @@ package net.folivo.matrix.appservice.api
 import net.folivo.matrix.appservice.api.room.AppserviceRoomService
 import net.folivo.matrix.appservice.api.user.AppserviceUserService
 import net.folivo.matrix.core.api.MatrixServerException
+import net.folivo.matrix.core.model.MatrixId.RoomAliasId
+import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
 
@@ -16,11 +18,11 @@ class AppserviceHandlerHelper(
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    suspend fun registerManagedUser(userId: String) {
+    suspend fun registerManagedUser(userId: UserId) {
         try {
             matrixClient.userApi.register(
                     authenticationType = "m.login.application_service",
-                    username = userId.trimStart('@').substringBefore(":")
+                    username = userId.localpart
             )
         } catch (error: MatrixServerException) {
             if (error.errorResponse.errorCode == "M_USER_IN_USE") {
@@ -38,11 +40,11 @@ class AppserviceHandlerHelper(
         appserviceUserService.onRegisteredUser(userId)
     }
 
-    suspend fun createManagedRoom(roomAlias: String) {
+    suspend fun createManagedRoom(roomAlias: RoomAliasId) {
         val createRoomParameter = appserviceRoomService.getCreateRoomParameter(roomAlias)
         val roomId = matrixClient.roomsApi
                 .createRoom(
-                        roomAliasName = roomAlias.trimStart('#').substringBefore(":"),
+                        roomAliasId = roomAlias,
                         visibility = createRoomParameter.visibility,
                         name = createRoomParameter.name,
                         topic = createRoomParameter.topic,

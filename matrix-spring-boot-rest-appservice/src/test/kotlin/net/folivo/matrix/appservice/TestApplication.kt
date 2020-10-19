@@ -5,6 +5,7 @@ import net.folivo.matrix.appservice.api.room.AppserviceRoomService
 import net.folivo.matrix.appservice.api.room.CreateRoomParameter
 import net.folivo.matrix.appservice.api.user.AppserviceUserService
 import net.folivo.matrix.appservice.api.user.RegisterUserParameter
+import net.folivo.matrix.core.model.MatrixId.*
 import net.folivo.matrix.core.model.events.Event
 import org.springframework.boot.SpringBootConfiguration
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
@@ -39,12 +40,12 @@ class TestApplication {
         return object : AppserviceEventService {
             override suspend fun eventProcessingState(
                     tnxId: String,
-                    eventId: String
+                    eventId: EventId
             ): AppserviceEventService.EventProcessingState {
                 return AppserviceEventService.EventProcessingState.PROCESSED
             }
 
-            override suspend fun onEventProcessed(tnxId: String, eventId: String) {
+            override suspend fun onEventProcessed(tnxId: String, eventId: EventId) {
             }
 
             override suspend fun processEvent(event: Event<*>) {
@@ -55,15 +56,15 @@ class TestApplication {
     @Bean
     fun noOpAppserviceRoomService(): AppserviceRoomService {
         return object : AppserviceRoomService {
-            override suspend fun roomExistingState(roomAlias: String): AppserviceRoomService.RoomExistingState {
+            override suspend fun roomExistingState(roomAlias: RoomAliasId): AppserviceRoomService.RoomExistingState {
                 return AppserviceRoomService.RoomExistingState.DOES_NOT_EXISTS
             }
 
-            override suspend fun getCreateRoomParameter(roomAlias: String): CreateRoomParameter {
+            override suspend fun getCreateRoomParameter(roomAlias: RoomAliasId): CreateRoomParameter {
                 return CreateRoomParameter()
             }
 
-            override suspend fun onCreatedRoom(roomAlias: String, roomId: String) {
+            override suspend fun onCreatedRoom(roomAlias: RoomAliasId, roomId: RoomId) {
 
             }
         }
@@ -72,15 +73,15 @@ class TestApplication {
     @Bean
     fun noOpAppserviceUserService(): AppserviceUserService {
         return object : AppserviceUserService {
-            override suspend fun userExistingState(userId: String): AppserviceUserService.UserExistingState {
+            override suspend fun userExistingState(userId: UserId): AppserviceUserService.UserExistingState {
                 return AppserviceUserService.UserExistingState.DOES_NOT_EXISTS
             }
 
-            override suspend fun getRegisterUserParameter(userId: String): RegisterUserParameter {
+            override suspend fun getRegisterUserParameter(userId: UserId): RegisterUserParameter {
                 return RegisterUserParameter()
             }
 
-            override suspend fun onRegisteredUser(userId: String) {
+            override suspend fun onRegisteredUser(userId: UserId) {
 
             }
         }
