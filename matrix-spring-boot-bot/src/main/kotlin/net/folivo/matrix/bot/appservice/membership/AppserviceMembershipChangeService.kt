@@ -6,6 +6,8 @@ import net.folivo.matrix.bot.appservice.room.MatrixRoomService
 import net.folivo.matrix.bot.appservice.user.MatrixUserService
 import net.folivo.matrix.bot.membership.MembershipChangeService
 import net.folivo.matrix.bot.util.BotServiceHelper
+import net.folivo.matrix.core.model.MatrixId.RoomId
+import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
 import org.springframework.transaction.annotation.Transactional
@@ -23,13 +25,13 @@ class AppserviceMembershipChangeService(
     }
 
     @Transactional
-    override suspend fun onRoomJoin(userId: String, roomId: String) {
+    override suspend fun onRoomJoin(userId: UserId, roomId: RoomId) {
         LOG.debug("join in $roomId of user $userId")
         membershipService.getOrCreateMembership(userId = userId, roomId = roomId)
     }
 
     @Transactional
-    override suspend fun onRoomLeave(userId: String, roomId: String) {
+    override suspend fun onRoomLeave(userId: UserId, roomId: RoomId) {
         if (membershipService.doesRoomContainsMembers(roomId, setOf(userId))) {
 
             LOG.debug("save room leave in room $roomId of user $userId")
@@ -58,14 +60,14 @@ class AppserviceMembershipChangeService(
         }
     }
 
-    private suspend fun deleteUserWhenNotManaged(userId: String) {
+    private suspend fun deleteUserWhenNotManaged(userId: UserId) {
         if (!userService.getOrCreateUser(userId).isManaged && membershipService.getMembershipsSizeByUserId(userId) == 0L) {
             LOG.debug("delete user $userId because there are no memberships left")
             userService.deleteUser(userId)
         }
     }
 
-    override suspend fun shouldJoinRoom(userId: String, roomId: String): Boolean {
+    override suspend fun shouldJoinRoom(userId: UserId, roomId: RoomId): Boolean {
         return true
     }
 }

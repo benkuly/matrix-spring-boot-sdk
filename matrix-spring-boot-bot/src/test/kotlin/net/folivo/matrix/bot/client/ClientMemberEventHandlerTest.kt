@@ -7,6 +7,7 @@ import io.mockk.clearMocks
 import io.mockk.coVerify
 import io.mockk.mockk
 import net.folivo.matrix.bot.membership.MembershipChangeHandler
+import net.folivo.matrix.core.model.MatrixId.*
 import net.folivo.matrix.core.model.events.m.room.MemberEvent
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.INVITE
@@ -31,16 +32,20 @@ private fun testBody(): DescribeSpec.() -> Unit {
         describe(ClientMemberEventHandler::handleEvent.name) {
             val event = MemberEvent(
                     MemberEventContent(membership = INVITE),
-                    "someId",
-                    "someSender",
+                    EventId("event", "server"),
+                    UserId("sender", "server"),
                     123,
                     null,
                     MemberUnsignedData(),
-                    "someInvitedUserId"
+                    UserId("invited", "server")
             )
             it("should delegate to ${MembershipChangeHandler::class.simpleName}") {
-                cut.handleEvent(event, "someRoomId")
-                coVerify { membershipChangeHandlerMock.handleMembership("someInvitedUserId", "someRoomId", INVITE) }
+                cut.handleEvent(event, RoomId("room", "server"))
+                coVerify {
+                    membershipChangeHandlerMock.handleMembership(
+                            UserId("invited", "server"), RoomId("room", "server"), INVITE
+                    )
+                }
             }
         }
 

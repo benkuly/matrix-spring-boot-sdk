@@ -1,6 +1,7 @@
 package net.folivo.matrix.restclient.api.sync
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import net.folivo.matrix.core.model.MatrixId.RoomId
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.StrippedStateEvent
 
@@ -22,11 +23,11 @@ data class SyncResponse(
 ) {
     data class Rooms(
             @JsonProperty("join")
-            val join: Map<String, JoinedRoom>,
+            val join: Map<RoomId, JoinedRoom>,
             @JsonProperty("invite")
-            val invite: Map<String, InvitedRoom>,
+            val invite: Map<RoomId, InvitedRoom>,
             @JsonProperty("leave")
-            val leave: Map<String, LeftRoom>
+            val leave: Map<RoomId, LeftRoom>
     ) {
         data class JoinedRoom(
                 @JsonProperty("summary")

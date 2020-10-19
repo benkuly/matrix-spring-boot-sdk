@@ -6,6 +6,8 @@ import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.RESTRICTED
 import net.folivo.matrix.bot.config.MatrixBotProperties.TrackMembershipMode.ALL
 import net.folivo.matrix.bot.config.MatrixBotProperties.TrackMembershipMode.MANAGED
 import net.folivo.matrix.bot.util.BotServiceHelper
+import net.folivo.matrix.core.model.MatrixId.RoomId
+import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.*
 import net.folivo.matrix.restclient.MatrixClient
@@ -22,7 +24,7 @@ class MembershipChangeHandler(
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    suspend fun handleMembership(userId: String, roomId: String, membership: Membership) {
+    suspend fun handleMembership(userId: UserId, roomId: RoomId, membership: Membership) {
         val isManagedUser = botHelper.isManagedUser(userId)
         val serverName = botProperties.serverName
 
@@ -31,13 +33,13 @@ class MembershipChangeHandler(
                 val autoJoin = botProperties.autoJoin
                 if (isManagedUser && autoJoin != DISABLED) {
                     val asUserId = if (userId == botHelper.getBotUserId()) null else userId
-                    if (autoJoin == RESTRICTED && roomId.substringAfter(":") != serverName) {
+                    if (autoJoin == RESTRICTED && roomId.domain != serverName) {
                         LOG.warn("reject room invite of $userId to $roomId because autoJoin is restricted to $serverName")
                         matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)
                     } else {
                         if (membershipChangeService.shouldJoinRoom(userId, roomId)) {
                             LOG.debug("join room $roomId with $userId")
-                            matrixClient.roomsApi.joinRoom(roomIdOrAlias = roomId, asUserId = asUserId)
+                            matrixClient.roomsApi.joinRoom(roomId = roomId, asUserId = asUserId)
                         } else {
                             LOG.debug("reject room invite of $userId to $roomId because autoJoin denied by service")
                             matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)

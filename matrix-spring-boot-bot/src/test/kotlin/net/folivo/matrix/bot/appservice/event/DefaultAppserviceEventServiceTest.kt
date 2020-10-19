@@ -10,6 +10,8 @@ import net.folivo.matrix.appservice.api.event.AppserviceEventService.EventProces
 import net.folivo.matrix.appservice.api.event.AppserviceEventService.EventProcessingState.PROCESSED
 import net.folivo.matrix.bot.appservice.sync.MatrixSyncService
 import net.folivo.matrix.bot.event.MatrixEventHandler
+import net.folivo.matrix.core.model.MatrixId.EventId
+import net.folivo.matrix.core.model.MatrixId.RoomId
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 
 class DefaultAppserviceEventServiceTest : DescribeSpec(testBody())
@@ -30,29 +32,36 @@ private fun testBody(): DescribeSpec.() -> Unit {
 
         describe(DefaultAppserviceEventService::eventProcessingState.name) {
             describe("event already processed") {
-                coEvery { eventTransactionServiceMock.hasEvent("someTnxId", "someEventId") }
+                coEvery { eventTransactionServiceMock.hasEvent("someTnxId", EventId("event", "server")) }
                         .returns(true)
 
                 it("should return $PROCESSED") {
-                    cut.eventProcessingState("someTnxId", "someEventId")
+                    cut.eventProcessingState("someTnxId", EventId("event", "server"))
                             .shouldBe(PROCESSED)
                 }
             }
             describe("event not processed") {
-                coEvery { eventTransactionServiceMock.hasEvent("someTnxId", "someEventId") }
+                coEvery { eventTransactionServiceMock.hasEvent("someTnxId", EventId("event", "server")) }
                         .returns(false)
 
                 it("should return $NOT_PROCESSED") {
-                    cut.eventProcessingState("someTnxId", "someEventId")
+                    cut.eventProcessingState("someTnxId", EventId("event", "server"))
                             .shouldBe(NOT_PROCESSED)
                 }
             }
         }
         describe(DefaultAppserviceEventService::onEventProcessed.name) {
             it("should save event as processed") {
-                cut.onEventProcessed("someTnxId", "someEventId")
+                cut.onEventProcessed("someTnxId", EventId("event", "server"))
 
-                coVerify { eventTransactionServiceMock.saveEvent(MatrixEventTransaction("someTnxId", "someEventId")) }
+                coVerify {
+                    eventTransactionServiceMock.saveEvent(
+                            MatrixEventTransaction(
+                                    "someTnxId",
+                                    EventId("event", "server")
+                            )
+                    )
+                }
             }
         }
         describe(DefaultAppserviceEventService::processEvent.name) {
@@ -60,14 +69,14 @@ private fun testBody(): DescribeSpec.() -> Unit {
             coEvery { eventHandlerMock2.supports(any()) }.returns(false)
 
             val event = mockk<MessageEvent<*>> {
-                every { roomId } returns "someRoomId"
+                every { roomId } returns RoomId("room", "server")
             }
             cut.processEvent(event)
             it("should sync room") {
-                coVerify { syncServiceMock.syncRoomMemberships("someRoomId") }
+                coVerify { syncServiceMock.syncRoomMemberships(RoomId("room", "server")) }
             }
             it("should delegate to matching event handler") {
-                coVerify { eventHandlerMock1.handleEvent(event, "someRoomId") }
+                coVerify { eventHandlerMock1.handleEvent(event, RoomId("room", "server")) }
             }
             it("should not delegate to not matching event handler") {
                 coVerify(exactly = 0) { eventHandlerMock2.handleEvent(any(), any()) }

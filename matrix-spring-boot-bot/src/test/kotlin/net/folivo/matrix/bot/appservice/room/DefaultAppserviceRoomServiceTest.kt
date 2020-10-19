@@ -8,6 +8,8 @@ import io.mockk.mockk
 import net.folivo.matrix.appservice.api.room.AppserviceRoomService.RoomExistingState.*
 import net.folivo.matrix.appservice.api.room.CreateRoomParameter
 import net.folivo.matrix.bot.util.BotServiceHelper
+import net.folivo.matrix.core.model.MatrixId.RoomAliasId
+import net.folivo.matrix.core.model.MatrixId.RoomId
 
 class DefaultAppserviceRoomServiceTest : DescribeSpec(testBody())
 
@@ -18,33 +20,36 @@ private fun testBody(): DescribeSpec.() -> Unit {
 
         val cut = DefaultAppserviceRoomService(roomServiceMock, helperMock)
 
+        val roomAlias = RoomAliasId("alias", "server")
+
         describe(DefaultAppserviceRoomService::roomExistingState.name) {
             it("should return $EXISTS when alias does exists") {
-                coEvery { roomServiceMock.existsByRoomAlias("someAlias") }.returns(true)
-                cut.roomExistingState("someAlias").shouldBe(EXISTS)
+                coEvery { roomServiceMock.existsByRoomAlias(roomAlias) }.returns(true)
+                cut.roomExistingState(roomAlias).shouldBe(EXISTS)
             }
             it("should return $CAN_BE_CREATED when alias does not exists but is managed") {
-                coEvery { roomServiceMock.existsByRoomAlias("someAlias") }.returns(false)
-                coEvery { helperMock.isManagedRoom("someAlias") }.returns(true)
-                cut.roomExistingState("someAlias").shouldBe(CAN_BE_CREATED)
+                coEvery { roomServiceMock.existsByRoomAlias(roomAlias) }.returns(false)
+                coEvery { helperMock.isManagedRoom(roomAlias) }.returns(true)
+                cut.roomExistingState(roomAlias).shouldBe(CAN_BE_CREATED)
             }
             it("should return $DOES_NOT_EXISTS when alias does not exists and is not managed") {
-                coEvery { roomServiceMock.existsByRoomAlias("someAlias") }.returns(false)
-                coEvery { helperMock.isManagedRoom("someAlias") }.returns(false)
-                cut.roomExistingState("someAlias").shouldBe(DOES_NOT_EXISTS)
+                coEvery { roomServiceMock.existsByRoomAlias(roomAlias) }.returns(false)
+                coEvery { helperMock.isManagedRoom(roomAlias) }.returns(false)
+                cut.roomExistingState(roomAlias).shouldBe(DOES_NOT_EXISTS)
             }
         }
 
         describe(DefaultAppserviceRoomService::getCreateRoomParameter.name) {
             it("should return empty ${CreateRoomParameter::class.simpleName}") {
-                cut.getCreateRoomParameter("bla").shouldBe(CreateRoomParameter())
+                cut.getCreateRoomParameter(roomAlias).shouldBe(CreateRoomParameter())
             }
         }
 
         describe(DefaultAppserviceRoomService::onCreatedRoom.name) {
+            val room = RoomId("room", "server")
             it("should save room alias") {
-                cut.onCreatedRoom("someRoomAlias", "someRoomId")
-                coVerify { roomServiceMock.getOrCreateRoomAlias("someRoomAlias", "someRoomId") }
+                cut.onCreatedRoom(roomAlias, room)
+                coVerify { roomServiceMock.getOrCreateRoomAlias(roomAlias, room) }
             }
         }
     }

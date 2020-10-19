@@ -5,37 +5,42 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.mockk.*
 import net.folivo.matrix.bot.util.BotServiceHelper
+import net.folivo.matrix.core.model.MatrixId.UserId
 
 class PersistentSyncBatchTokenServiceTest : DescribeSpec(testBody())
 
 private fun testBody(): DescribeSpec.() -> Unit {
     return {
         val syncBatchTokenRepositoryMock: MatrixSyncBatchTokenRepository = mockk(relaxed = true)
+
+        val botUserId = UserId("bot", "server")
+        val userId = UserId("user", "server")
+
         val helperMock: BotServiceHelper = mockk {
-            every { getBotUserId() }.returns("@bot:server")
+            every { getBotUserId() }.returns(botUserId)
         }
 
         val cut = PersistentSyncBatchTokenService(syncBatchTokenRepositoryMock, helperMock)
 
         describe(PersistentSyncBatchTokenService::getBatchToken.name) {
             it("should get token from repository") {
-                coEvery { syncBatchTokenRepositoryMock.findByUserId("@user:server") }
-                        .returns(MatrixSyncBatchToken("@user:server", "someToken"))
-                cut.getBatchToken("@user:server").shouldBe("someToken")
+                coEvery { syncBatchTokenRepositoryMock.findByUserId(userId) }
+                        .returns(MatrixSyncBatchToken(userId, "someToken"))
+                cut.getBatchToken(userId).shouldBe("someToken")
             }
             it("should use bot user when no user given") {
-                coEvery { syncBatchTokenRepositoryMock.findByUserId("@bot:server") }
-                        .returns(MatrixSyncBatchToken("@user:server", "someToken"))
+                coEvery { syncBatchTokenRepositoryMock.findByUserId(botUserId) }
+                        .returns(MatrixSyncBatchToken(userId, "someToken"))
                 cut.getBatchToken().shouldBe("someToken")
             }
             it("should return null when no token found") {
-                coEvery { syncBatchTokenRepositoryMock.findByUserId("@user:server") }
-                        .returns(MatrixSyncBatchToken("@user:server", null))
-                cut.getBatchToken("@user:server").shouldBeNull()
+                coEvery { syncBatchTokenRepositoryMock.findByUserId(userId) }
+                        .returns(MatrixSyncBatchToken(userId, null))
+                cut.getBatchToken(userId).shouldBeNull()
 
-                coEvery { syncBatchTokenRepositoryMock.findByUserId("@user:server") }
+                coEvery { syncBatchTokenRepositoryMock.findByUserId(userId) }
                         .returns(null)
-                cut.getBatchToken("@user:server").shouldBeNull()
+                cut.getBatchToken(userId).shouldBeNull()
             }
         }
 
@@ -43,31 +48,31 @@ private fun testBody(): DescribeSpec.() -> Unit {
             describe("token does not exists in database") {
                 beforeTest { coEvery { syncBatchTokenRepositoryMock.findByUserId(any()) }.returns(null) }
                 it("should save new token") {
-                    cut.setBatchToken("someToken", "@user:server")
-                    coVerify { syncBatchTokenRepositoryMock.save(MatrixSyncBatchToken("@user:server", "someToken")) }
+                    cut.setBatchToken("someToken", userId)
+                    coVerify { syncBatchTokenRepositoryMock.save(MatrixSyncBatchToken(userId, "someToken")) }
                 }
                 it("should use bot user when no user given") {
                     cut.setBatchToken("someToken")
-                    coVerify { syncBatchTokenRepositoryMock.save(MatrixSyncBatchToken("@bot:server", "someToken")) }
+                    coVerify { syncBatchTokenRepositoryMock.save(MatrixSyncBatchToken(botUserId, "someToken")) }
                 }
             }
             describe("token exists in database") {
                 it("should override token") {
                     coEvery { syncBatchTokenRepositoryMock.findByUserId(any()) }
-                            .returns(MatrixSyncBatchToken("@user:server", "someToken", version = 3))
-                    cut.setBatchToken("someNewToken", "@user:server")
+                            .returns(MatrixSyncBatchToken(userId, "someToken", version = 3))
+                    cut.setBatchToken("someNewToken", userId)
                     coVerify {
                         syncBatchTokenRepositoryMock
-                                .save(MatrixSyncBatchToken("@user:server", "someNewToken", version = 3))
+                                .save(MatrixSyncBatchToken(userId, "someNewToken", version = 3))
                     }
                 }
                 it("should use bot user when no user given") {
                     coEvery { syncBatchTokenRepositoryMock.findByUserId(any()) }
-                            .returns(MatrixSyncBatchToken("@bot:server", "someToken", version = 3))
+                            .returns(MatrixSyncBatchToken(botUserId, "someToken", version = 3))
                     cut.setBatchToken("someNewToken")
                     coVerify {
                         syncBatchTokenRepositoryMock
-                                .save(MatrixSyncBatchToken("@bot:server", "someNewToken", version = 3))
+                                .save(MatrixSyncBatchToken(botUserId, "someNewToken", version = 3))
                     }
                 }
             }

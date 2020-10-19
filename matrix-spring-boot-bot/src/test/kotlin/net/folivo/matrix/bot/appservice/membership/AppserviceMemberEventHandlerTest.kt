@@ -10,6 +10,7 @@ import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
 import net.folivo.matrix.bot.membership.MembershipChangeHandler
 import net.folivo.matrix.core.api.ErrorResponse
 import net.folivo.matrix.core.api.MatrixServerException
+import net.folivo.matrix.core.model.MatrixId.*
 import net.folivo.matrix.core.model.events.m.room.MemberEvent
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.INVITE
@@ -37,25 +38,35 @@ private fun testBody(): DescribeSpec.() -> Unit {
         describe(AppserviceMemberEventHandler::handleEvent.name) {
             val event = MemberEvent(
                     MemberEventContent(membership = INVITE),
-                    "someId",
-                    "someSender",
+                    EventId("event", "server"),
+                    UserId("sender", "server"),
                     123,
                     null,
                     MemberUnsignedData(),
-                    "someInvitedUserId"
+                    UserId("invitedUser", "server")
             )
             it("should delegate to ${MembershipChangeHandler::class.simpleName}") {
-                cut.handleEvent(event, "someRoomId")
-                coVerify { membershipChangeHandlerMock.handleMembership("someInvitedUserId", "someRoomId", INVITE) }
+                cut.handleEvent(event, RoomId("room", "server"))
+                coVerify {
+                    membershipChangeHandlerMock.handleMembership(
+                            UserId("invitedUser", "server"),
+                            RoomId("room", "server"),
+                            INVITE
+                    )
+                }
             }
             describe("delegate to ${MembershipChangeHandler::class.simpleName} fails with ${MatrixServerException::class.simpleName} and $FORBIDDEN") {
                 coEvery { membershipChangeHandlerMock.handleMembership(any(), any(), any()) }
                         .throws(MatrixServerException(FORBIDDEN, ErrorResponse("FORBIDDEN")))
                 it("should try to register user") {
-                    cut.handleEvent(event, "someRoomId")
+                    cut.handleEvent(event, RoomId("room", "server"))
                     coVerify {
-                        appserviceHelperMock.registerManagedUser("someInvitedUserId")
-                        membershipChangeHandlerMock.handleMembership("someInvitedUserId", "someRoomId", INVITE)
+                        appserviceHelperMock.registerManagedUser(UserId("invitedUser", "server"))
+                        membershipChangeHandlerMock.handleMembership(
+                                UserId("invitedUser", "server"),
+                                RoomId("room", "server"),
+                                INVITE
+                        )
                     }
                 }
             }

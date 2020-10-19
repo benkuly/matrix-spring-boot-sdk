@@ -8,6 +8,7 @@ import io.mockk.clearMocks
 import io.mockk.coVerifyAll
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import net.folivo.matrix.core.model.MatrixId.*
 import net.folivo.matrix.core.model.events.RoomEvent
 import net.folivo.matrix.core.model.events.StateEvent
 import net.folivo.matrix.core.model.events.m.room.CanonicalAliasEvent
@@ -41,12 +42,12 @@ private fun testBody(): DescribeSpec.() -> Unit {
                     cut.handleEvent(
                             MessageEvent(
                                     content = content,
-                                    roomId = "someRoomId",
-                                    id = "someMessageId",
-                                    sender = "someSender",
+                                    roomId = RoomId("room", "server"),
+                                    id = EventId("event", "server"),
+                                    sender = UserId("sender", "server"),
                                     originTimestamp = 1234,
                                     unsigned = RoomEvent.UnsignedData()
-                            ), "roomId"
+                            ), RoomId("room", "server")
                     )
                 }
                 coVerifyAll {
@@ -59,13 +60,12 @@ private fun testBody(): DescribeSpec.() -> Unit {
                     cut.handleEvent(
                             CanonicalAliasEvent(
                                     content = CanonicalAliasEventContent(),
-                                    roomId = "someRoomId",
-                                    id = "someMessageId",
-                                    sender = "someSender",
+                                    roomId = RoomId("room", "server"),
+                                    id = EventId("event", "server"),
+                                    sender = UserId("sender", "server"),
                                     originTimestamp = 1234,
-                                    stateKey = "",
                                     unsigned = StateEvent.UnsignedData()
-                            ), "roomId"
+                            ), RoomId("room", "server")
                     )
                 }
                 coVerifyAll {

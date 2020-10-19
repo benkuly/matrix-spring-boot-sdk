@@ -5,6 +5,7 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import net.folivo.matrix.bot.config.MatrixBotDatabaseAutoconfiguration
+import net.folivo.matrix.core.model.MatrixId.EventId
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest
 import org.springframework.data.r2dbc.core.DatabaseClient
@@ -25,16 +26,16 @@ private fun testBody(cut: MatrixEventTransactionRepository, dbClient: DatabaseCl
         beforeSpec {
             dbClient.insert()
                     .into<MatrixEventTransaction>()
-                    .using(MatrixEventTransaction("someTnxId", "someIdOrHash"))
+                    .using(MatrixEventTransaction("someTnxId", EventId("event", "server")))
                     .then().awaitFirstOrNull()
         }
 
         describe(MatrixEventTransactionRepository::existsByTnxIdAndEventId.name) {
             it("when transaction exists in database it should return true") {
-                cut.existsByTnxIdAndEventId("someTnxId", "someIdOrHash").shouldBeTrue()
+                cut.existsByTnxIdAndEventId("someTnxId", EventId("event", "server")).shouldBeTrue()
             }
             it("when transaction does not exists in database it should return false") {
-                cut.existsByTnxIdAndEventId("someUnknownTnxId", "someIdOrHash").shouldBeFalse()
+                cut.existsByTnxIdAndEventId("someUnknownTnxId", EventId("event", "server")).shouldBeFalse()
             }
         }
 

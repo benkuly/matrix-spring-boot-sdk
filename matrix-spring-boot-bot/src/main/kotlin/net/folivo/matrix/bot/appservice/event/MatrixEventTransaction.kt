@@ -1,5 +1,6 @@
 package net.folivo.matrix.bot.appservice.event
 
+import net.folivo.matrix.core.model.MatrixId.EventId
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Version
 import org.springframework.data.relational.core.mapping.Column
@@ -10,7 +11,7 @@ data class MatrixEventTransaction(
         @Column("tnx_id")
         var tnxId: String,
         @Column("event_id")
-        var eventId: String,
+        var eventId: EventId,
         @Id
         @Column("id")
         val id: String = "$tnxId-$eventId",

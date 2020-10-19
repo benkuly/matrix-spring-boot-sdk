@@ -1,5 +1,6 @@
 package net.folivo.matrix.bot.event
 
+import net.folivo.matrix.core.model.MatrixId.RoomId
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.restclient.MatrixClient
@@ -18,7 +19,7 @@ class MessageEventHandler(
         return clazz == MessageEvent::class.java
     }
 
-    override suspend fun handleEvent(event: Event<*>, roomId: String?) {
+    override suspend fun handleEvent(event: Event<*>, roomId: RoomId?) {
         if (event is MessageEvent<*>) {
             if (roomId == null) {
                 LOG.info("could not handle message event due to missing roomId")

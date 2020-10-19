@@ -6,6 +6,8 @@ import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.*
 import net.folivo.matrix.bot.config.MatrixBotProperties.TrackMembershipMode.*
 import net.folivo.matrix.bot.util.BotServiceHelper
+import net.folivo.matrix.core.model.MatrixId.RoomId
+import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.*
 import net.folivo.matrix.restclient.MatrixClient
 
@@ -27,8 +29,13 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 botPropertiesMock
         )
 
+        val botUserId = UserId("bot", "server")
+        val userId = UserId("user", "server")
+        val roomId = RoomId("room", "server")
+        val roomOnForeignServerId = RoomId("room", "foreignServer")
+
         beforeTest {
-            every { botHelperMock.getBotUserId() }.returns("@bot:server")
+            every { botHelperMock.getBotUserId() }.returns(botUserId)
             every { botHelperMock.isManagedUser(any()) }.returns(true)
             every { botPropertiesMock.serverName }.returns("server")
             coEvery { membershipChangeServiceMock.shouldJoinRoom(any(), any()) }.returns(true)
@@ -38,78 +45,78 @@ private fun testBody(): DescribeSpec.() -> Unit {
             describe("membership is $INVITE") {
                 it("should do nothing when autoJoin is $DISABLED") {
                     every { botPropertiesMock.autoJoin }.returns(DISABLED)
-                    cut.handleMembership("@user:server", "!room:server", INVITE)
+                    cut.handleMembership(userId, roomId, INVITE)
                     coVerify {
                         matrixClientMock wasNot Called
                     }
                 }
                 it("should do nothing when user is not managed") {
                     every { botPropertiesMock.autoJoin }.returns(ENABLED)
-                    every { botHelperMock.isManagedUser("@user:server") }.returns(false)
-                    cut.handleMembership("@user:server", "!room:server", INVITE)
+                    every { botHelperMock.isManagedUser(userId) }.returns(false)
+                    cut.handleMembership(userId, roomId, INVITE)
                     coVerify {
                         matrixClientMock wasNot Called
                     }
                 }
                 it("should leave room when autoJoin to foreign server is $RESTRICTED") {
                     every { botPropertiesMock.autoJoin }.returns(RESTRICTED)
-                    cut.handleMembership("@user:server", "!room:foreignServer", INVITE)
+                    cut.handleMembership(userId, roomOnForeignServerId, INVITE)
                     coVerify {
-                        matrixClientMock.roomsApi.leaveRoom("!room:foreignServer", asUserId = "@user:server")
+                        matrixClientMock.roomsApi.leaveRoom(roomOnForeignServerId, asUserId = userId)
                     }
                 }
                 it("should join room when autoJoin is $RESTRICTED, but server is allowed") {
                     every { botPropertiesMock.autoJoin }.returns(RESTRICTED)
-                    cut.handleMembership("@user:server", "!room:server", INVITE)
+                    cut.handleMembership(userId, roomId, INVITE)
                     coVerify {
-                        matrixClientMock.roomsApi.joinRoom("!room:server", asUserId = "@user:server")
+                        matrixClientMock.roomsApi.joinRoom(roomId, asUserId = userId)
                     }
                 }
                 it("should join room when autoJoin is $ENABLED") {
                     every { botPropertiesMock.autoJoin }.returns(ENABLED)
-                    cut.handleMembership("@user:server", "!room:foreignServer", INVITE)
+                    cut.handleMembership(userId, roomOnForeignServerId, INVITE)
                     coVerify {
-                        matrixClientMock.roomsApi.joinRoom("!room:foreignServer", asUserId = "@user:server")
+                        matrixClientMock.roomsApi.joinRoom(roomOnForeignServerId, asUserId = userId)
                     }
                 }
                 it("should not join and leave room when delegated server wants to") {
                     every { botPropertiesMock.autoJoin }.returns(ENABLED)
-                    coEvery { membershipChangeServiceMock.shouldJoinRoom("@user:server", "!room:foreignServer") }
+                    coEvery { membershipChangeServiceMock.shouldJoinRoom(userId, roomOnForeignServerId) }
                             .returns(false)
-                    cut.handleMembership("@user:server", "!room:foreignServer", INVITE)
+                    cut.handleMembership(userId, roomOnForeignServerId, INVITE)
                     coVerify {
-                        matrixClientMock.roomsApi.leaveRoom("!room:foreignServer", asUserId = "@user:server")
+                        matrixClientMock.roomsApi.leaveRoom(roomOnForeignServerId, asUserId = userId)
                     }
                 }
             }
             describe("membership is $JOIN") {
                 it("should notify service when trackMembershipMode is $ALL") {
                     every { botPropertiesMock.trackMembership }.returns(ALL)
-                    every { botHelperMock.isManagedUser("@user:server") }.returns(false)
-                    cut.handleMembership("@user:server", "!room:server", JOIN)
+                    every { botHelperMock.isManagedUser(userId) }.returns(false)
+                    cut.handleMembership(userId, roomId, JOIN)
                     coVerify {
-                        membershipChangeServiceMock.onRoomJoin("@user:server", "!room:server")
+                        membershipChangeServiceMock.onRoomJoin(userId, roomId)
                     }
                 }
                 it("should notify service when trackMembershipMode is $MANAGED and user is managed") {
                     every { botPropertiesMock.trackMembership }.returns(MANAGED)
-                    cut.handleMembership("@user:server", "!room:server", JOIN)
+                    cut.handleMembership(userId, roomId, JOIN)
                     coVerify {
-                        membershipChangeServiceMock.onRoomJoin("@user:server", "!room:server")
+                        membershipChangeServiceMock.onRoomJoin(userId, roomId)
                     }
                 }
                 it("should not notify service when trackMembershipMode is $MANAGED and user is not managed") {
                     every { botPropertiesMock.trackMembership }.returns(MANAGED)
-                    every { botHelperMock.isManagedUser("@user:server") }.returns(false)
+                    every { botHelperMock.isManagedUser(userId) }.returns(false)
 
-                    cut.handleMembership("@user:server", "!room:server", JOIN)
+                    cut.handleMembership(userId, roomId, JOIN)
                     coVerify {
                         membershipChangeServiceMock wasNot Called
                     }
                 }
                 it("should not notify service when trackMembershipMode is $NONE") {
                     every { botPropertiesMock.trackMembership }.returns(NONE)
-                    cut.handleMembership("@user:server", "!room:server", JOIN)
+                    cut.handleMembership(userId, roomId, JOIN)
                     coVerify {
                         membershipChangeServiceMock wasNot Called
                     }
@@ -118,35 +125,35 @@ private fun testBody(): DescribeSpec.() -> Unit {
             describe("membership is $LEAVE or $BAN") {
                 it("should notify service when trackMembershipMode is $ALL") {
                     every { botPropertiesMock.trackMembership }.returns(ALL)
-                    every { botHelperMock.isManagedUser("@user:server") }.returns(false)
-                    cut.handleMembership("@user:server", "!room:server", LEAVE)
-                    cut.handleMembership("@user:server", "!room:server", BAN)
+                    every { botHelperMock.isManagedUser(userId) }.returns(false)
+                    cut.handleMembership(userId, roomId, LEAVE)
+                    cut.handleMembership(userId, roomId, BAN)
                     coVerify(exactly = 2) {
-                        membershipChangeServiceMock.onRoomLeave("@user:server", "!room:server")
+                        membershipChangeServiceMock.onRoomLeave(userId, roomId)
                     }
                 }
                 it("should notify service when trackMembershipMode is $MANAGED and user is managed") {
                     every { botPropertiesMock.trackMembership }.returns(MANAGED)
-                    cut.handleMembership("@user:server", "!room:server", LEAVE)
-                    cut.handleMembership("@user:server", "!room:server", BAN)
+                    cut.handleMembership(userId, roomId, LEAVE)
+                    cut.handleMembership(userId, roomId, BAN)
                     coVerify(exactly = 2) {
-                        membershipChangeServiceMock.onRoomLeave("@user:server", "!room:server")
+                        membershipChangeServiceMock.onRoomLeave(userId, roomId)
                     }
                 }
                 it("should not notify service when trackMembershipMode is $MANAGED and user is not managed") {
                     every { botPropertiesMock.trackMembership }.returns(MANAGED)
-                    every { botHelperMock.isManagedUser("@user:server") }.returns(false)
+                    every { botHelperMock.isManagedUser(userId) }.returns(false)
 
-                    cut.handleMembership("@user:server", "!room:server", LEAVE)
-                    cut.handleMembership("@user:server", "!room:server", BAN)
+                    cut.handleMembership(userId, roomId, LEAVE)
+                    cut.handleMembership(userId, roomId, BAN)
                     coVerify {
                         membershipChangeServiceMock wasNot Called
                     }
                 }
                 it("should not notify service when trackMembershipMode is $NONE") {
                     every { botPropertiesMock.trackMembership }.returns(NONE)
-                    cut.handleMembership("@user:server", "!room:server", LEAVE)
-                    cut.handleMembership("@user:server", "!room:server", BAN)
+                    cut.handleMembership(userId, roomId, LEAVE)
+                    cut.handleMembership(userId, roomId, BAN)
 
                     coVerify {
                         membershipChangeServiceMock wasNot Called

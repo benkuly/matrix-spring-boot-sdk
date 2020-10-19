@@ -4,6 +4,7 @@ import com.github.michaelbull.retry.policy.binaryExponentialBackoff
 import com.github.michaelbull.retry.policy.limitAttempts
 import com.github.michaelbull.retry.policy.plus
 import com.github.michaelbull.retry.retry
+import net.folivo.matrix.core.model.MatrixId.*
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
@@ -11,7 +12,7 @@ import org.slf4j.LoggerFactory
 class MessageContext(
         val matrixClient: MatrixClient,
         val originalEvent: MessageEvent<*>,
-        val roomId: String
+        val roomId: RoomId
 ) {
 
     companion object {
@@ -20,8 +21,8 @@ class MessageContext(
 
     suspend fun answer(
             content: MessageEvent.MessageEventContent,
-            asUserId: String? = null
-    ): String {
+            asUserId: UserId? = null
+    ): EventId {
         return try {
             retry(limitAttempts(5) + binaryExponentialBackoff(LongRange(500, 10000))) {
                 matrixClient.roomsApi.sendRoomEvent(

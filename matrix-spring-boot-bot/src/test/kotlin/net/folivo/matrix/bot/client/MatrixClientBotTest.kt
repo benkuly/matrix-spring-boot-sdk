@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.flowOf
 import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.bot.membership.MembershipChangeHandler
 import net.folivo.matrix.bot.util.BotServiceHelper
+import net.folivo.matrix.core.model.MatrixId.RoomId
+import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.core.model.events.m.room.MemberEvent
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.INVITE
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.LEAVE
@@ -35,6 +37,9 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 helperMock
         )
 
+        val roomId1 = RoomId("room1", "server")
+        val roomId2 = RoomId("room2", "server")
+
         describe(MatrixClientBot::start.name) {
             it("should delegate events to event handlers") {
                 val event1 = mockk<MessageEvent<TextMessageEventContent>>()
@@ -43,7 +48,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
 
                 val response1 = mockk<SyncResponse>(relaxed = true) {
                     every { room.join } returns mapOf(
-                            "someRoomId1" to mockk(relaxed = true) {
+                            roomId1 to mockk(relaxed = true) {
                                 every { timeline.events } returns listOf(
                                         event1,
                                         event2
@@ -53,7 +58,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 }
                 val response2 = mockk<SyncResponse>(relaxed = true) {
                     every { room.join } returns mapOf(
-                            "someRoomId2" to mockk(relaxed = true) {
+                            roomId2 to mockk(relaxed = true) {
                                 every { timeline.events } returns listOf(
                                         event3
                                 )
@@ -72,36 +77,42 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 cut.start().join()
 
                 coVerifyOrder {
-                    eventHandlerMock1.handleEvent(event1, "someRoomId1")
-                    eventHandlerMock2.handleEvent(event1, "someRoomId1")
-                    eventHandlerMock2.handleEvent(event2, "someRoomId1")
-                    eventHandlerMock1.handleEvent(event3, "someRoomId2")
-                    eventHandlerMock2.handleEvent(event3, "someRoomId2")
+                    eventHandlerMock1.handleEvent(event1, roomId1)
+                    eventHandlerMock2.handleEvent(event1, roomId1)
+                    eventHandlerMock2.handleEvent(event2, roomId1)
+                    eventHandlerMock1.handleEvent(event3, roomId2)
+                    eventHandlerMock2.handleEvent(event3, roomId2)
                 }
             }
 
             it("should delegate invites and leaves to ${MembershipChangeHandler::class.simpleName}") {
+                val inviteRoomId1 = RoomId("inviteRoom1", "server")
+                val inviteRoomId2 = RoomId("inviteRoom2", "server")
+                val leaveRoomId1 = RoomId("leaveRoomId1", "server")
+                val leaveRoomId2 = RoomId("leaveRoomId2", "server")
+                val botUserId = UserId("bot", "server")
+
                 val response1 = mockk<SyncResponse>(relaxed = true) {
                     every { room.invite } returns mapOf(
-                            "inviteRoom1" to mockk(relaxed = true),
-                            "inviteRoom2" to mockk(relaxed = true)
+                            inviteRoomId1 to mockk(relaxed = true),
+                            inviteRoomId2 to mockk(relaxed = true)
                     )
                     every { room.leave } returns mapOf(
-                            "leaveRoom1" to mockk(relaxed = true),
-                            "leaveRoom2" to mockk(relaxed = true)
+                            leaveRoomId1 to mockk(relaxed = true),
+                            leaveRoomId2 to mockk(relaxed = true)
                     )
                 }
 
-                coEvery { helperMock.getBotUserId() }.returns("@bot:someServer")
+                coEvery { helperMock.getBotUserId() }.returns(botUserId)
                 every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response1))
 
                 cut.start().join()
 
                 coVerify {
-                    membershipChangeHandlerMock.handleMembership("@bot:someServer", "inviteRoom1", INVITE)
-                    membershipChangeHandlerMock.handleMembership("@bot:someServer", "inviteRoom2", INVITE)
-                    membershipChangeHandlerMock.handleMembership("@bot:someServer", "leaveRoom1", LEAVE)
-                    membershipChangeHandlerMock.handleMembership("@bot:someServer", "leaveRoom2", LEAVE)
+                    membershipChangeHandlerMock.handleMembership(botUserId, inviteRoomId1, INVITE)
+                    membershipChangeHandlerMock.handleMembership(botUserId, inviteRoomId2, INVITE)
+                    membershipChangeHandlerMock.handleMembership(botUserId, leaveRoomId1, LEAVE)
+                    membershipChangeHandlerMock.handleMembership(botUserId, leaveRoomId2, LEAVE)
                 }
             }
 
@@ -109,7 +120,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
 
                 val response = mockk<SyncResponse>(relaxed = true) {
                     every { room.join } returns mapOf(
-                            "roomId" to mockk(relaxed = true) {
+                            roomId1 to mockk(relaxed = true) {
                                 every { timeline.events } returns listOf(
                                         mockk<MessageEvent<TextMessageEventContent>>()
                                 )
@@ -140,7 +151,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
 
                 val response1 = mockk<SyncResponse>(relaxed = true) {
                     every { room.join } returns mapOf(
-                            "someRoomId1" to mockk(relaxed = true) {
+                            roomId1 to mockk(relaxed = true) {
                                 every { timeline.events } returns listOf(
                                         event1,
                                         event2
@@ -158,8 +169,8 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 cut.start().join()
 
                 coVerifyOrder {
-                    eventHandlerMock1.handleEvent(event1, "someRoomId1")
-                    eventHandlerMock1.handleEvent(event2, "someRoomId1")
+                    eventHandlerMock1.handleEvent(event1, roomId1)
+                    eventHandlerMock1.handleEvent(event2, roomId1)
                 }
             }
         }
@@ -168,7 +179,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
             it("should stop") {
                 val response = mockk<SyncResponse>(relaxed = true) {
                     every { room.join } returns mapOf(
-                            "roomId" to mockk(relaxed = true) {
+                            roomId1 to mockk(relaxed = true) {
                                 every { timeline.events } returns listOf(
                                         mockk<MessageEvent<TextMessageEventContent>>()
                                 )

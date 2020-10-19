@@ -1,6 +1,7 @@
 package net.folivo.matrix.bot.appservice.room
 
 import kotlinx.coroutines.flow.Flow
+import net.folivo.matrix.core.model.MatrixId.*
 import org.slf4j.LoggerFactory
 
 class MatrixRoomService(
@@ -11,12 +12,12 @@ class MatrixRoomService(
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    suspend fun getOrCreateRoom(roomId: String): MatrixRoom {
+    suspend fun getOrCreateRoom(roomId: RoomId): MatrixRoom {
         return roomRepository.findById(roomId)
                ?: roomRepository.save(MatrixRoom(roomId))
     }
 
-    suspend fun getOrCreateRoomAlias(roomAlias: String, roomId: String): MatrixRoomAlias {
+    suspend fun getOrCreateRoomAlias(roomAlias: RoomAliasId, roomId: RoomId): MatrixRoomAlias {
         roomRepository.findById(roomId) ?: roomRepository.save(MatrixRoom(roomId, true))
         val existingRoomAlias = roomAliasRepository.findById(roomAlias)
         return if (existingRoomAlias != null) {
@@ -27,15 +28,15 @@ class MatrixRoomService(
         }
     }
 
-    suspend fun existsByRoomAlias(roomAlias: String): Boolean {
+    suspend fun existsByRoomAlias(roomAlias: RoomAliasId): Boolean {
         return roomAliasRepository.existsById(roomAlias)
     }
 
-    fun getRoomsByMembers(members: Set<String>): Flow<MatrixRoom> {
+    fun getRoomsByMembers(members: Set<UserId>): Flow<MatrixRoom> {
         return roomRepository.findByMembers(members)
     }
 
-    suspend fun deleteRoom(roomId: String) {
+    suspend fun deleteRoom(roomId: RoomId) {
         roomRepository.deleteById(roomId)
     }
 

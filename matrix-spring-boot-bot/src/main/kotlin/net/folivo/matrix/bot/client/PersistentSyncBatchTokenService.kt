@@ -1,6 +1,7 @@
 package net.folivo.matrix.bot.client
 
 import net.folivo.matrix.bot.util.BotServiceHelper
+import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.restclient.api.sync.SyncBatchTokenService
 
 class PersistentSyncBatchTokenService(
@@ -8,11 +9,11 @@ class PersistentSyncBatchTokenService(
         private val helper: BotServiceHelper
 ) : SyncBatchTokenService {
 
-    override suspend fun getBatchToken(userId: String?): String? {
+    override suspend fun getBatchToken(userId: UserId?): String? {
         return syncBatchTokenRepository.findByUserId(userId ?: helper.getBotUserId())?.token
     }
 
-    override suspend fun setBatchToken(value: String?, userId: String?) {
+    override suspend fun setBatchToken(value: String?, userId: UserId?) {
         val realUserId = userId ?: helper.getBotUserId()
         val token = syncBatchTokenRepository.findByUserId(realUserId)
         if (token != null) {

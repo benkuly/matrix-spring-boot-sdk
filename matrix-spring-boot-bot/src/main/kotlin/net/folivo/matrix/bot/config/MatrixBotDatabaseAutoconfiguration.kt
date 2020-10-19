@@ -38,4 +38,8 @@ class MatrixBotDatabaseAutoconfiguration(
         return ConnectionFactoryBuilder.of(botProperties.database) { EmbeddedDatabaseConnection.get(resourceLoader.classLoader) }
                 .build()
     }
+
+    override fun getCustomConverters(): MutableList<Any> {
+        return mutableListOf(MatrixIdReadingConverter(), MatrixIdWritingConverter())
+    }
 }

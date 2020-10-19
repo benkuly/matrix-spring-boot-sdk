@@ -6,6 +6,7 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
 import net.folivo.matrix.bot.util.BotServiceHelper
+import net.folivo.matrix.core.model.MatrixId.UserId
 
 class BotUserInitializerTest : DescribeSpec(testBody())
 
@@ -18,11 +19,11 @@ private fun testBody(): DescribeSpec.() -> Unit {
 
         describe(BotUserInitializer::initializeBotUser.name) {
             it("should initialize bot user") {
-                coEvery { botServiceHelperMock.getBotUserId() }.returns("@bot:server")
+                coEvery { botServiceHelperMock.getBotUserId() }.returns(UserId("@bot:server"))
                 cut.initializeBotUser()
 
                 coVerify {
-                    appserviceHandlerHelperMock.registerManagedUser("@bot:server")
+                    appserviceHandlerHelperMock.registerManagedUser(UserId("@bot:server"))
                 }
             }
         }

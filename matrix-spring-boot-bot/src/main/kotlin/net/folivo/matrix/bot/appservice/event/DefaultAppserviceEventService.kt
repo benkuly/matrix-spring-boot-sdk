@@ -4,6 +4,8 @@ import net.folivo.matrix.appservice.api.event.AppserviceEventService
 import net.folivo.matrix.appservice.api.event.AppserviceEventService.EventProcessingState
 import net.folivo.matrix.bot.appservice.sync.MatrixSyncService
 import net.folivo.matrix.bot.event.MatrixEventHandler
+import net.folivo.matrix.core.model.MatrixId.EventId
+import net.folivo.matrix.core.model.MatrixId.RoomId
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.StateEvent
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
@@ -18,15 +20,15 @@ open class DefaultAppserviceEventService(
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    override suspend fun eventProcessingState(tnxId: String, eventIdOrHash: String): EventProcessingState {
-        return if (eventTransactionService.hasEvent(tnxId, eventIdOrHash))
+    override suspend fun eventProcessingState(tnxId: String, eventId: EventId): EventProcessingState {
+        return if (eventTransactionService.hasEvent(tnxId, eventId))
             EventProcessingState.PROCESSED
         else
             EventProcessingState.NOT_PROCESSED
     }
 
-    override suspend fun onEventProcessed(tnxId: String, eventIdOrHash: String) {
-        eventTransactionService.saveEvent(MatrixEventTransaction(tnxId, eventIdOrHash))
+    override suspend fun onEventProcessed(tnxId: String, eventId: EventId) {
+        eventTransactionService.saveEvent(MatrixEventTransaction(tnxId, eventId))
     }
 
     override suspend fun processEvent(event: Event<*>) {
@@ -37,7 +39,7 @@ open class DefaultAppserviceEventService(
         }
     }
 
-    private suspend fun delegateEventHandling(event: Event<*>, roomId: String? = null) {
+    private suspend fun delegateEventHandling(event: Event<*>, roomId: RoomId? = null) {
         if (roomId != null) syncService.syncRoomMemberships(roomId)
         LOG.debug("delegate event $event to event handlers")
         eventHandler

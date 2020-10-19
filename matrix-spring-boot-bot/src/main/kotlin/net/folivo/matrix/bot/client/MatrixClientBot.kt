@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.filter
 import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.bot.membership.MembershipChangeHandler
 import net.folivo.matrix.bot.util.BotServiceHelper
+import net.folivo.matrix.core.model.MatrixId.RoomId
 import net.folivo.matrix.core.model.events.Event
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.INVITE
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.LEAVE
@@ -69,7 +70,7 @@ class MatrixClientBot(
         syncJob?.cancelAndJoin()
     }
 
-    private suspend fun handleEvent(event: Event<*>, roomId: String) {
+    private suspend fun handleEvent(event: Event<*>, roomId: RoomId) {
         return eventHandler.asFlow()
                 .filter { it.supports(event::class.java) }
                 .collect { it.handleEvent(event, roomId) }

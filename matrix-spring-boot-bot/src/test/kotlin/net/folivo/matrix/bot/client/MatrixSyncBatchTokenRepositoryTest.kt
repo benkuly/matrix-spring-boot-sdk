@@ -7,6 +7,7 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import net.folivo.matrix.bot.RepositoryTestHelper
 import net.folivo.matrix.bot.appservice.user.MatrixUser
 import net.folivo.matrix.bot.config.MatrixBotDatabaseAutoconfiguration
+import net.folivo.matrix.core.model.MatrixId.UserId
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest
 import org.springframework.data.r2dbc.core.DatabaseClient
@@ -25,20 +26,21 @@ private fun testBody(cut: MatrixSyncBatchTokenRepository, dbClient: DatabaseClie
     return {
         val h = RepositoryTestHelper(dbClient)
 
+        val userId = UserId("user", "server")
         beforeSpec {
-            h.insertUser(MatrixUser("@user:server", true))
+            h.insertUser(MatrixUser(userId, true))
             dbClient.insert()
                     .into<MatrixSyncBatchToken>()
-                    .using(MatrixSyncBatchToken("@user:server", "someToken"))
+                    .using(MatrixSyncBatchToken(userId, "someToken"))
                     .then().awaitFirstOrNull()
         }
 
         describe(MatrixSyncBatchTokenRepository::findByUserId.name) {
             it("should find matching token") {
-                cut.findByUserId("@user:server").shouldBe(MatrixSyncBatchToken("@user:server", "someToken"))
+                cut.findByUserId(userId).shouldBe(MatrixSyncBatchToken(userId, "someToken"))
             }
             it("should not find matching token") {
-                cut.findByUserId("@unknown:server").shouldBeNull()
+                cut.findByUserId(UserId("unknown", "server")).shouldBeNull()
             }
         }
 
