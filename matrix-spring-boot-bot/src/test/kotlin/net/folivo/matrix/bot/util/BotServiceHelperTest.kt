@@ -21,8 +21,8 @@ private fun testBody(): DescribeSpec.() -> Unit {
             every { username } returns "bot"
         }
         val appservicePropertiesMock: AppserviceProperties = mockk {
-            every { namespaces.users } returns listOf(Namespace("@unicorn_.+"))
-            every { namespaces.rooms } returns listOf(Namespace("#dino_.+"))
+            every { namespaces.users } returns listOf(Namespace("unicorn_.+"))
+            every { namespaces.rooms } returns listOf(Namespace("dino_.+"))
         }
 
         val cut = BotServiceHelper(botPropertiesMock, appservicePropertiesMock)

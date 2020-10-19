@@ -12,13 +12,13 @@ class BotServiceHelper(
     fun isManagedUser(userId: UserId): Boolean {
         return if (userId.domain == botProperties.serverName)
             userId.localpart == botProperties.username || appserviceProperties.namespaces.users
-                    .map { userId.full.matches(Regex(it.regex)) }.contains(true)
+                    .map { userId.localpart.matches(Regex(it.regex)) }.contains(true)
         else false
     }
 
     fun isManagedRoom(roomAlias: RoomAliasId): Boolean {
         return if (roomAlias.domain == botProperties.serverName)
-            appserviceProperties.namespaces.rooms.map { roomAlias.full.matches(Regex(it.regex)) }.contains(true)
+            appserviceProperties.namespaces.rooms.map { roomAlias.localpart.matches(Regex(it.regex)) }.contains(true)
         else false
     }
 

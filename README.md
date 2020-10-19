@@ -14,6 +14,8 @@ The most developers only need to use [matrix-spring-boot-bot](./matrix-spring-bo
 
 ## How to use
 Just add the maven/gradle dependency `net.folivo.matrix:matrix-spring-boot-bot` to you project.
+
+Then decide which database you want to use. E. g. for embeddable [H2](h2database.com) include `io.r2dbc:r2dbc-h2` and `com.h2database:h2`.
  
 ### Properties
  Add the following properties to your `application.yml` or `application.properties` file:
@@ -38,11 +40,16 @@ matrix:
     # (optional) Configure if ALL membership changes should be tracked/saved with help of MatrixAppserviceRoomService 
     # or only membership changes of users, which are MANAGED by the bridge. Default is NONE (no tracking/saving).
     trackMembership: ALL
-    # Connection settings for the database.
+    # Connection settings to the database (only r2dbc drivers are supported)
     database:
-      url: h2:mem:dbName
-      username: sa
-      password: password
+      url: r2dbc:h2:mem:///testdb
+      username:
+      password:
+    # Connection setting to the database for migration purpose only (only jdbc drivers ar supported)
+    migration:
+      url: jdbc:h2:mem:testdb
+      username:
+      password:
   client:
     homeServer:
       # The hostname of your Homeserver.
