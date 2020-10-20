@@ -34,6 +34,7 @@ class MatrixBotDatabaseAutoconfiguration(
         }
     }
 
+    @Bean
     override fun connectionFactory(): ConnectionFactory {
         return ConnectionFactoryBuilder.of(botProperties.database) { EmbeddedDatabaseConnection.get(resourceLoader.classLoader) }
                 .build()
