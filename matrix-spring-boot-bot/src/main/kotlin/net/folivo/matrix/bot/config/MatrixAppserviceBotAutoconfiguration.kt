@@ -74,9 +74,11 @@ class MatrixAppserviceBotAutoconfiguration {
     @Bean
     fun matrixSyncService(
             matrixClient: MatrixClient,
-            membershipService: MatrixMembershipService
+            membershipService: MatrixMembershipService,
+            helper: BotServiceHelper,
+            botProperties: MatrixBotProperties
     ): MatrixSyncService {
-        return MatrixSyncService(matrixClient, membershipService)
+        return MatrixSyncService(matrixClient, membershipService, helper, botProperties)
     }
 
     @Bean

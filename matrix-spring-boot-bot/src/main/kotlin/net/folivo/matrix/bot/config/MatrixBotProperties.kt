@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConstructorBinding
 @ConstructorBinding
 data class MatrixBotProperties(
         val autoJoin: AutoJoinMode = AutoJoinMode.RESTRICTED,
-        val trackMembership: TrackMembershipMode = TrackMembershipMode.NONE,
+        val trackMembership: TrackMembershipMode = TrackMembershipMode.ALL,
         val serverName: String,
         val username: String,
         val displayName: String? = null,

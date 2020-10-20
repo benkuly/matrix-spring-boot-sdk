@@ -25,7 +25,7 @@ open class DefaultMembershipChangeService(
 
     @Transactional
     override suspend fun onRoomJoin(userId: UserId, roomId: RoomId) {
-        LOG.debug("join in $roomId of user $userId")
+        LOG.debug("save join in $roomId of user $userId")
         membershipService.getOrCreateMembership(userId = userId, roomId = roomId)
     }
 

@@ -2,16 +2,15 @@ package net.folivo.matrix.bot.appservice.event
 
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.mockk
+import io.mockk.*
 import net.folivo.matrix.appservice.api.event.AppserviceEventService.EventProcessingState.NOT_PROCESSED
 import net.folivo.matrix.appservice.api.event.AppserviceEventService.EventProcessingState.PROCESSED
 import net.folivo.matrix.bot.appservice.sync.MatrixSyncService
 import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.core.model.MatrixId.EventId
 import net.folivo.matrix.core.model.MatrixId.RoomId
+import net.folivo.matrix.core.model.events.m.room.MemberEvent
+import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.INVITE
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 
 class DefaultAppserviceEventServiceTest : DescribeSpec(testBody())
@@ -32,19 +31,17 @@ private fun testBody(): DescribeSpec.() -> Unit {
 
         describe(DefaultAppserviceEventService::eventProcessingState.name) {
             describe("event already processed") {
-                coEvery { eventTransactionServiceMock.hasEvent("someTnxId", EventId("event", "server")) }
-                        .returns(true)
-
                 it("should return $PROCESSED") {
+                    coEvery { eventTransactionServiceMock.hasEvent("someTnxId", EventId("event", "server")) }
+                            .returns(true)
                     cut.eventProcessingState("someTnxId", EventId("event", "server"))
                             .shouldBe(PROCESSED)
                 }
             }
             describe("event not processed") {
-                coEvery { eventTransactionServiceMock.hasEvent("someTnxId", EventId("event", "server")) }
-                        .returns(false)
-
                 it("should return $NOT_PROCESSED") {
+                    coEvery { eventTransactionServiceMock.hasEvent("someTnxId", EventId("event", "server")) }
+                            .returns(false)
                     cut.eventProcessingState("someTnxId", EventId("event", "server"))
                             .shouldBe(NOT_PROCESSED)
                 }
@@ -65,22 +62,42 @@ private fun testBody(): DescribeSpec.() -> Unit {
             }
         }
         describe(DefaultAppserviceEventService::processEvent.name) {
-            coEvery { eventHandlerMock1.supports(any()) }.returns(true)
-            coEvery { eventHandlerMock2.supports(any()) }.returns(false)
+            beforeTest {
+                coEvery { eventHandlerMock1.supports(any()) }.returns(true)
+                coEvery { eventHandlerMock2.supports(any()) }.returns(false)
+            }
 
             val event = mockk<MessageEvent<*>> {
                 every { roomId } returns RoomId("room", "server")
             }
-            cut.processEvent(event)
-            it("should sync room") {
+            it("should sync room when event is not invite member event") {
+                cut.processEvent(event)
                 coVerify { syncServiceMock.syncRoomMemberships(RoomId("room", "server")) }
             }
+            it("should not sync room when event is invite member event") {
+                val memberEvent = mockk<MemberEvent> {
+                    every { roomId } returns RoomId("room", "server")
+                    every { content.membership } returns INVITE
+                }
+                cut.processEvent(memberEvent)
+                coVerify(exactly = 0) { syncServiceMock.syncRoomMemberships(any()) }
+            }
             it("should delegate to matching event handler") {
+                cut.processEvent(event)
                 coVerify { eventHandlerMock1.handleEvent(event, RoomId("room", "server")) }
             }
             it("should not delegate to not matching event handler") {
+                cut.processEvent(event)
                 coVerify(exactly = 0) { eventHandlerMock2.handleEvent(any(), any()) }
             }
+        }
+
+        afterTest {
+            clearMocks(
+                    eventTransactionServiceMock,
+                    syncServiceMock,
+                    eventHandlerMock1, eventHandlerMock2
+            )
         }
     }
 }

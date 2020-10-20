@@ -9,7 +9,7 @@ import org.springframework.data.relational.core.mapping.Table
 
 
 @Table("matrix_membership")
-class MatrixMembership(
+data class MatrixMembership(
         @Column("user_id")
         val userId: UserId,
         @Column("room_id")

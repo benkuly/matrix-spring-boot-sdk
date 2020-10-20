@@ -1,11 +1,3 @@
-org:
-  neo4j:
-    driver:
-      uri: bolt://localhost:7687
-      authentication:
-        username: neo4j
-        password: secret
-
 logging:
   level:
     net.folivo.matrix: DEBUG
@@ -13,8 +5,14 @@ logging:
 matrix:
   bot:
     serverName: matrix-local
-    username: "ping"
+    username: ping
+    displayname: PING BOT 2000
     mode: APPSERVICE
+    migration:
+      url: jdbc:h2:file:./testdb/testdb
+    database:
+      url: r2dbc:h2:file:///./testdb/testdb
+      username: sa
   client:
     homeServer:
       hostname: localhost

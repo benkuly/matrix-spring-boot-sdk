@@ -13,7 +13,7 @@ class AppserviceController(private val appserviceHandler: AppserviceHandler) {
     /**
      * @see <a href="https://matrix.org/docs/spec/application_service/r0.1.2#put-matrix-app-v1-transactions-txnid">matrix spec</a>
      */
-    @PutMapping("/_matrix/app/v1/transactions/{tnxId}")
+    @PutMapping("/_matrix/app/v1/transactions/{tnxId}", "/transactions/{tnxId}")
     suspend fun addTransactions(@PathVariable tnxId: String, @RequestBody eventRequest: EventRequest): EmptyResponse {
         appserviceHandler.addTransactions(tnxId, eventRequest.events.asFlow())
         return EmptyResponse()
@@ -22,7 +22,7 @@ class AppserviceController(private val appserviceHandler: AppserviceHandler) {
     /**
      * @see <a href="https://matrix.org/docs/spec/application_service/r0.1.2#get-matrix-app-v1-users-userid">matrix spec</a>
      */
-    @GetMapping("/_matrix/app/v1/users/{userId}")
+    @GetMapping("/_matrix/app/v1/users/{userId}", "/users/{userId}")
     suspend fun hasUser(@PathVariable userId: String): EmptyResponse {
         try {
             val hasUser = appserviceHandler.hasUser(UserId(userId))
@@ -39,7 +39,7 @@ class AppserviceController(private val appserviceHandler: AppserviceHandler) {
     /**
      * @see <a href="https://matrix.org/docs/spec/application_service/r0.1.2#get-matrix-app-v1-rooms-roomalias">matrix spec</a>
      */
-    @GetMapping("/_matrix/app/v1/rooms/{roomAlias}")
+    @GetMapping("/_matrix/app/v1/rooms/{roomAlias}", "/rooms/{roomAlias}")
     suspend fun hasRoomAlias(@PathVariable roomAlias: String): EmptyResponse {
         try {
             val hasRoomAlias = appserviceHandler.hasRoomAlias(RoomAliasId(roomAlias))

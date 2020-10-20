@@ -1,0 +1,14 @@
+version: '3.3'
+services:
+  matrix-synapse:
+    image: matrixdotorg/synapse:latest
+    volumes:
+      - type: bind
+        source: ./synapse
+        target: /data
+    environment:
+      - SYNAPSE_REPORT_STATS=false
+      - UID=1000
+      - GID=1000
+    ports:
+      - 8008:8008

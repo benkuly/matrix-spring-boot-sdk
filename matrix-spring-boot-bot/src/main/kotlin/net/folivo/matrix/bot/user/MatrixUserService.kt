@@ -27,7 +27,7 @@ class MatrixUserService(
         return userRepository.existsById(userId)
     }
 
-    fun getUsers(roomId: RoomId): Flow<MatrixUser> {
+    fun getUsersByRoom(roomId: RoomId): Flow<MatrixUser> {
         return userRepository.findByRoomId(roomId)
     }
 }

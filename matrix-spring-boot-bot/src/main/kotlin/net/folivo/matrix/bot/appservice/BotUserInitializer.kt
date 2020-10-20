@@ -22,7 +22,11 @@ class BotUserInitializer(
 
             val userId = botServiceHelper.getBotUserId()
 
-            appserviceHandlerHelper.registerManagedUser(userId)
+            try {
+                appserviceHandlerHelper.registerManagedUser(userId)
+            } catch (error: Throwable) {
+                LOG.warn("failed to initialize appservice bot: ${error.message}")
+            }
         }
     }
 }
