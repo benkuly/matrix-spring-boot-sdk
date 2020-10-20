@@ -34,14 +34,14 @@ class MatrixSyncService(
         }
     }
 
-    suspend fun syncRoomMemberships(roomId: RoomId) { // FIXME this is user specific. we need to find a way to use the right userId
+    suspend fun syncRoomMemberships(roomId: RoomId) {
         // this is needed to get all members, e.g. when managed user joins a new room
         val trackMembershipMode = botProperties.trackMembership
         if (trackMembershipMode != NONE && membershipService.getMembershipsSizeByRoomId(roomId) == 0L) {
             LOG.debug("collect all members in room $roomId because we didn't saved it yet")
             try {
                 matrixClient.roomsApi.getJoinedMembers(roomId).joined.keys
-                        .forEach { joinedUserId ->//FIXME test
+                        .forEach { joinedUserId ->
                             if (trackMembershipMode == ALL
                                 || trackMembershipMode == MANAGED && helper.isManagedUser(joinedUserId))
                                 membershipService.getOrCreateMembership(joinedUserId, roomId)

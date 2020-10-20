@@ -15,7 +15,7 @@ import org.springframework.web.reactive.function.client.awaitBody
 class SyncApiClient(
         private val webClient: WebClient,
         private val syncBatchTokenService: SyncBatchTokenService
-) { //FIXME test asUserId
+) {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(this::class.java)

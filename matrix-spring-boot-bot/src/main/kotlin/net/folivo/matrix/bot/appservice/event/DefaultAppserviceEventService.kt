@@ -42,7 +42,7 @@ open class DefaultAppserviceEventService(
     }
 
     private suspend fun delegateEventHandling(event: Event<*>, roomId: RoomId? = null) {
-        if (roomId != null && !(event is MemberEvent && event.content.membership == INVITE)) //FIXME test
+        if (roomId != null && !(event is MemberEvent && event.content.membership == INVITE))
             syncService.syncRoomMemberships(roomId)
         LOG.debug("delegate event $event to event handlers")
         eventHandler

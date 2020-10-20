@@ -34,7 +34,7 @@ class DefaultAppserviceHandler(
                     else                -> null
                 }
                 LOG.debug("incoming event $eventId in transaction $tnxId")
-                if (eventId == null) { //FIXME test
+                if (eventId == null) {
                     LOG.debug("process event $eventId in transaction $tnxId")
                     appserviceEventService.processEvent(event)
                 } else when (appserviceEventService.eventProcessingState(tnxId, eventId)) {

@@ -20,5 +20,5 @@ data class CreateRoomParameter(
         val preset: Preset? = null,
         val isDirect: Boolean? = null,
         val powerLevelContentOverride: PowerLevelsEvent.PowerLevelsEventContent? = null,
-        val asUserId: UserId? = null // FIXME why?
+        val asUserId: UserId? = null
 )
