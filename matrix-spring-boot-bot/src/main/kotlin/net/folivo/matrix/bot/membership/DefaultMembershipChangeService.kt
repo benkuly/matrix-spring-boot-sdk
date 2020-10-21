@@ -2,9 +2,9 @@ package net.folivo.matrix.bot.membership
 
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
+import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.room.MatrixRoomService
 import net.folivo.matrix.bot.user.MatrixUserService
-import net.folivo.matrix.bot.util.BotServiceHelper
 import net.folivo.matrix.core.model.MatrixId.RoomId
 import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.restclient.MatrixClient
@@ -16,7 +16,7 @@ open class DefaultMembershipChangeService(
         private val membershipService: MatrixMembershipService,
         private val userService: MatrixUserService,
         private val matrixClient: MatrixClient,
-        private val helper: BotServiceHelper
+        private val botProperties: MatrixBotProperties
 ) : MembershipChangeService {
 
     companion object {
@@ -47,7 +47,7 @@ open class DefaultMembershipChangeService(
                 memberships
                         .map { it.userId }
                         .collect { joinedUserId ->
-                            if (joinedUserId == helper.getBotUserId())
+                            if (joinedUserId == botProperties.botUserId)
                                 matrixClient.roomsApi.leaveRoom(roomId)
                             else matrixClient.roomsApi.leaveRoom(roomId, joinedUserId)
                             membershipService.deleteMembership(joinedUserId, roomId)

@@ -40,4 +40,9 @@ class MatrixAutoconfiguration {
             it.serializationInclusion(JsonInclude.Include.NON_NULL)
         }
     }
+
+    @Bean
+    fun matrixIdConfigurationPropertiesConverter(): MatrixIdConfigurationPropertiesConverter {
+        return MatrixIdConfigurationPropertiesConverter()
+    }
 }

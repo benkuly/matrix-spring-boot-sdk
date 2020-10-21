@@ -21,9 +21,4 @@ class BotServiceHelper(
             roomNamespaceRegex.map { roomAlias.localpart.matches(it) }.contains(true)
         else false
     }
-
-    fun getBotUserId(): UserId {
-        return UserId(botProperties.username, botProperties.serverName)
-    }
-
 }

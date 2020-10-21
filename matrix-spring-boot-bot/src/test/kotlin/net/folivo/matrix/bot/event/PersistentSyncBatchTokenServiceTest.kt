@@ -4,8 +4,8 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.mockk.*
+import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.user.MatrixUserService
-import net.folivo.matrix.bot.util.BotServiceHelper
 import net.folivo.matrix.core.model.MatrixId.UserId
 
 class PersistentSyncBatchTokenServiceTest : DescribeSpec(testBody())
@@ -17,12 +17,14 @@ private fun testBody(): DescribeSpec.() -> Unit {
         val botUserId = UserId("bot", "server")
         val userId = UserId("user", "server")
 
-        val helperMock: BotServiceHelper = mockk {
-            every { getBotUserId() }.returns(botUserId)
-        }
+        val botPropertiesMock: MatrixBotProperties = mockk()
         val userServiceMock: MatrixUserService = mockk(relaxed = true)
 
-        val cut = PersistentSyncBatchTokenService(syncBatchTokenRepositoryMock, userServiceMock, helperMock)
+        val cut = PersistentSyncBatchTokenService(syncBatchTokenRepositoryMock, userServiceMock, botPropertiesMock)
+
+        beforeTest {
+            every { botPropertiesMock.botUserId }.returns(botUserId)
+        }
 
         describe(PersistentSyncBatchTokenService::getBatchToken.name) {
             it("should get token from repository") {

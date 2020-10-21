@@ -32,7 +32,7 @@ class MembershipChangeHandler(
             INVITE -> {
                 val autoJoin = botProperties.autoJoin
                 if (isManagedUser && autoJoin != DISABLED) {
-                    val asUserId = if (userId == botHelper.getBotUserId()) null else userId
+                    val asUserId = if (userId == botProperties.botUserId) null else userId
                     if (autoJoin == RESTRICTED && roomId.domain != serverName) {
                         LOG.warn("reject room invite of $userId to $roomId because autoJoin is restricted to $serverName")
                         matrixClient.roomsApi.leaveRoom(roomId = roomId, asUserId = asUserId)

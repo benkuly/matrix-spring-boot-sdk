@@ -33,9 +33,9 @@ class MatrixBotAutoconfiguration {
     fun persistentSyncBatchTokenService(
             syncBatchTokenRepository: MatrixSyncBatchTokenRepository,
             userService: MatrixUserService,
-            helper: BotServiceHelper
+            botProperties: MatrixBotProperties
     ): SyncBatchTokenService {
-        return PersistentSyncBatchTokenService(syncBatchTokenRepository, userService, helper)
+        return PersistentSyncBatchTokenService(syncBatchTokenRepository, userService, botProperties)
     }
 
     @Bean
@@ -70,14 +70,14 @@ class MatrixBotAutoconfiguration {
             membershipService: MatrixMembershipService,
             userService: MatrixUserService,
             matrixClient: MatrixClient,
-            helper: BotServiceHelper
+            botProperties: MatrixBotProperties
     ): DefaultMembershipChangeService {
         return DefaultMembershipChangeService(
                 roomService,
                 membershipService,
                 userService,
                 matrixClient,
-                helper
+                botProperties
         )
     }
 

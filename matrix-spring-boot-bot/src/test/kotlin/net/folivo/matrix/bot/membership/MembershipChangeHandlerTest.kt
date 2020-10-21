@@ -35,7 +35,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
         val roomOnForeignServerId = RoomId("room", "foreignServer")
 
         beforeTest {
-            every { botHelperMock.getBotUserId() }.returns(botUserId)
+            every { botPropertiesMock.botUserId }.returns(botUserId)
             every { botHelperMock.isManagedUser(any()) }.returns(true)
             every { botPropertiesMock.serverName }.returns("server")
             coEvery { membershipChangeServiceMock.shouldJoinRoom(any(), any()) }.returns(true)

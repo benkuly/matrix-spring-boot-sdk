@@ -85,9 +85,9 @@ class MatrixAppserviceBotAutoconfiguration {
     @Profile("!initialsync")
     fun botUserInitializer(
             appserviceHandlerHelper: AppserviceHandlerHelper,
-            botServiceHelper: BotServiceHelper
+            botProperties: MatrixBotProperties
     ): BotUserInitializer {
-        return BotUserInitializer(appserviceHandlerHelper, botServiceHelper)
+        return BotUserInitializer(appserviceHandlerHelper, botProperties)
     }
 
     @Bean

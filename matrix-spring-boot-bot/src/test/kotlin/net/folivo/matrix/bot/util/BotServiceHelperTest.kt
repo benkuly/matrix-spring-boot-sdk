@@ -3,7 +3,6 @@ package net.folivo.matrix.bot.util
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import net.folivo.matrix.bot.config.MatrixBotProperties
@@ -21,11 +20,6 @@ private fun testBody(): DescribeSpec.() -> Unit {
 
         val cut = BotServiceHelper(botPropertiesMock, setOf(Regex("unicorn_.+")), setOf(Regex("dino_.+")))
 
-        describe(BotServiceHelper::getBotUserId.name) {
-            it("should return bot userId") {
-                cut.getBotUserId().shouldBe(UserId("@bot:server"))
-            }
-        }
         describe(BotServiceHelper::isManagedUser.name) {
             it("it should return true when userId is bot") {
                 cut.isManagedUser(UserId("@bot:server")).shouldBeTrue()

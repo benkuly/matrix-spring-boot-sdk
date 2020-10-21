@@ -7,6 +7,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.flowOf
+import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.bot.membership.MembershipChangeHandler
 import net.folivo.matrix.bot.util.BotServiceHelper
@@ -29,12 +30,13 @@ private fun testBody(): DescribeSpec.() -> Unit {
         val eventHandlerMock2: MatrixEventHandler = mockk(relaxed = true, name = "eventHandlerMock2")
         val membershipChangeHandlerMock: MembershipChangeHandler = mockk(relaxed = true)
         val helperMock: BotServiceHelper = mockk(relaxed = true)
+        val botPropertiesMock: MatrixBotProperties = mockk()
 
         val cut = MatrixClientBot(
                 matrixClientMock,
                 listOf(eventHandlerMock1, eventHandlerMock2),
                 membershipChangeHandlerMock,
-                helperMock
+                botPropertiesMock
         )
 
         val roomId1 = RoomId("room1", "server")
@@ -103,7 +105,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                     )
                 }
 
-                coEvery { helperMock.getBotUserId() }.returns(botUserId)
+                coEvery { botPropertiesMock.botUserId }.returns(botUserId)
                 every { matrixClientMock.syncApi.syncLoop() }.returns(flowOf(response1))
 
                 cut.start().join()

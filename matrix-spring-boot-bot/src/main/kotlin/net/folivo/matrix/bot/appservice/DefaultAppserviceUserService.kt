@@ -23,7 +23,7 @@ open class DefaultAppserviceUserService(
     }
 
     override suspend fun getRegisterUserParameter(userId: UserId): RegisterUserParameter {
-        return if (userId == helper.getBotUserId()) {
+        return if (userId == botProperties.botUserId) {
             RegisterUserParameter(botProperties.displayName)
         } else {
             RegisterUserParameter()

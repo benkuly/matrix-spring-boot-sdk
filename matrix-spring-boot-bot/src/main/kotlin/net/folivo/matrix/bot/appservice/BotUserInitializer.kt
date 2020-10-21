@@ -2,14 +2,14 @@ package net.folivo.matrix.bot.appservice
 
 import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
-import net.folivo.matrix.bot.util.BotServiceHelper
+import net.folivo.matrix.bot.config.MatrixBotProperties
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 
 class BotUserInitializer(
         private val appserviceHandlerHelper: AppserviceHandlerHelper,
-        private val botServiceHelper: BotServiceHelper
+        private val botProperties: MatrixBotProperties
 ) {
     companion object {
         private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -20,7 +20,7 @@ class BotUserInitializer(
         runBlocking {
             LOG.info("Initializing appservice bot")
 
-            val userId = botServiceHelper.getBotUserId()
+            val userId = botProperties.botUserId
 
             try {
                 appserviceHandlerHelper.registerManagedUser(userId)

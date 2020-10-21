@@ -4,12 +4,12 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.mockk.*
 import kotlinx.coroutines.flow.flowOf
+import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.membership.DefaultMembershipChangeService
 import net.folivo.matrix.bot.room.MatrixRoom
 import net.folivo.matrix.bot.room.MatrixRoomService
 import net.folivo.matrix.bot.user.MatrixUser
 import net.folivo.matrix.bot.user.MatrixUserService
-import net.folivo.matrix.bot.util.BotServiceHelper
 import net.folivo.matrix.core.model.MatrixId.RoomId
 import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.restclient.MatrixClient
@@ -23,14 +23,14 @@ private fun testBody(): DescribeSpec.() -> Unit {
         val membershipServiceMock: MatrixMembershipService = mockk(relaxed = true)
         val userServiceMock: MatrixUserService = mockk(relaxed = true)
         val matrixClientMock: MatrixClient = mockk(relaxed = true)
-        val helperMock: BotServiceHelper = mockk(relaxed = true)
+        val botPropertiesMock: MatrixBotProperties = mockk()
 
         val cut = DefaultMembershipChangeService(
                 roomServiceMock,
                 membershipServiceMock,
                 userServiceMock,
                 matrixClientMock,
-                helperMock
+                botPropertiesMock
         )
 
         val botUser = UserId("bot", "server")
@@ -39,7 +39,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
         val room = RoomId("room", "server")
 
         beforeTest {
-            coEvery { helperMock.getBotUserId() }.returns(botUser)
+            coEvery { botPropertiesMock.botUserId }.returns(botUser)
         }
 
         describe(DefaultMembershipChangeService::onRoomJoin.name) {
@@ -177,7 +177,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                     membershipServiceMock,
                     userServiceMock,
                     matrixClientMock,
-                    helperMock
+                    botPropertiesMock
             )
         }
     }

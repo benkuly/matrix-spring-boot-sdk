@@ -25,13 +25,13 @@ class MatrixClientBotAutoconfiguration {
             matrixClient: MatrixClient,
             eventHandler: List<MatrixEventHandler>,
             membershipChangeHandler: MembershipChangeHandler,
-            helper: BotServiceHelper
+            botProperties: MatrixBotProperties,
     ): MatrixClientBot {
         return MatrixClientBot(
                 matrixClient,
                 eventHandler,
                 membershipChangeHandler,
-                helper
+                botProperties
         )
     }
 

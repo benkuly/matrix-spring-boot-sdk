@@ -1,9 +1,9 @@
 object Versions {
-    const val kotlin = "1.4.10"
-    const val kotlinxCoroutines = "1.3.9"
-    const val kotlinRetry = "1.0.5"
-    const val kotest = "4.2.5"
-    const val springBoot = "2.3.4.RELEASE"
-    const val springDependencyManagement = "1.0.10.RELEASE"
-    const val springMockk = "2.0.3"
+    const val kotlin = "1.4.10" // https://kotlinlang.org/
+    const val kotlinxCoroutines = "1.3.9" // https://github.com/Kotlin/kotlinx.coroutines/releases
+    const val kotlinRetry = "1.0.6" // https://github.com/michaelbull/kotlin-retry
+    const val kotest = "4.2.5" // https://github.com/kotest/kotest/releases
+    const val springBoot = "2.3.4.RELEASE" // https://spring.io/projects/spring-boot
+    const val springDependencyManagement = "1.0.10.RELEASE" // https://github.com/spring-gradle-plugins/dependency-management-plugin/releases
+    const val springMockk = "2.0.3" // https://github.com/Ninja-Squad/springmockk/releases
 }

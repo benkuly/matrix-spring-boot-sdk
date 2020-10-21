@@ -6,8 +6,10 @@ matrix:
     mode: APPSERVICE
     migration:
       url: jdbc:h2:mem:testdb
+      username: sa
     database:
       url: r2dbc:h2:mem:///testdb
+      username: sa
   client:
     homeServer:
       hostname: localhost
