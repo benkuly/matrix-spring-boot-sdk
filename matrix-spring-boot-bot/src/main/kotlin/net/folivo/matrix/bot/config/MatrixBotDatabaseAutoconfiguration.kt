@@ -11,10 +11,12 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.ResourceLoader
 import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
+import org.springframework.transaction.annotation.EnableTransactionManagement
 import javax.sql.DataSource
 
 @Configuration
 @EnableR2dbcRepositories(basePackages = ["net.folivo.matrix.bot"])
+@EnableTransactionManagement
 @EnableConfigurationProperties(MatrixBotProperties::class)
 class MatrixBotDatabaseAutoconfiguration(
         private val botProperties: MatrixBotProperties,

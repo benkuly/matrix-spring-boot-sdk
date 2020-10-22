@@ -19,6 +19,10 @@ class MatrixMembershipService(
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
+    suspend fun getMembership(id: String): MatrixMembership? {
+        return membershipRepository.findById(id)
+    }
+
     suspend fun getOrCreateMembership(userId: UserId, roomId: RoomId): MatrixMembership {
         roomService.getOrCreateRoom(roomId)
         userService.getOrCreateUser(userId)

@@ -62,6 +62,7 @@ databaseChangeLog:
                     nullable: false
                     foreignKeyName: fk_matrix_room_alias_matrix_room
                     references: matrix_room(id)
+                    onDelete: CASCADE
               - column:
                   name: version
                   type: INTEGER
@@ -102,6 +103,7 @@ databaseChangeLog:
                     nullable: false
                     foreignKeyName: fk_matrix_membership_matrix_user
                     references: matrix_user(id)
+                    onDelete: CASCADE
               - column:
                   name: room_id
                   type: VARCHAR(250)
@@ -109,6 +111,7 @@ databaseChangeLog:
                     nullable: false
                     foreignKeyName: fk_matrix_membership_matrix_room
                     references: matrix_room(id)
+                    onDelete: CASCADE
               - column:
                   name: version
                   type: INTEGER
@@ -125,6 +128,7 @@ databaseChangeLog:
                     primaryKey: true
                     foreignKeyName: fk_matrix_sync_batch_token_matrix_user
                     references: matrix_user(id)
+                    onDelete: CASCADE
               - column:
                   name: token
                   type: VARCHAR(250)
