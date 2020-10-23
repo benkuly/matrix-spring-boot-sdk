@@ -13,14 +13,12 @@ import net.folivo.matrix.bot.appservice.event.DefaultAppserviceEventService
 import net.folivo.matrix.bot.appservice.event.MatrixEventTransactionRepository
 import net.folivo.matrix.bot.appservice.event.MatrixEventTransactionService
 import net.folivo.matrix.bot.appservice.sync.InitialSyncService
-import net.folivo.matrix.bot.appservice.sync.MatrixSyncService
 import net.folivo.matrix.bot.event.MatrixEventHandler
-import net.folivo.matrix.bot.membership.MatrixMembershipService
+import net.folivo.matrix.bot.membership.MatrixMembershipSyncService
 import net.folivo.matrix.bot.membership.MembershipChangeHandler
 import net.folivo.matrix.bot.room.MatrixRoomService
 import net.folivo.matrix.bot.user.MatrixUserService
 import net.folivo.matrix.bot.util.BotServiceHelper
-import net.folivo.matrix.restclient.MatrixClient
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -36,10 +34,9 @@ class MatrixAppserviceBotAutoconfiguration {
     @ConditionalOnMissingBean
     fun defaultAppserviceEventService(
             eventHandler: List<MatrixEventHandler>,
-            syncService: MatrixSyncService,
             eventTransactionService: MatrixEventTransactionService
     ): AppserviceEventService {
-        return DefaultAppserviceEventService(eventTransactionService, syncService, eventHandler)
+        return DefaultAppserviceEventService(eventTransactionService, eventHandler)
     }
 
     @Bean
@@ -66,19 +63,9 @@ class MatrixAppserviceBotAutoconfiguration {
     fun initialSyncService(
             userService: MatrixUserService,
             roomService: MatrixRoomService,
-            syncService: MatrixSyncService
+            membershipSyncService: MatrixMembershipSyncService
     ): InitialSyncService {
-        return InitialSyncService(userService, roomService, syncService)
-    }
-
-    @Bean
-    fun matrixSyncService(
-            matrixClient: MatrixClient,
-            membershipService: MatrixMembershipService,
-            helper: BotServiceHelper,
-            botProperties: MatrixBotProperties
-    ): MatrixSyncService {
-        return MatrixSyncService(matrixClient, membershipService, helper, botProperties)
+        return InitialSyncService(userService, roomService, membershipSyncService)
     }
 
     @Bean

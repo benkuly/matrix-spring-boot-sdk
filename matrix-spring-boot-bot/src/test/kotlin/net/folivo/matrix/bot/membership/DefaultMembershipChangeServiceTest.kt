@@ -5,7 +5,6 @@ import io.kotest.matchers.booleans.shouldBeTrue
 import io.mockk.*
 import kotlinx.coroutines.flow.flowOf
 import net.folivo.matrix.bot.config.MatrixBotProperties
-import net.folivo.matrix.bot.membership.DefaultMembershipChangeService
 import net.folivo.matrix.bot.room.MatrixRoom
 import net.folivo.matrix.bot.room.MatrixRoomService
 import net.folivo.matrix.bot.user.MatrixUser
@@ -22,6 +21,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
         val roomServiceMock: MatrixRoomService = mockk(relaxed = true)
         val membershipServiceMock: MatrixMembershipService = mockk(relaxed = true)
         val userServiceMock: MatrixUserService = mockk(relaxed = true)
+        val membershipSyncServiceMock: MatrixMembershipSyncService = mockk(relaxed = true)
         val matrixClientMock: MatrixClient = mockk(relaxed = true)
         val botPropertiesMock: MatrixBotProperties = mockk()
 
@@ -29,40 +29,42 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 roomServiceMock,
                 membershipServiceMock,
                 userServiceMock,
+                membershipSyncServiceMock,
                 matrixClientMock,
                 botPropertiesMock
         )
 
-        val botUser = UserId("bot", "server")
-        val user1 = UserId("user1", "server")
-        val user2 = UserId("user2", "server")
-        val room = RoomId("room", "server")
+        val botUserId = UserId("bot", "server")
+        val userId1 = UserId("user1", "server")
+        val userId2 = UserId("user2", "server")
+        val roomId = RoomId("room", "server")
 
         beforeTest {
-            coEvery { botPropertiesMock.botUserId }.returns(botUser)
+            coEvery { botPropertiesMock.botUserId }.returns(botUserId)
         }
 
         describe(DefaultMembershipChangeService::onRoomJoin.name) {
             it("should get or create user, room and membership") {
-                cut.onRoomJoin(user1, room)
+                cut.onRoomJoin(userId1, roomId)
 
-                coVerifyAll {
-                    membershipServiceMock.getOrCreateMembership(user1, room)
+                coVerifyOrder {
+                    membershipServiceMock.getOrCreateMembership(userId1, roomId)
+                    membershipSyncServiceMock.syncRoomMemberships(roomId)
                 }
             }
         }
         describe(DefaultMembershipChangeService::onRoomLeave.name) {
             beforeTest {
-                coEvery { roomServiceMock.getOrCreateRoom(room) }.returns(MatrixRoom(room))
+                coEvery { roomServiceMock.getOrCreateRoom(roomId) }.returns(MatrixRoom(roomId))
             }
             it("should do nothing, when user is not in room") {
                 coEvery { membershipServiceMock.doesRoomContainsMembers(any(), any()) }
                         .returns(false)
-                cut.onRoomLeave(user1, room)
+                cut.onRoomLeave(userId1, roomId)
                 coVerifyAll {
                     membershipServiceMock.doesRoomContainsMembers(
-                            room,
-                            match { it.contains(user1) && it.size == 1 })
+                            roomId,
+                            match { it.contains(userId1) && it.size == 1 })
                 }
             }
             describe("user is member") {
@@ -75,39 +77,39 @@ private fun testBody(): DescribeSpec.() -> Unit {
                             .returns(false)
                 }
                 it("should delete membership") {
-                    coEvery { userServiceMock.getOrCreateUser(any()) }.returns(MatrixUser(user1, true))
-                    cut.onRoomLeave(user1, room)
+                    coEvery { userServiceMock.getOrCreateUser(any()) }.returns(MatrixUser(userId1, true))
+                    cut.onRoomLeave(userId1, roomId)
                     coVerify {
-                        membershipServiceMock.deleteMembership(user1, room)
+                        membershipServiceMock.deleteMembership(userId1, roomId)
                     }
                 }
                 it("should delete user when not managed and does not have rooms") {
-                    coEvery { userServiceMock.getOrCreateUser(any()) }.returns(MatrixUser(user1, false))
-                    coEvery { membershipServiceMock.getMembershipsSizeByUserId(user1) }.returns(0L)
-                    cut.onRoomLeave(user1, room)
+                    coEvery { userServiceMock.getOrCreateUser(any()) }.returns(MatrixUser(userId1, false))
+                    coEvery { membershipServiceMock.getMembershipsSizeByUserId(userId1) }.returns(0L)
+                    cut.onRoomLeave(userId1, roomId)
                     coVerify {
-                        userServiceMock.deleteUser(user1)
+                        userServiceMock.deleteUser(userId1)
                     }
                 }
                 it("should not delete user when managed") {
-                    coEvery { userServiceMock.getOrCreateUser(any()) }.returns(MatrixUser(user1, true))
-                    cut.onRoomLeave(user1, room)
+                    coEvery { userServiceMock.getOrCreateUser(any()) }.returns(MatrixUser(userId1, true))
+                    cut.onRoomLeave(userId1, roomId)
                     coVerify(exactly = 0) {
-                        userServiceMock.deleteUser(user1)
+                        userServiceMock.deleteUser(userId1)
                     }
                 }
                 it("should not delete user when member in other rooms") {
-                    coEvery { userServiceMock.getOrCreateUser(any()) }.returns(MatrixUser(user1, false))
-                    coEvery { membershipServiceMock.getMembershipsSizeByUserId(user1) }.returns(1L)
-                    cut.onRoomLeave(user1, room)
+                    coEvery { userServiceMock.getOrCreateUser(any()) }.returns(MatrixUser(userId1, false))
+                    coEvery { membershipServiceMock.getMembershipsSizeByUserId(userId1) }.returns(1L)
+                    cut.onRoomLeave(userId1, roomId)
                     coVerify(exactly = 0) {
-                        userServiceMock.deleteUser(user1)
+                        userServiceMock.deleteUser(userId1)
                     }
                 }
             }
             describe("user is last member") {
                 beforeTest {
-                    coEvery { userServiceMock.getOrCreateUser(any()) }.returns(MatrixUser(user1, true))
+                    coEvery { userServiceMock.getOrCreateUser(any()) }.returns(MatrixUser(userId1, true))
                     coEvery { membershipServiceMock.doesRoomContainsMembers(any(), any()) }
                             .returns(true)
                     coEvery { membershipServiceMock.getMembershipsSizeByRoomId(any()) }
@@ -116,50 +118,50 @@ private fun testBody(): DescribeSpec.() -> Unit {
                             .returns(false)
                 }
                 it("should delete room when not managed") {
-                    coEvery { roomServiceMock.getOrCreateRoom(any()) }.returns(MatrixRoom(room, false))
-                    cut.onRoomLeave(user1, room)
-                    coVerify { roomServiceMock.deleteRoom(room) }
+                    coEvery { roomServiceMock.getOrCreateRoom(any()) }.returns(MatrixRoom(roomId, false))
+                    cut.onRoomLeave(userId1, roomId)
+                    coVerify { roomServiceMock.deleteRoom(roomId) }
                 }
                 it("should not delete room when managed") {
-                    coEvery { roomServiceMock.getOrCreateRoom(any()) }.returns(MatrixRoom(room, true))
-                    cut.onRoomLeave(user1, room)
+                    coEvery { roomServiceMock.getOrCreateRoom(any()) }.returns(MatrixRoom(roomId, true))
+                    cut.onRoomLeave(userId1, roomId)
                     coVerify(exactly = 0) { roomServiceMock.deleteRoom(any()) }
                 }
             }
             describe("room has only managed users left") {
                 beforeTest {
-                    coEvery { userServiceMock.getOrCreateUser(user1) }.returns(MatrixUser(user1, true))
+                    coEvery { userServiceMock.getOrCreateUser(userId1) }.returns(MatrixUser(userId1, true))
                     coEvery { membershipServiceMock.doesRoomContainsMembers(any(), any()) }
                             .returns(true)
                     coEvery { membershipServiceMock.getMembershipsSizeByRoomId(any()) }
                             .returns(2L)
                     coEvery { membershipServiceMock.hasRoomOnlyManagedUsersLeft(any()) }
                             .returns(true)
-                    coEvery { membershipServiceMock.getMembershipsByRoomId(room) }
+                    coEvery { membershipServiceMock.getMembershipsByRoomId(roomId) }
                             .returns(
                                     flowOf(
-                                            MatrixMembership(user2, room),
-                                            MatrixMembership(botUser, room)
+                                            MatrixMembership(userId2, roomId),
+                                            MatrixMembership(botUserId, roomId)
                                     )
                             )
                 }
                 it("all members should leave room and their membership deleted") {
-                    cut.onRoomLeave(user1, room)
+                    cut.onRoomLeave(userId1, roomId)
                     coVerify {
-                        matrixClientMock.roomsApi.leaveRoom(room, user2)
-                        matrixClientMock.roomsApi.leaveRoom(room)
-                        membershipServiceMock.deleteMembership(user2, room)
-                        membershipServiceMock.deleteMembership(botUser, room)
+                        matrixClientMock.roomsApi.leaveRoom(roomId, userId2)
+                        matrixClientMock.roomsApi.leaveRoom(roomId)
+                        membershipServiceMock.deleteMembership(userId2, roomId)
+                        membershipServiceMock.deleteMembership(botUserId, roomId)
                     }
                 }
                 it("should delete room when not managed") {
-                    coEvery { roomServiceMock.getOrCreateRoom(any()) }.returns(MatrixRoom(room, false))
-                    cut.onRoomLeave(user1, room)
-                    coVerify { roomServiceMock.deleteRoom(room) }
+                    coEvery { roomServiceMock.getOrCreateRoom(any()) }.returns(MatrixRoom(roomId, false))
+                    cut.onRoomLeave(userId1, roomId)
+                    coVerify { roomServiceMock.deleteRoom(roomId) }
                 }
                 it("should not delete room when managed") {
-                    coEvery { roomServiceMock.getOrCreateRoom(any()) }.returns(MatrixRoom(room, true))
-                    cut.onRoomLeave(user1, room)
+                    coEvery { roomServiceMock.getOrCreateRoom(any()) }.returns(MatrixRoom(roomId, true))
+                    cut.onRoomLeave(userId1, roomId)
                     coVerify(exactly = 0) { roomServiceMock.deleteRoom(any()) }
                 }
             }
@@ -176,6 +178,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                     roomServiceMock,
                     membershipServiceMock,
                     userServiceMock,
+                    membershipSyncServiceMock,
                     matrixClientMock,
                     botPropertiesMock
             )

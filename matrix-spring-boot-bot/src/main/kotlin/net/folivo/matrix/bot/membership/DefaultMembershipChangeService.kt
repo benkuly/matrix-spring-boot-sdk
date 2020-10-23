@@ -15,6 +15,7 @@ open class DefaultMembershipChangeService(
         private val roomService: MatrixRoomService,
         private val membershipService: MatrixMembershipService,
         private val userService: MatrixUserService,
+        private val membershipSyncService: MatrixMembershipSyncService,
         private val matrixClient: MatrixClient,
         private val botProperties: MatrixBotProperties
 ) : MembershipChangeService {
@@ -27,6 +28,7 @@ open class DefaultMembershipChangeService(
     override suspend fun onRoomJoin(userId: UserId, roomId: RoomId) {
         LOG.debug("save join in $roomId of user $userId")
         membershipService.getOrCreateMembership(userId = userId, roomId = roomId)
+        membershipSyncService.syncRoomMemberships(roomId)
     }
 
     @Transactional

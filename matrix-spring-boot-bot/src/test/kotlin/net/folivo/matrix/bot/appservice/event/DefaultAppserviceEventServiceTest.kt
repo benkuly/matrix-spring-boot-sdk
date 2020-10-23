@@ -5,12 +5,9 @@ import io.kotest.matchers.shouldBe
 import io.mockk.*
 import net.folivo.matrix.appservice.api.event.AppserviceEventService.EventProcessingState.NOT_PROCESSED
 import net.folivo.matrix.appservice.api.event.AppserviceEventService.EventProcessingState.PROCESSED
-import net.folivo.matrix.bot.appservice.sync.MatrixSyncService
 import net.folivo.matrix.bot.event.MatrixEventHandler
 import net.folivo.matrix.core.model.MatrixId.EventId
 import net.folivo.matrix.core.model.MatrixId.RoomId
-import net.folivo.matrix.core.model.events.m.room.MemberEvent
-import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.INVITE
 import net.folivo.matrix.core.model.events.m.room.message.MessageEvent
 
 class DefaultAppserviceEventServiceTest : DescribeSpec(testBody())
@@ -19,13 +16,11 @@ private fun testBody(): DescribeSpec.() -> Unit {
     return {
 
         val eventTransactionServiceMock = mockk<MatrixEventTransactionService>(relaxed = true)
-        val syncServiceMock = mockk<MatrixSyncService>(relaxed = true)
         val eventHandlerMock1 = mockk<MatrixEventHandler>(relaxed = true)
         val eventHandlerMock2 = mockk<MatrixEventHandler>(relaxed = true)
 
         val cut = DefaultAppserviceEventService(
                 eventTransactionServiceMock,
-                syncServiceMock,
                 listOf(eventHandlerMock1, eventHandlerMock2)
         )
 
@@ -70,18 +65,6 @@ private fun testBody(): DescribeSpec.() -> Unit {
             val event = mockk<MessageEvent<*>> {
                 every { roomId } returns RoomId("room", "server")
             }
-            it("should sync room when event is not invite member event") {
-                cut.processEvent(event)
-                coVerify { syncServiceMock.syncRoomMemberships(RoomId("room", "server")) }
-            }
-            it("should not sync room when event is invite member event") {
-                val memberEvent = mockk<MemberEvent> {
-                    every { roomId } returns RoomId("room", "server")
-                    every { content.membership } returns INVITE
-                }
-                cut.processEvent(memberEvent)
-                coVerify(exactly = 0) { syncServiceMock.syncRoomMemberships(any()) }
-            }
             it("should delegate to matching event handler") {
                 cut.processEvent(event)
                 coVerify { eventHandlerMock1.handleEvent(event, RoomId("room", "server")) }
@@ -95,7 +78,6 @@ private fun testBody(): DescribeSpec.() -> Unit {
         afterTest {
             clearMocks(
                     eventTransactionServiceMock,
-                    syncServiceMock,
                     eventHandlerMock1, eventHandlerMock2
             )
         }

@@ -1,6 +1,7 @@
 package net.folivo.matrix.bot.appservice.sync
 
 import kotlinx.coroutines.runBlocking
+import net.folivo.matrix.bot.membership.MatrixMembershipSyncService
 import net.folivo.matrix.bot.room.MatrixRoomService
 import net.folivo.matrix.bot.user.MatrixUserService
 import org.slf4j.LoggerFactory
@@ -10,7 +11,7 @@ import org.springframework.context.event.EventListener
 class InitialSyncService(
         private val userService: MatrixUserService,
         private val roomService: MatrixRoomService,
-        private val syncService: MatrixSyncService
+        private val membershipSyncService: MatrixMembershipSyncService
 ) {
 
     companion object {
@@ -27,7 +28,7 @@ class InitialSyncService(
             userService.deleteAllUsers()
 
             LOG.info("collect all joined rooms (of bot user) - this can take some time!")
-            syncService.syncBotMemberships()
+            membershipSyncService.syncBotMemberships()
 
             LOG.info("finished initial sync")
         }

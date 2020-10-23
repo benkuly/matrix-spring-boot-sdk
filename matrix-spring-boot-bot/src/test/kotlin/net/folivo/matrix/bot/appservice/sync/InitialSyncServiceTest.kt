@@ -3,6 +3,7 @@ package net.folivo.matrix.bot.appservice.sync
 import io.kotest.core.spec.style.DescribeSpec
 import io.mockk.coVerify
 import io.mockk.mockk
+import net.folivo.matrix.bot.membership.MatrixMembershipSyncService
 import net.folivo.matrix.bot.room.MatrixRoomService
 import net.folivo.matrix.bot.user.MatrixUserService
 
@@ -12,9 +13,9 @@ private fun testBody(): DescribeSpec.() -> Unit {
     return {
         val userServiceMock: MatrixUserService = mockk(relaxed = true)
         val roomServiceMock: MatrixRoomService = mockk(relaxed = true)
-        val syncServiceMock: MatrixSyncService = mockk(relaxed = true)
+        val membershipSyncServiceMock: MatrixMembershipSyncService = mockk(relaxed = true)
 
-        val cut = InitialSyncService(userServiceMock, roomServiceMock, syncServiceMock)
+        val cut = InitialSyncService(userServiceMock, roomServiceMock, membershipSyncServiceMock)
 
         describe(InitialSyncService::initialSync.name) {
             cut.initialSync()
@@ -25,7 +26,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 coVerify { userServiceMock.deleteAllUsers() }
             }
             it("should sync rooms of bot user") {
-                coVerify { syncServiceMock.syncBotMemberships() }
+                coVerify { membershipSyncServiceMock.syncBotMemberships() }
             }
         }
     }
