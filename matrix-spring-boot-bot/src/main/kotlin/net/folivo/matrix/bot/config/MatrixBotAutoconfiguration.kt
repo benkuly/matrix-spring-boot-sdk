@@ -69,6 +69,7 @@ class MatrixBotAutoconfiguration {
             roomService: MatrixRoomService,
             membershipService: MatrixMembershipService,
             userService: MatrixUserService,
+            membershipSyncService: MatrixMembershipSyncService,
             matrixClient: MatrixClient,
             botProperties: MatrixBotProperties
     ): DefaultMembershipChangeService {
@@ -76,6 +77,7 @@ class MatrixBotAutoconfiguration {
                 roomService,
                 membershipService,
                 userService,
+                membershipSyncService,
                 matrixClient,
                 botProperties
         )
@@ -89,5 +91,15 @@ class MatrixBotAutoconfiguration {
             botProperties: MatrixBotProperties
     ): MembershipChangeHandler {
         return MembershipChangeHandler(matrixClient, membershipChangeService, botHelper, botProperties)
+    }
+
+    @Bean
+    fun matrixMembershipSyncService(
+            matrixClient: MatrixClient,
+            membershipService: MatrixMembershipService,
+            helper: BotServiceHelper,
+            botProperties: MatrixBotProperties
+    ): MatrixMembershipSyncService {
+        return MatrixMembershipSyncService(matrixClient, membershipService, helper, botProperties)
     }
 }

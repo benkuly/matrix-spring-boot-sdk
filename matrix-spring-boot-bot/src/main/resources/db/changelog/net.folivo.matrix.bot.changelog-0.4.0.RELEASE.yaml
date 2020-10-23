@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 0.3.3.RELEASE
+      id: net.folivo.matrix.bot.changelog-0.4.0.RELEASE
       author: benkuly
       changes:
         - createTable:
