@@ -8,7 +8,6 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.toSet
 import kotlinx.coroutines.runBlocking
-import net.folivo.matrix.core.api.MatrixClientException
 import net.folivo.matrix.core.model.MatrixId.*
 import net.folivo.matrix.core.model.events.RoomEventContent
 import net.folivo.matrix.core.model.events.StateEvent
@@ -297,8 +296,8 @@ class RoomsApiClientTest {
             }
             fail<Unit>("error has error")
         } catch (error: Throwable) {
-            if (error !is MatrixClientException) {
-                fail<Unit>("error should be of type ${MatrixClientException::class} but was ${error::class}")
+            if (error !is IllegalArgumentException) {
+                fail<Unit>("error should be of type ${IllegalArgumentException::class} but was ${error::class}")
             }
         }
     }
@@ -350,8 +349,8 @@ class RoomsApiClientTest {
             }
             fail<Unit>("error has error")
         } catch (error: Throwable) {
-            if (error !is MatrixClientException) {
-                fail<Unit>("error should be of type ${MatrixClientException::class} but was ${error::class}")
+            if (error !is IllegalArgumentException) {
+                fail<Unit>("error should be of type ${IllegalArgumentException::class} but was ${error::class}")
             }
         }
     }

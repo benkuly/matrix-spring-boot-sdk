@@ -28,6 +28,10 @@ class MatrixRoomService(
         }
     }
 
+    suspend fun getRoomAlias(roomAlias: RoomAliasId): MatrixRoomAlias? {
+        return roomAliasRepository.findById(roomAlias)
+    }
+
     suspend fun existsByRoomAlias(roomAlias: RoomAliasId): Boolean {
         return roomAliasRepository.existsById(roomAlias)
     }

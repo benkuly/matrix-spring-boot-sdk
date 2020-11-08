@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.reactive.awaitFirst
 import net.folivo.matrix.core.annotation.MatrixEvent
-import net.folivo.matrix.core.api.MatrixClientException
 import net.folivo.matrix.core.model.MatrixId.*
 import net.folivo.matrix.core.model.events.*
 import net.folivo.matrix.core.model.events.m.room.CreateEvent
@@ -67,7 +66,7 @@ class RoomsApiClient(
                 .getValue("type", String::class.java)
                 .orElse(eventType)
         if (annotatedEventType.isNullOrEmpty()) {
-            throw MatrixClientException("the eventContent should be an inner-class of your custom event to find eventType or else you must use the method parameter 'eventType'")
+            throw IllegalArgumentException("the eventContent should be an inner-class of your custom event to find eventType or else you must use the method parameter 'eventType'")
         }
         return webClient
                 .get().uri {
@@ -186,7 +185,7 @@ class RoomsApiClient(
                 .getValue("type", String::class.java)
                 .orElse(eventType)
         if (annotatedEventType.isNullOrEmpty()) {
-            throw MatrixClientException("the eventContent should be an inner-class of your custom event to find eventType or else you must use the method parameter 'eventType'")
+            throw IllegalArgumentException("the eventContent should be an inner-class of your custom event to find eventType or else you must use the method parameter 'eventType'")
         }
 
         return webClient
@@ -218,7 +217,7 @@ class RoomsApiClient(
                 .getValue("type", String::class.java)
                 .orElse(eventType)
         if (annotatedEventType.isNullOrEmpty()) {
-            throw MatrixClientException("the eventContent should be an inner-class of your custom event to find eventType or else you must use the method parameter 'eventType'")
+            throw IllegalArgumentException("the eventContent should be an inner-class of your custom event to find eventType or else you must use the method parameter 'eventType'")
         }
 
         return webClient
