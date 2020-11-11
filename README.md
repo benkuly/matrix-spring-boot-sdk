@@ -69,15 +69,12 @@ matrix:
       # A list of users, aliases and rooms namespaces that the application service controls.
       namespaces:
         users:
-            # (optional) A true or false value stating whether this application service 
-            # has exclusive access to events within this namespace. Default is true.
-          - exclusive: true
             # A regular expression defining which values this namespace includes.
             # Note that this is not similar to the matrix homeserver appservice config,
-            # because this regex only regards the username and not user id.
-            regex: "_superAppservice_.*"
+            # because this regex only regards the localpart and not the complete matrix id.
+          - localpartRegex: "_superAppservice_.*"
         aliases:
-          - regex: "_superAppservice_.*"
+          - localpartRegex: "_superAppservice_.*"
         rooms: []
 ```
 

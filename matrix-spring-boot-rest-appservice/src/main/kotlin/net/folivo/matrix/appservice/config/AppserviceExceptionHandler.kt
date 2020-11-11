@@ -1,5 +1,6 @@
 package net.folivo.matrix.appservice.config
 
+import net.folivo.matrix.appservice.api.MatrixNotFoundException
 import net.folivo.matrix.core.api.ErrorResponse
 import net.folivo.matrix.core.api.MatrixServerException
 import org.slf4j.LoggerFactory
@@ -24,6 +25,12 @@ class AppserviceExceptionHandler {
     @ExceptionHandler(MatrixServerException::class)
     fun handleMatrixServerException(exception: MatrixServerException): ResponseEntity<ErrorResponse> {
         LOG.warn("MatrixServerException occurred", exception)
+        return ResponseEntity(exception.errorResponse, exception.statusCode)
+    }
+
+    @ExceptionHandler(MatrixNotFoundException::class)
+    fun handleMatrixNotFoundException(exception: MatrixNotFoundException): ResponseEntity<ErrorResponse> {
+        LOG.debug("MatrixNotFoundException occurred", exception)
         return ResponseEntity(exception.errorResponse, exception.statusCode)
     }
 }

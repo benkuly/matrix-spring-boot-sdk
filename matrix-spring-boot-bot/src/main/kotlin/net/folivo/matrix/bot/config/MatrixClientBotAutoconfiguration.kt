@@ -36,7 +36,7 @@ class MatrixClientBotAutoconfiguration {
     }
 
     @Bean
-    fun botServiceHelper(
+    fun clientBotServiceHelper(
             botProperties: MatrixBotProperties
     ): BotServiceHelper {
         return BotServiceHelper(botProperties, setOf(), setOf())

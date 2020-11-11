@@ -88,14 +88,14 @@ class MatrixAppserviceBotAutoconfiguration {
     }
 
     @Bean
-    fun botServiceHelper(
+    fun appserviceBotServiceHelper(
             botProperties: MatrixBotProperties,
             appserviceProperties: AppserviceProperties
     ): BotServiceHelper {
         return BotServiceHelper(
                 botProperties,
-                appserviceProperties.namespaces.users.map { Regex(it.regex) }.toSet(),
-                appserviceProperties.namespaces.rooms.map { Regex(it.regex) }.toSet()
+                appserviceProperties.namespaces.users.map { Regex(it.localpartRegex) }.toSet(),
+                appserviceProperties.namespaces.rooms.map { Regex(it.localpartRegex) }.toSet()
         )
     }
 }

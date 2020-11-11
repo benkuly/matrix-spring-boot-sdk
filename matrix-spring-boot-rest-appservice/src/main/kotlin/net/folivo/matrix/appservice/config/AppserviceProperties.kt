@@ -16,7 +16,6 @@ data class AppserviceProperties(
     )
 
     data class Namespace(
-            val regex: String,
-            val exclusive: Boolean = true
+            val localpartRegex: String
     )
 }

@@ -5,10 +5,15 @@ import net.folivo.matrix.appservice.api.event.EventRequest
 import net.folivo.matrix.core.api.MatrixServerException
 import net.folivo.matrix.core.model.MatrixId.RoomAliasId
 import net.folivo.matrix.core.model.MatrixId.UserId
+import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
 
 @RestController
 class AppserviceController(private val appserviceHandler: AppserviceHandler) {
+
+    companion object {
+        private val LOG = LoggerFactory.getLogger(this::class.java)
+    }
 
     /**
      * @see <a href="https://matrix.org/docs/spec/application_service/r0.1.2#put-matrix-app-v1-transactions-txnid">matrix spec</a>
@@ -26,10 +31,10 @@ class AppserviceController(private val appserviceHandler: AppserviceHandler) {
     suspend fun hasUser(@PathVariable userId: String): EmptyResponse {
         try {
             val hasUser = appserviceHandler.hasUser(UserId(userId))
-            return if (hasUser) EmptyResponse() else throw MatrixNotFoundException()
+            return if (hasUser) EmptyResponse() else throw MatrixNotFoundException("user $userId not found")
         } catch (error: Throwable) {
             if (error !is MatrixServerException) {
-                throw MatrixNotFoundException(error.message)
+                throw MatrixNotFoundException(error.message ?: "unknown")
             } else {
                 throw error
             }
@@ -43,10 +48,10 @@ class AppserviceController(private val appserviceHandler: AppserviceHandler) {
     suspend fun hasRoomAlias(@PathVariable roomAlias: String): EmptyResponse {
         try {
             val hasRoomAlias = appserviceHandler.hasRoomAlias(RoomAliasId(roomAlias))
-            return if (hasRoomAlias) EmptyResponse() else throw MatrixNotFoundException()
+            return if (hasRoomAlias) EmptyResponse() else throw MatrixNotFoundException("no room alias $roomAlias found")
         } catch (error: Throwable) {
             if (error !is MatrixServerException) {
-                throw MatrixNotFoundException(error.message)
+                throw MatrixNotFoundException(error.message ?: "unknown")
             } else {
                 throw error
             }

@@ -58,6 +58,7 @@ class DefaultAppserviceHandler(
     }
 
     override suspend fun hasUser(userId: UserId): Boolean {
+        LOG.debug("handle has user")
         return when (appserviceUserService.userExistingState(userId)) {
             UserExistingState.EXISTS -> true
             UserExistingState.DOES_NOT_EXISTS -> false
@@ -70,6 +71,7 @@ class DefaultAppserviceHandler(
     }
 
     override suspend fun hasRoomAlias(roomAlias: RoomAliasId): Boolean {
+        LOG.debug("handle has room alias")
         return when (appserviceRoomService.roomExistingState(roomAlias)) {
             RoomExistingState.EXISTS -> true
             RoomExistingState.DOES_NOT_EXISTS -> false

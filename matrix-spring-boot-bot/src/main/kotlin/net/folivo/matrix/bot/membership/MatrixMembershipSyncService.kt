@@ -23,6 +23,7 @@ class MatrixMembershipSyncService(
         try {
             matrixClient.roomsApi.getJoinedRooms()
                     .collect { roomId ->
+                        LOG.debug("sync room $roomId")
                         matrixClient.roomsApi.getJoinedMembers(roomId).joined.keys.forEach { userId ->
                             membershipService.getOrCreateMembership(userId, roomId)
                         }
