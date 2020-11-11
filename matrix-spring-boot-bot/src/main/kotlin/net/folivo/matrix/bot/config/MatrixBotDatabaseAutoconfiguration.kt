@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 import javax.sql.DataSource
 
 @Configuration
+// FIXME try not to use jdbc starter, because it forces users to exclude it.
 @EnableR2dbcRepositories(basePackages = ["net.folivo.matrix.bot"])
 @EnableTransactionManagement
 @EnableConfigurationProperties(MatrixBotProperties::class)
