@@ -9,7 +9,6 @@ import net.folivo.matrix.core.model.MatrixId.RoomId
 import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
-import org.springframework.transaction.annotation.Transactional
 
 open class DefaultMembershipChangeService(
         private val roomService: MatrixRoomService,
@@ -24,14 +23,12 @@ open class DefaultMembershipChangeService(
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    @Transactional
     override suspend fun onRoomJoin(userId: UserId, roomId: RoomId) {
         LOG.debug("save join in $roomId of user $userId")
         membershipService.getOrCreateMembership(userId = userId, roomId = roomId)
         membershipSyncService.syncRoomMemberships(roomId)
     }
 
-    @Transactional
     override suspend fun onRoomLeave(userId: UserId, roomId: RoomId) {
         if (membershipService.doesRoomContainsMembers(roomId, setOf(userId))) {
 

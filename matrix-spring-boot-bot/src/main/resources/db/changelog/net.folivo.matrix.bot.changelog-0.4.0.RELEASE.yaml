@@ -60,14 +60,18 @@ databaseChangeLog:
                   type: VARCHAR(250)
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_matrix_room_alias_matrix_room
-                    references: matrix_room(id)
-                    onDelete: CASCADE
               - column:
                   name: version
                   type: INTEGER
                   constraints:
                     nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: matrix_room_alias
+            baseColumnNames: room_id
+            constraintName: fk_matrix_room_alias_matrix_room
+            onDelete: CASCADE
+            referencedTableName: matrix_room
+            referencedColumnNames: id
         - createTable:
             tableName: matrix_user
             columns:
@@ -101,22 +105,30 @@ databaseChangeLog:
                   type: VARCHAR(250)
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_matrix_membership_matrix_user
-                    references: matrix_user(id)
-                    onDelete: CASCADE
               - column:
                   name: room_id
                   type: VARCHAR(250)
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_matrix_membership_matrix_room
-                    references: matrix_room(id)
-                    onDelete: CASCADE
               - column:
                   name: version
                   type: INTEGER
                   constraints:
                     nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: matrix_membership
+            baseColumnNames: user_id
+            constraintName: fk_matrix_membership_matrix_user
+            onDelete: CASCADE
+            referencedTableName: matrix_user
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            baseTableName: matrix_membership
+            baseColumnNames: room_id
+            constraintName: fk_matrix_membership_matrix_room
+            onDelete: CASCADE
+            referencedTableName: matrix_room
+            referencedColumnNames: id
         - createTable:
             tableName: matrix_sync_batch_token
             columns:
@@ -126,9 +138,6 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     primaryKey: true
-                    foreignKeyName: fk_matrix_sync_batch_token_matrix_user
-                    references: matrix_user(id)
-                    onDelete: CASCADE
               - column:
                   name: token
                   type: VARCHAR(250)
@@ -139,3 +148,10 @@ databaseChangeLog:
                   type: INTEGER
                   constraints:
                     nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: matrix_sync_batch_token
+            baseColumnNames: user_id
+            constraintName: fk_matrix_sync_batch_token_matrix_user
+            onDelete: CASCADE
+            referencedTableName: matrix_user
+            referencedColumnNames: id
