@@ -4,6 +4,9 @@ plugins {
 }
 
 dependencies {
+    annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    
     api(project(":matrix-spring-boot-rest-client"))
     api(project(":matrix-spring-boot-rest-appservice"))
 
@@ -11,8 +14,12 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${Versions.kotlinxCoroutines}")
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:${Versions.kotlinRetry}")
 
-    annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    api("org.liquibase:liquibase-core")
+    api("org.springframework.boot:spring-boot-starter-data-r2dbc")
+    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+
+    testImplementation("io.r2dbc:r2dbc-h2")
+    testImplementation("com.h2database:h2")
 
     testImplementation("io.projectreactor:reactor-test")
 }

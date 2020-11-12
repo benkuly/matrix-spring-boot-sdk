@@ -1,5 +1,6 @@
 package net.folivo.matrix.appservice.api.room
 
+import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.core.model.events.StateEvent
 import net.folivo.matrix.core.model.events.m.room.CreateEvent
 import net.folivo.matrix.core.model.events.m.room.PowerLevelsEvent
@@ -11,7 +12,7 @@ data class CreateRoomParameter(
         val visibility: Visibility = Visibility.PUBLIC,
         val name: String? = null,
         val topic: String? = null,
-        val invite: Set<String>? = null,
+        val invite: Set<UserId>? = null,
         val invite3Pid: Set<Invite3Pid>? = null,
         val roomVersion: String? = null,
         val creationContent: CreateEvent.CreateEventContent? = null,
@@ -19,5 +20,5 @@ data class CreateRoomParameter(
         val preset: Preset? = null,
         val isDirect: Boolean? = null,
         val powerLevelContentOverride: PowerLevelsEvent.PowerLevelsEventContent? = null,
-        val asUserId: String? = null
+        val asUserId: UserId? = null
 )

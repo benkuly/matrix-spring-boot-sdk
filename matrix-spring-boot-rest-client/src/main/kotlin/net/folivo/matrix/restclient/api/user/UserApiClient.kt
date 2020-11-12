@@ -1,5 +1,6 @@
 package net.folivo.matrix.restclient.api.user
 
+import net.folivo.matrix.core.model.MatrixId.UserId
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 
@@ -46,16 +47,16 @@ class UserApiClient(private val webClient: WebClient) {
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#put-matrix-client-r0-profile-userid-displayname">matrix spec</a>
      */
     suspend fun setDisplayName(
-            userId: String,
+            userId: UserId,
             displayName: String? = null,
-            asUserId: String? = null
+            asUserId: UserId? = null
     ) {
         return webClient
                 .put().uri {
                     it.apply {
                         path("/r0/profile/{userId}/displayname")
-                        if (asUserId != null) queryParam("user_id", asUserId)
-                    }.build(userId)
+                        if (asUserId != null) queryParam("user_id", asUserId.full)
+                    }.build(userId.full)
                 }
                 .bodyValue(mapOf("displayname" to displayName))
                 .retrieve()
@@ -65,12 +66,12 @@ class UserApiClient(private val webClient: WebClient) {
     /**
      * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#get-matrix-client-r0-account-whoami">matrix spec</a>
      */
-    suspend fun whoAmI(asUserId: String? = null): String {
+    suspend fun whoAmI(asUserId: UserId? = null): UserId {
         return webClient
                 .get().uri {
                     it.apply {
                         path("/r0/account/whoami")
-                        if (asUserId != null) queryParam("user_id", asUserId)
+                        if (asUserId != null) queryParam("user_id", asUserId.full)
                     }.build()
                 }
                 .retrieve()

@@ -1,33 +1,36 @@
 package net.folivo.matrix.appservice.api
 
-import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
-import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
+import net.folivo.matrix.appservice.api.room.AppserviceRoomService
+import net.folivo.matrix.appservice.api.user.AppserviceUserService
 import net.folivo.matrix.core.api.MatrixServerException
+import net.folivo.matrix.core.model.MatrixId.RoomAliasId
+import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
 
 class AppserviceHandlerHelper(
         private val matrixClient: MatrixClient,
-        private val matrixAppserviceUserService: MatrixAppserviceUserService,
-        private val matrixAppserviceRoomService: MatrixAppserviceRoomService
+        private val appserviceUserService: AppserviceUserService,
+        private val appserviceRoomService: AppserviceRoomService
 ) {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    suspend fun registerAndSaveUser(userId: String) {
+    suspend fun registerManagedUser(userId: UserId) {
+        LOG.debug("try to register user")
         try {
             matrixClient.userApi.register(
                     authenticationType = "m.login.application_service",
-                    username = userId.trimStart('@').substringBefore(":")
+                    username = userId.localpart
             )
         } catch (error: MatrixServerException) {
             if (error.errorResponse.errorCode == "M_USER_IN_USE") {
                 LOG.warn("user $userId has already been created")
             } else throw error
         }
-        val displayName = matrixAppserviceUserService.getCreateUserParameter(userId).displayName
+        val displayName = appserviceUserService.getRegisterUserParameter(userId).displayName
         if (displayName != null) {
             matrixClient.userApi.setDisplayName(
                     userId,
@@ -35,14 +38,16 @@ class AppserviceHandlerHelper(
                     asUserId = userId
             )
         }
-        matrixAppserviceUserService.saveUser(userId)
+        LOG.debug("registered user")
+        appserviceUserService.onRegisteredUser(userId)
     }
 
-    suspend fun createAndSaveRoom(roomAlias: String) {
-        val createRoomParameter = matrixAppserviceRoomService.getCreateRoomParameter(roomAlias)
+    suspend fun createManagedRoom(roomAlias: RoomAliasId) {
+        LOG.debug("try to create room")
+        val createRoomParameter = appserviceRoomService.getCreateRoomParameter(roomAlias)
         val roomId = matrixClient.roomsApi
                 .createRoom(
-                        roomAliasName = roomAlias.trimStart('#').substringBefore(":"),
+                        roomAliasId = roomAlias,
                         visibility = createRoomParameter.visibility,
                         name = createRoomParameter.name,
                         topic = createRoomParameter.topic,
@@ -56,6 +61,7 @@ class AppserviceHandlerHelper(
                         powerLevelContentOverride = createRoomParameter.powerLevelContentOverride,
                         preset = createRoomParameter.preset
                 )
-        matrixAppserviceRoomService.saveRoom(roomAlias, roomId)
+        LOG.debug("created room")
+        appserviceRoomService.onCreatedRoom(roomAlias, roomId)
     }
 }

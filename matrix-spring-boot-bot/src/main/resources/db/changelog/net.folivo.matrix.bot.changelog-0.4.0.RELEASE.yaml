@@ -1,0 +1,157 @@
+databaseChangeLog:
+  - changeSet:
+      id: net.folivo.matrix.bot.changelog-0.4.0.RELEASE
+      author: benkuly
+      changes:
+        - createTable:
+            tableName: matrix_event_transaction
+            columns:
+              - column:
+                  name: id
+                  type: VARCHAR(250)
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: tnx_id
+                  type: VARCHAR(250)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: event_id
+                  type: VARCHAR(250)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: matrix_room
+            columns:
+              - column:
+                  name: id
+                  type: VARCHAR(250)
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: is_managed
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: matrix_room_alias
+            columns:
+              - column:
+                  name: alias
+                  type: VARCHAR(250)
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: room_id
+                  type: VARCHAR(250)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: matrix_room_alias
+            baseColumnNames: room_id
+            constraintName: fk_matrix_room_alias_matrix_room
+            onDelete: CASCADE
+            referencedTableName: matrix_room
+            referencedColumnNames: id
+        - createTable:
+            tableName: matrix_user
+            columns:
+              - column:
+                  name: id
+                  type: VARCHAR(250)
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: is_managed
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: matrix_membership
+            columns:
+              - column:
+                  name: id
+                  type: VARCHAR(250)
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: user_id
+                  type: VARCHAR(250)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: room_id
+                  type: VARCHAR(250)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: matrix_membership
+            baseColumnNames: user_id
+            constraintName: fk_matrix_membership_matrix_user
+            onDelete: CASCADE
+            referencedTableName: matrix_user
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            baseTableName: matrix_membership
+            baseColumnNames: room_id
+            constraintName: fk_matrix_membership_matrix_room
+            onDelete: CASCADE
+            referencedTableName: matrix_room
+            referencedColumnNames: id
+        - createTable:
+            tableName: matrix_sync_batch_token
+            columns:
+              - column:
+                  name: user_id
+                  type: VARCHAR(250)
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: token
+                  type: VARCHAR(250)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: version
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: matrix_sync_batch_token
+            baseColumnNames: user_id
+            constraintName: fk_matrix_sync_batch_token_matrix_user
+            onDelete: CASCADE
+            referencedTableName: matrix_user
+            referencedColumnNames: id

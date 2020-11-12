@@ -6,5 +6,5 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/_matrix/app/v1/thirdparty")
 class ThirdPartyController {
-
+    // TODO
 }

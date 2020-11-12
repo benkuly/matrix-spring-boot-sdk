@@ -1,10 +1,11 @@
 package net.folivo.matrix.appservice
 
-import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
+import net.folivo.matrix.appservice.api.event.AppserviceEventService
+import net.folivo.matrix.appservice.api.room.AppserviceRoomService
 import net.folivo.matrix.appservice.api.room.CreateRoomParameter
-import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
-import net.folivo.matrix.appservice.api.user.CreateUserParameter
-import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
+import net.folivo.matrix.appservice.api.user.AppserviceUserService
+import net.folivo.matrix.appservice.api.user.RegisterUserParameter
+import net.folivo.matrix.core.model.MatrixId.*
 import net.folivo.matrix.core.model.events.Event
 import org.springframework.boot.SpringBootConfiguration
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
@@ -35,16 +36,16 @@ class TestApplication {
     }
 
     @Bean
-    fun noOpMatrixAppserviceEventService(): MatrixAppserviceEventService {
-        return object : MatrixAppserviceEventService {
+    fun noOpAppserviceEventService(): AppserviceEventService {
+        return object : AppserviceEventService {
             override suspend fun eventProcessingState(
                     tnxId: String,
-                    eventIdOrType: String
-            ): MatrixAppserviceEventService.EventProcessingState {
-                return MatrixAppserviceEventService.EventProcessingState.PROCESSED
+                    eventId: EventId
+            ): AppserviceEventService.EventProcessingState {
+                return AppserviceEventService.EventProcessingState.PROCESSED
             }
 
-            override suspend fun saveEventProcessed(tnxId: String, eventIdOrType: String) {
+            override suspend fun onEventProcessed(tnxId: String, eventId: EventId) {
             }
 
             override suspend fun processEvent(event: Event<*>) {
@@ -53,42 +54,34 @@ class TestApplication {
     }
 
     @Bean
-    fun noOpMatrixAppserviceRoomService(): MatrixAppserviceRoomService {
-        return object : MatrixAppserviceRoomService {
-            override suspend fun roomExistingState(roomAlias: String): MatrixAppserviceRoomService.RoomExistingState {
-                return MatrixAppserviceRoomService.RoomExistingState.DOES_NOT_EXISTS
+    fun noOpAppserviceRoomService(): AppserviceRoomService {
+        return object : AppserviceRoomService {
+            override suspend fun roomExistingState(roomAlias: RoomAliasId): AppserviceRoomService.RoomExistingState {
+                return AppserviceRoomService.RoomExistingState.DOES_NOT_EXISTS
             }
 
-            override suspend fun getCreateRoomParameter(roomAlias: String): CreateRoomParameter {
+            override suspend fun getCreateRoomParameter(roomAlias: RoomAliasId): CreateRoomParameter {
                 return CreateRoomParameter()
             }
 
-            override suspend fun saveRoom(roomAlias: String, roomId: String) {
-
-            }
-
-            override suspend fun saveRoomJoin(roomId: String, userId: String) {
-
-            }
-
-            override suspend fun saveRoomLeave(roomId: String, userId: String) {
+            override suspend fun onCreatedRoom(roomAlias: RoomAliasId, roomId: RoomId) {
 
             }
         }
     }
 
     @Bean
-    fun noOpMatrixAppserviceUserService(): MatrixAppserviceUserService {
-        return object : MatrixAppserviceUserService {
-            override suspend fun userExistingState(userId: String): MatrixAppserviceUserService.UserExistingState {
-                return MatrixAppserviceUserService.UserExistingState.DOES_NOT_EXISTS
+    fun noOpAppserviceUserService(): AppserviceUserService {
+        return object : AppserviceUserService {
+            override suspend fun userExistingState(userId: UserId): AppserviceUserService.UserExistingState {
+                return AppserviceUserService.UserExistingState.DOES_NOT_EXISTS
             }
 
-            override suspend fun getCreateUserParameter(userId: String): CreateUserParameter {
-                return CreateUserParameter()
+            override suspend fun getRegisterUserParameter(userId: UserId): RegisterUserParameter {
+                return RegisterUserParameter()
             }
 
-            override suspend fun saveUser(userId: String) {
+            override suspend fun onRegisteredUser(userId: UserId) {
 
             }
         }

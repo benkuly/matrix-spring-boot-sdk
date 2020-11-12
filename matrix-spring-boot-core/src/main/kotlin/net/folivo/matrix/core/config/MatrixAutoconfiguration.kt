@@ -2,6 +2,7 @@ package net.folivo.matrix.core.config
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.Module
+import net.folivo.matrix.core.jackson.MatrixEventJacksonModule
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer
 import org.springframework.context.annotation.Bean
@@ -38,5 +39,10 @@ class MatrixAutoconfiguration {
         return Jackson2ObjectMapperBuilderCustomizer {
             it.serializationInclusion(JsonInclude.Include.NON_NULL)
         }
+    }
+
+    @Bean
+    fun matrixIdConfigurationPropertiesConverter(): MatrixIdConfigurationPropertiesConverter {
+        return MatrixIdConfigurationPropertiesConverter()
     }
 }

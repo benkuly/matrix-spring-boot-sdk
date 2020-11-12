@@ -1,6 +1,7 @@
 package net.folivo.matrix.core.model.events
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import net.folivo.matrix.core.model.MatrixId.*
 
 
 /**
@@ -11,10 +12,10 @@ abstract class StateEvent<C : StateEventContent, U : StateEvent.UnsignedData> : 
     constructor(
             type: String,
             content: C,
-            id: String,
-            sender: String,
+            id: EventId,
+            sender: UserId,
             originTimestamp: Long,
-            roomId: String? = null,
+            roomId: RoomId? = null,
             unsigned: U,
             stateKey: String,
             previousContent: C? = null
@@ -32,16 +33,16 @@ abstract class StateEvent<C : StateEventContent, U : StateEvent.UnsignedData> : 
     }
 
     @JsonProperty("event_id")
-    val id: String
+    val id: EventId
 
     @JsonProperty("sender")
-    val sender: String
+    val sender: UserId
 
     @JsonProperty("origin_server_ts")
     val originTimestamp: Long
 
     @JsonProperty("room_id")
-    val roomId: String?
+    val roomId: RoomId?
 
     @JsonProperty("unsigned")
     val unsigned: U?

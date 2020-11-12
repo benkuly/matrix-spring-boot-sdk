@@ -1,12 +1,16 @@
 package net.folivo.matrix.restclient.api.sync
 
-class InMemorySyncBatchTokenService(private var syncBatchToken: String? = null) : SyncBatchTokenService {
-    override suspend fun getBatchToken(): String? {
-        return this.syncBatchToken
+import net.folivo.matrix.core.model.MatrixId.UserId
+
+class InMemorySyncBatchTokenService(
+        private val syncBatchTokenMap: MutableMap<UserId, String?> = mutableMapOf()
+) : SyncBatchTokenService {
+    override suspend fun getBatchToken(userId: UserId?): String? {
+        return this.syncBatchTokenMap[userId ?: UserId("@default:server")]
     }
 
-    override suspend fun setBatchToken(value: String?) {
-        this.syncBatchToken = value
+    override suspend fun setBatchToken(value: String?, userId: UserId?) {
+        syncBatchTokenMap[userId ?: UserId("@default:server")] = value
     }
 
 }

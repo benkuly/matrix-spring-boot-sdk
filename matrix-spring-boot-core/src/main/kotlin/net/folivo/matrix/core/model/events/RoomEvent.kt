@@ -1,6 +1,7 @@
 package net.folivo.matrix.core.model.events
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import net.folivo.matrix.core.model.MatrixId.*
 
 /**
  * @see <a href="https://matrix.org/docs/spec/client_server/r0.6.0#room-event-fields">matrix spec</a>
@@ -10,10 +11,10 @@ abstract class RoomEvent<C : RoomEventContent, U : RoomEvent.UnsignedData> : Eve
     constructor(
             type: String,
             content: C,
-            id: String,
-            sender: String,
+            id: EventId,
+            sender: UserId,
             originTimestamp: Long,
-            roomId: String? = null,
+            roomId: RoomId? = null,
             unsigned: U? = null
     ) : super(
             type = type,
@@ -27,16 +28,16 @@ abstract class RoomEvent<C : RoomEventContent, U : RoomEvent.UnsignedData> : Eve
     }
 
     @JsonProperty("event_id")
-    val id: String
+    val id: EventId
 
     @JsonProperty("sender")
-    val sender: String
+    val sender: UserId
 
     @JsonProperty("origin_server_ts")
     val originTimestamp: Long
 
     @JsonProperty("room_id")
-    val roomId: String?
+    val roomId: RoomId?
 
     @JsonProperty("unsigned")
     val unsigned: U?

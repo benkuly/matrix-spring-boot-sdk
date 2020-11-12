@@ -4,6 +4,8 @@ subprojects {
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${Versions.kotlinxCoroutines}")
 
+        implementation("io.r2dbc:r2dbc-h2")
+        implementation("com.h2database:h2")
     }
 
     tasks.getByName<Jar>("jar") {

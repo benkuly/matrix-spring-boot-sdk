@@ -1,10 +1,11 @@
 package net.folivo.matrix.restclient.api.rooms
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import net.folivo.matrix.core.model.MatrixId.UserId
 
 data class GetJoinedMembersResponse(
         @JsonProperty("joined")
-        val joined: Map<String, RoomMember>
+        val joined: Map<UserId, RoomMember>
 ) {
     data class RoomMember(
             @JsonProperty("display_name")

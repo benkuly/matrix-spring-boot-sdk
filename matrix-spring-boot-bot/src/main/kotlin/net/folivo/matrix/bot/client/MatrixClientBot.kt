@@ -1,25 +1,27 @@
 package net.folivo.matrix.bot.client
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.filter
 import net.folivo.matrix.bot.config.MatrixBotProperties
-import net.folivo.matrix.bot.config.MatrixBotProperties.AutoJoinMode.DISABLED
-import net.folivo.matrix.bot.handler.AutoJoinService
-import net.folivo.matrix.bot.handler.MatrixEventHandler
+import net.folivo.matrix.bot.event.MatrixEventHandler
+import net.folivo.matrix.bot.membership.MembershipChangeHandler
+import net.folivo.matrix.core.model.MatrixId.RoomId
 import net.folivo.matrix.core.model.events.Event
+import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.INVITE
+import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.LEAVE
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
-import org.springframework.boot.CommandLineRunner
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.event.EventListener
 
 class MatrixClientBot(
         private val matrixClient: MatrixClient,
         private val eventHandler: List<MatrixEventHandler>,
-        private val botProperties: MatrixBotProperties,
-        private val autoJoinService: AutoJoinService
-) : CommandLineRunner {
+        private val membershipChangeHandler: MembershipChangeHandler,
+        private val botProperties: MatrixBotProperties
+) {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -27,65 +29,50 @@ class MatrixClientBot(
 
     private var syncJob: Job? = null
 
-    fun start(): Job {
+    @EventListener(ApplicationReadyEvent::class)
+    fun startClientJob() {
+        runBlocking { start().join() }
+    }
+
+    suspend fun start(): Job {
         stop()
         LOG.info("started syncLoop")
         val job = GlobalScope.launch {
-            matrixClient.syncApi
-                    .syncLoop()
-                    .collect { syncResponse ->
-                        try {
-                            syncResponse.room.join.forEach { (roomId, joinedRoom) ->
-                                joinedRoom.timeline.events.forEach { handleEvent(it, roomId) }
-                                joinedRoom.state.events.forEach { handleEvent(it, roomId) }
-                            }
-                            syncResponse.room.invite.keys.forEach { roomId ->
-                                if (botProperties.autoJoin == DISABLED
-                                    || botProperties.autoJoin == MatrixBotProperties.AutoJoinMode.RESTRICTED
-                                    && roomId.substringAfter(":") != botProperties.serverName
-                                ) {
-                                    LOG.warn("reject room invite to $roomId because autoJoin is not allowed to ${botProperties.serverName}")
-                                    matrixClient.roomsApi.leaveRoom(roomId)
-                                } else {
-                                    if (autoJoinService.shouldJoin(
-                                                    roomId,
-                                                    botProperties.username?.let { username ->
-                                                        "@${username}:${botProperties.serverName}"
-                                                    }
-                                            )) {
-                                        LOG.debug("join invitation to roomId: $roomId")
-                                        matrixClient.roomsApi.joinRoom(roomId)
-                                    } else {
-                                        LOG.debug("reject room invite to $roomId because service denied it")
-                                        matrixClient.roomsApi.leaveRoom(roomId)
-                                    }
-
+            try {
+                matrixClient.syncApi
+                        .syncLoop()
+                        .collect { syncResponse ->
+                            try {
+                                syncResponse.room.join.forEach { (roomId, joinedRoom) ->
+                                    joinedRoom.timeline.events.forEach { handleEvent(it, roomId) }
+                                    joinedRoom.state.events.forEach { handleEvent(it, roomId) }
                                 }
+                                syncResponse.room.invite.forEach { (roomId) ->
+                                    membershipChangeHandler.handleMembership(botProperties.botUserId, roomId, INVITE)
+                                }
+                                syncResponse.room.leave.forEach { (roomId) ->
+                                    membershipChangeHandler.handleMembership(botProperties.botUserId, roomId, LEAVE)
+                                }
+                                LOG.debug("processed sync response")
+                            } catch (error: Throwable) {
+                                LOG.error("some error while processing response: ${error.message}")
                             }
-                            LOG.debug("processed sync response")
-                        } catch (error: Throwable) {
-                            LOG.error("some error while processing response", error.message)
                         }
-                    }
+            } catch (error: CancellationException) {
+                LOG.info("stopped syncLoop")
+            }
         }
         syncJob = job
         return job
     }
 
-    fun stop() {
-        syncJob?.apply {
-            LOG.info("stopped syncLoop")
-            cancel()
-        }
+    suspend fun stop() {
+        syncJob?.cancelAndJoin()
     }
 
-    private suspend fun handleEvent(event: Event<*>, roomId: String) {
-        return eventHandler
+    private suspend fun handleEvent(event: Event<*>, roomId: RoomId) {
+        return eventHandler.asFlow()
                 .filter { it.supports(event::class.java) }
-                .forEach { it.handleEvent(event, roomId) }
-    }
-
-    override fun run(vararg args: String?) {
-        runBlocking { start().join() }
+                .collect { it.handleEvent(event, roomId) }
     }
 }

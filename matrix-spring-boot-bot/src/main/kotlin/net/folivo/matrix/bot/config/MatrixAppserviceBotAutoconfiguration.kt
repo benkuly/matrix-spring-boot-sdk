@@ -1,88 +1,101 @@
 package net.folivo.matrix.bot.config
 
 import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
-import net.folivo.matrix.appservice.api.event.MatrixAppserviceEventService
-import net.folivo.matrix.appservice.api.room.MatrixAppserviceRoomService
-import net.folivo.matrix.appservice.api.user.MatrixAppserviceUserService
-import net.folivo.matrix.appservice.config.MatrixAppserviceProperties
-import net.folivo.matrix.bot.appservice.*
-import net.folivo.matrix.bot.handler.AutoJoinService
-import net.folivo.matrix.bot.handler.MatrixEventHandler
-import net.folivo.matrix.restclient.MatrixClient
+import net.folivo.matrix.appservice.api.event.AppserviceEventService
+import net.folivo.matrix.appservice.api.room.AppserviceRoomService
+import net.folivo.matrix.appservice.api.user.AppserviceUserService
+import net.folivo.matrix.appservice.config.AppserviceProperties
+import net.folivo.matrix.bot.appservice.AppserviceMemberEventHandler
+import net.folivo.matrix.bot.appservice.BotUserInitializer
+import net.folivo.matrix.bot.appservice.DefaultAppserviceRoomService
+import net.folivo.matrix.bot.appservice.DefaultAppserviceUserService
+import net.folivo.matrix.bot.appservice.event.DefaultAppserviceEventService
+import net.folivo.matrix.bot.appservice.event.MatrixEventTransactionRepository
+import net.folivo.matrix.bot.appservice.event.MatrixEventTransactionService
+import net.folivo.matrix.bot.appservice.sync.InitialSyncService
+import net.folivo.matrix.bot.event.MatrixEventHandler
+import net.folivo.matrix.bot.membership.MatrixMembershipSyncService
+import net.folivo.matrix.bot.membership.MembershipChangeHandler
+import net.folivo.matrix.bot.room.MatrixRoomService
+import net.folivo.matrix.bot.user.MatrixUserService
+import net.folivo.matrix.bot.util.BotServiceHelper
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 
 
 @Configuration
 @ConditionalOnProperty(prefix = "matrix.bot", name = ["mode"], havingValue = "APPSERVICE")
-class MatrixAppserviceBotAutoconfiguration(private val matrixBotProperties: MatrixBotProperties) {
+class MatrixAppserviceBotAutoconfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    fun matrixAppserviceServiceHelper(appserviceProperties: MatrixAppserviceProperties): MatrixAppserviceServiceHelper {
-        val asUserName = matrixBotProperties.username
-                         ?: throw MissingRequiredPropertyException("matrix.bot.username")
+    fun defaultAppserviceEventService(
+            eventHandler: List<MatrixEventHandler>,
+            eventTransactionService: MatrixEventTransactionService
+    ): AppserviceEventService {
+        return DefaultAppserviceEventService(eventTransactionService, eventHandler)
+    }
 
-        return MatrixAppserviceServiceHelper(
-                usersRegex = appserviceProperties.namespaces.users.map { it.regex },
-                roomsRegex = appserviceProperties.namespaces.rooms.map { it.regex },
-                asUsername = asUserName
-        )
+    @Bean
+    fun matrixEventTransactionService(eventTransactionRepository: MatrixEventTransactionRepository): MatrixEventTransactionService {
+        return MatrixEventTransactionService(eventTransactionRepository)
+    }
+
+    @Bean
+    fun appserviceMemberEventHandler(
+            membershipChangeHandler: MembershipChangeHandler,
+            appserviceHelper: AppserviceHandlerHelper
+    ): AppserviceMemberEventHandler {
+        return AppserviceMemberEventHandler(membershipChangeHandler, appserviceHelper)
     }
 
     @Bean
     @ConditionalOnMissingBean
-    fun defaultMatrixAppserviceRoomService(helper: MatrixAppserviceServiceHelper): MatrixAppserviceRoomService {
-        return DefaultMatrixAppserviceRoomService(helper)
+    fun defaultAppserviceRoomService(roomService: MatrixRoomService, helper: BotServiceHelper): AppserviceRoomService {
+        return DefaultAppserviceRoomService(roomService, helper)
+    }
+
+    @Bean
+    @Profile("initialsync")
+    fun initialSyncService(
+            userService: MatrixUserService,
+            roomService: MatrixRoomService,
+            membershipSyncService: MatrixMembershipSyncService
+    ): InitialSyncService {
+        return InitialSyncService(userService, roomService, membershipSyncService)
+    }
+
+    @Bean
+    @Profile("!initialsync")
+    fun botUserInitializer(
+            appserviceHandlerHelper: AppserviceHandlerHelper,
+            botProperties: MatrixBotProperties
+    ): BotUserInitializer {
+        return BotUserInitializer(appserviceHandlerHelper, botProperties)
     }
 
     @Bean
     @ConditionalOnMissingBean
-    fun defaultMatrixAppserviceUserService(helper: MatrixAppserviceServiceHelper): MatrixAppserviceUserService {
-        return DefaultMatrixAppserviceUserService(helper)
+    fun defaultAppserviceUserService(
+            matrixUserService: MatrixUserService,
+            helper: BotServiceHelper,
+            botProperties: MatrixBotProperties
+    ): AppserviceUserService {
+        return DefaultAppserviceUserService(matrixUserService, helper, botProperties)
     }
 
     @Bean
-    @ConditionalOnMissingBean
-    fun defaultMatrixAppserviceEventService(eventHandler: List<MatrixEventHandler>): MatrixAppserviceEventService {
-        return DefaultMatrixAppserviceEventService(eventHandler)
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun membershipEventHandler(
-            autoJoinService: AutoJoinService,
-            matrixClient: MatrixClient,
-            matrixAppserviceRoomService: MatrixAppserviceRoomService,
-            appserviceProperties: MatrixAppserviceProperties,
-            appserviceHandlerHelper: AppserviceHandlerHelper
-    ): MembershipEventHandler {
-        val asUserName = matrixBotProperties.username
-                         ?: throw MissingRequiredPropertyException("matrix.bot.username")
-
-        return MembershipEventHandler(
-                autoJoinService = autoJoinService,
-                matrixClient = matrixClient,
-                roomService = matrixAppserviceRoomService,
-                asUsername = asUserName,
-                usersRegex = appserviceProperties.namespaces.users.map { it.regex },
-                serverName = matrixBotProperties.serverName,
-                autoJoin = matrixBotProperties.autoJoin,
-                helper = appserviceHandlerHelper,
-                trackMembershipMode = matrixBotProperties.trackMembership
-
-        )
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun botUserInitializer(matrixClient: MatrixClient, userService: MatrixAppserviceUserService): BotUserInitializer {
-        return BotUserInitializer(
-                matrixClient = matrixClient,
-                botProperties = matrixBotProperties,
-                userService = userService
+    fun appserviceBotServiceHelper(
+            botProperties: MatrixBotProperties,
+            appserviceProperties: AppserviceProperties
+    ): BotServiceHelper {
+        return BotServiceHelper(
+                botProperties,
+                appserviceProperties.namespaces.users.map { Regex(it.localpartRegex) }.toSet(),
+                appserviceProperties.namespaces.rooms.map { Regex(it.localpartRegex) }.toSet()
         )
     }
 }

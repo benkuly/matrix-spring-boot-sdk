@@ -7,11 +7,15 @@ import com.github.michaelbull.retry.policy.plus
 import com.github.michaelbull.retry.retry
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import net.folivo.matrix.core.model.MatrixId.UserId
 import org.slf4j.LoggerFactory
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 
-class SyncApiClient(private val webClient: WebClient, private val syncBatchTokenService: SyncBatchTokenService) {
+class SyncApiClient(
+        private val webClient: WebClient,
+        private val syncBatchTokenService: SyncBatchTokenService
+) {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -22,8 +26,8 @@ class SyncApiClient(private val webClient: WebClient, private val syncBatchToken
             since: String? = null,
             fullState: Boolean = false,
             setPresence: Presence? = null,
-            timeout: Long = 0
-//            asUserId: String? = null // TODO currently not supported due to limit of syncBatchTokenService to only store one token
+            timeout: Long = 0,
+            asUserId: UserId? = null
     ): SyncResponse {
         return webClient
                 .get().uri {
@@ -34,7 +38,7 @@ class SyncApiClient(private val webClient: WebClient, private val syncBatchToken
                         if (setPresence != null) queryParam("set_presence", setPresence.value)
                         if (since != null) queryParam("since", since)
                         queryParam("timeout", timeout)
-//                        if (asUserId != null) queryParam("user_id", asUserId) // TODO see TODO in syncOnce parameter
+                        if (asUserId != null) queryParam("user_id", asUserId.full)
                     }.build()
                 }
                 .retrieve()
@@ -51,12 +55,12 @@ class SyncApiClient(private val webClient: WebClient, private val syncBatchToken
 
     fun syncLoop(
             filter: String? = null,
-            setPresence: Presence? = null
-//            asUserId: String? = null // TODO see TODO in syncOnce parameter
+            setPresence: Presence? = null,
+            asUserId: UserId? = null
     ): Flow<SyncResponse> {
         return flow {
             while (true) {
-                val batchToken = syncBatchTokenService.getBatchToken()
+                val batchToken = syncBatchTokenService.getBatchToken(asUserId)
                 val response = retry(binaryExponentialBackoff(LongRange(1000, 90000)) + logAttempt()) {
                     if (batchToken != null) {
                         syncOnce(
@@ -64,20 +68,20 @@ class SyncApiClient(private val webClient: WebClient, private val syncBatchToken
                                 setPresence = setPresence,
                                 fullState = false,
                                 since = batchToken,
-                                timeout = 30000
-                                //asUserId = asUserId // TODO see TODO in syncOnce parameter
+                                timeout = 30000,
+                                asUserId = asUserId
                         )
                     } else {
                         syncOnce(
                                 filter = filter,
                                 setPresence = setPresence,
                                 fullState = false,
-                                timeout = 30000
-                                //asUserId = asUserId // TODO see TODO in syncOnce parameter
+                                timeout = 30000,
+                                asUserId = asUserId
                         )
                     }
                 }
-                syncBatchTokenService.setBatchToken(response.nextBatch)
+                syncBatchTokenService.setBatchToken(response.nextBatch, asUserId)
                 emit(response)
             }
         }
