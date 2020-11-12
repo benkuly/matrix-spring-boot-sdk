@@ -175,7 +175,7 @@ class RoomsApiClient(
     suspend fun sendStateEvent( // TODO should handle resend by itself (maybe use reactors retry)
             roomId: RoomId,
             eventContent: StateEventContent,
-            stateKey: String,
+            stateKey: String? = "",
             eventType: String? = null,
             asUserId: UserId? = null
     ): EventId {

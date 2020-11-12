@@ -37,6 +37,7 @@ class AppserviceHandlerHelper(
                     asUserId = userId
             )
         }
+        LOG.debug("registered user")
         appserviceUserService.onRegisteredUser(userId)
     }
 
@@ -58,6 +59,7 @@ class AppserviceHandlerHelper(
                         powerLevelContentOverride = createRoomParameter.powerLevelContentOverride,
                         preset = createRoomParameter.preset
                 )
+        LOG.debug("created room")
         appserviceRoomService.onCreatedRoom(roomAlias, roomId)
     }
 }

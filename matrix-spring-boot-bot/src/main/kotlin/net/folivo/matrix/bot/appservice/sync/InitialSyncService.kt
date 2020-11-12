@@ -28,7 +28,7 @@ class InitialSyncService(
             userService.deleteAllUsers()
 
             LOG.info("collect all joined rooms (of bot user) - this can take some time!")
-            membershipSyncService.syncBotMemberships()
+            membershipSyncService.syncBotRoomsAndMemberships()
 
             LOG.info("finished initial sync")
         }

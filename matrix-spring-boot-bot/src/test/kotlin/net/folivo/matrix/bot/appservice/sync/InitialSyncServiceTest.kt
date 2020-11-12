@@ -26,7 +26,7 @@ private fun testBody(): DescribeSpec.() -> Unit {
                 coVerify { userServiceMock.deleteAllUsers() }
             }
             it("should sync rooms of bot user") {
-                coVerify { membershipSyncServiceMock.syncBotMemberships() }
+                coVerify { membershipSyncServiceMock.syncBotRoomsAndMemberships() }
             }
         }
     }

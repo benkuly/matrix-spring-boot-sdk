@@ -8,10 +8,10 @@ import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import net.folivo.matrix.bot.config.MatrixBotProperties
 import net.folivo.matrix.bot.config.MatrixBotProperties.TrackMembershipMode.*
-import net.folivo.matrix.bot.membership.MatrixMembershipSyncService
+import net.folivo.matrix.bot.room.MatrixRoomService
 import net.folivo.matrix.bot.util.BotServiceHelper
-import net.folivo.matrix.core.model.MatrixId.RoomId
-import net.folivo.matrix.core.model.MatrixId.UserId
+import net.folivo.matrix.core.model.MatrixId.*
+import net.folivo.matrix.core.model.events.m.room.CanonicalAliasEvent.CanonicalAliasEventContent
 import net.folivo.matrix.restclient.MatrixClient
 
 class MatrixSyncServiceTest : DescribeSpec(testBody())
@@ -19,17 +19,25 @@ class MatrixSyncServiceTest : DescribeSpec(testBody())
 private fun testBody(): DescribeSpec.() -> Unit {
     return {
         val matrixClientMock: MatrixClient = mockk()
+        val roomServiceMock: MatrixRoomService = mockk()
         val membershipServiceMock: MatrixMembershipService = mockk()
         val helperMock: BotServiceHelper = mockk()
         val botPropertiesMock: MatrixBotProperties = mockk()
 
         val roomId1 = RoomId("room1", "server")
         val roomId2 = RoomId("room2", "server")
+        val roomAlias2 = RoomAliasId("alias2", "server")
         val userId1 = UserId("user1", "server")
         val userId2 = UserId("user2", "server")
-        val cut = MatrixMembershipSyncService(matrixClientMock, membershipServiceMock, helperMock, botPropertiesMock)
+        val cut = MatrixMembershipSyncService(
+                matrixClientMock,
+                roomServiceMock,
+                membershipServiceMock,
+                helperMock,
+                botPropertiesMock
+        )
 
-        describe(MatrixMembershipSyncService::syncBotMemberships.name) {
+        describe(MatrixMembershipSyncService::syncBotRoomsAndMemberships.name) {
             it("should create membership for each room and member") {
                 coEvery { matrixClientMock.roomsApi.getJoinedRooms() }
                         .returns(flowOf(roomId1, roomId2))
@@ -37,14 +45,21 @@ private fun testBody(): DescribeSpec.() -> Unit {
                         .returns(setOf(userId1))
                 coEvery { matrixClientMock.roomsApi.getJoinedMembers(roomId2).joined.keys }
                         .returns(setOf(userId1, userId2))
+                coEvery { matrixClientMock.roomsApi.getStateEvent<CanonicalAliasEventContent>(roomId1) }
+                        .returns(CanonicalAliasEventContent())
+                coEvery { matrixClientMock.roomsApi.getStateEvent<CanonicalAliasEventContent>(roomId2) }
+                        .returns(CanonicalAliasEventContent(roomAlias2))
                 coEvery { membershipServiceMock.getOrCreateMembership(any(), any()) }.returns(mockk())
+                coEvery { roomServiceMock.getOrCreateRoomAlias(any(), any()) }.returns(mockk())
+                coEvery { helperMock.isManagedRoom(roomAlias2) }.returns(true)
 
-                cut.syncBotMemberships()
+                cut.syncBotRoomsAndMemberships()
 
                 coVerify {
                     membershipServiceMock.getOrCreateMembership(userId1, roomId1)
                     membershipServiceMock.getOrCreateMembership(userId1, roomId2)
                     membershipServiceMock.getOrCreateMembership(userId2, roomId2)
+                    roomServiceMock.getOrCreateRoomAlias(roomAlias2, roomId2)
                 }
             }
         }
@@ -100,6 +115,6 @@ private fun testBody(): DescribeSpec.() -> Unit {
             }
         }
 
-        afterTest { clearMocks(matrixClientMock, membershipServiceMock) }
+        afterTest { clearMocks(matrixClientMock, roomServiceMock, membershipServiceMock, helperMock) }
     }
 }

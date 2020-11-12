@@ -96,10 +96,11 @@ class MatrixBotAutoconfiguration {
     @Bean
     fun matrixMembershipSyncService(
             matrixClient: MatrixClient,
+            roomService: MatrixRoomService,
             membershipService: MatrixMembershipService,
             helper: BotServiceHelper,
             botProperties: MatrixBotProperties
     ): MatrixMembershipSyncService {
-        return MatrixMembershipSyncService(matrixClient, membershipService, helper, botProperties)
+        return MatrixMembershipSyncService(matrixClient, roomService, membershipService, helper, botProperties)
     }
 }
