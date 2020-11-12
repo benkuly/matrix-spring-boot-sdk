@@ -19,6 +19,7 @@ class AppserviceHandlerHelper(
     }
 
     suspend fun registerManagedUser(userId: UserId) {
+        LOG.debug("try to register user")
         try {
             matrixClient.userApi.register(
                     authenticationType = "m.login.application_service",
@@ -42,6 +43,7 @@ class AppserviceHandlerHelper(
     }
 
     suspend fun createManagedRoom(roomAlias: RoomAliasId) {
+        LOG.debug("try to create room")
         val createRoomParameter = appserviceRoomService.getCreateRoomParameter(roomAlias)
         val roomId = matrixClient.roomsApi
                 .createRoom(
