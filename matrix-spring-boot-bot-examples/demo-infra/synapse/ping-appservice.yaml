@@ -5,6 +5,7 @@ hs_token: "312df522183efd404ec1cd22d2ffa4bbc76a8c1ccf541dd692eef281356bb74e"
 sender_localpart: "ping"
 namespaces:
   users:
-    - localpartRegex: "^@ping_.+:matrix-local"
+    - regex: "^@ping_.+:matrix-local$"
+      exclusive: true
   aliases: [ ]
   rooms: [ ]

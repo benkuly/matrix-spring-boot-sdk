@@ -13,9 +13,12 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:${Versions.kotlinRetry}")
 
-    api("org.liquibase:liquibase-core")
+
     api("org.springframework.boot:spring-boot-starter-data-r2dbc")
-    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+
+    api("org.liquibase:liquibase-core")
+    implementation("org.springframework.data:spring-data-jdbc")
+    implementation("com.zaxxer:HikariCP")
 
     testImplementation("io.r2dbc:r2dbc-h2")
     testImplementation("com.h2database:h2")

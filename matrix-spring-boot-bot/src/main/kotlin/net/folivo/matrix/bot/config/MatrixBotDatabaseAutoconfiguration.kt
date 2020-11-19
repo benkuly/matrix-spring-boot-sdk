@@ -14,7 +14,6 @@ import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 import javax.sql.DataSource
 
 @Configuration
-// FIXME try not to use jdbc starter, because it forces users to exclude it.
 @EnableR2dbcRepositories(basePackages = ["net.folivo.matrix.bot"])
 //@EnableTransactionManagement TODO wait until supported
 @EnableConfigurationProperties(MatrixBotProperties::class)
@@ -22,6 +21,7 @@ class MatrixBotDatabaseAutoconfiguration(
         private val botProperties: MatrixBotProperties,
         private val resourceLoader: ResourceLoader
 ) : AbstractR2dbcConfiguration() {
+
 
     @Bean("liquibaseDatasource")
     fun liquibaseDatasource(): DataSource {
@@ -45,4 +45,5 @@ class MatrixBotDatabaseAutoconfiguration(
     override fun getCustomConverters(): MutableList<Any> {
         return mutableListOf(MatrixIdReadingConverter(), MatrixIdWritingConverter())
     }
+
 }
