@@ -8,8 +8,7 @@ dependencies {
 
     api(project(":matrix-spring-boot-rest-client"))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${Versions.kotlinxCoroutines}")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
     annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")

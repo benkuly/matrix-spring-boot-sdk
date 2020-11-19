@@ -8,26 +8,21 @@ import net.folivo.matrix.bot.config.MatrixBotDatabaseAutoconfiguration
 import net.folivo.matrix.core.model.MatrixId.EventId
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest
-import org.springframework.data.r2dbc.core.DatabaseClient
-import org.springframework.data.r2dbc.core.from
-import org.springframework.data.r2dbc.core.into
-import org.springframework.data.relational.core.query.CriteriaDefinition
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
+import org.springframework.data.r2dbc.core.delete
 
 @DataR2dbcTest
 @ImportAutoConfiguration(MatrixBotDatabaseAutoconfiguration::class)
 class MatrixEventTransactionRepositoryTest(
         cut: MatrixEventTransactionRepository,
-        dbClient: DatabaseClient
-) : DescribeSpec(testBody(cut, dbClient))
+        db: R2dbcEntityTemplate
+) : DescribeSpec(testBody(cut, db))
 
-private fun testBody(cut: MatrixEventTransactionRepository, dbClient: DatabaseClient): DescribeSpec.() -> Unit {
+private fun testBody(cut: MatrixEventTransactionRepository, db: R2dbcEntityTemplate): DescribeSpec.() -> Unit {
     return {
 
         beforeSpec {
-            dbClient.insert()
-                    .into<MatrixEventTransaction>()
-                    .using(MatrixEventTransaction("someTnxId", EventId("event", "server")))
-                    .then().awaitFirstOrNull()
+            db.insert(MatrixEventTransaction("someTnxId", EventId("event", "server"))).awaitFirstOrNull()
         }
 
         describe(MatrixEventTransactionRepository::existsByTnxIdAndEventId.name) {
@@ -40,10 +35,7 @@ private fun testBody(cut: MatrixEventTransactionRepository, dbClient: DatabaseCl
         }
 
         afterSpec {
-            dbClient.delete()
-                    .from<MatrixEventTransaction>()
-                    .matching(CriteriaDefinition.empty())
-                    .then().awaitFirstOrNull()
+            db.delete<MatrixEventTransaction>().all().awaitFirstOrNull()
         }
     }
 }

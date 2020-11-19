@@ -4,7 +4,7 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import kotlinx.coroutines.flow.toList
-import net.folivo.matrix.bot.RepositoryTestHelper
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import net.folivo.matrix.bot.config.MatrixBotDatabaseAutoconfiguration
 import net.folivo.matrix.bot.membership.MatrixMembership
 import net.folivo.matrix.bot.room.MatrixRoom
@@ -12,19 +12,18 @@ import net.folivo.matrix.core.model.MatrixId.RoomId
 import net.folivo.matrix.core.model.MatrixId.UserId
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest
-import org.springframework.data.r2dbc.core.DatabaseClient
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
+import org.springframework.data.r2dbc.core.delete
 
 @DataR2dbcTest
 @ImportAutoConfiguration(MatrixBotDatabaseAutoconfiguration::class)
 class MatrixUserRepositoryTest(
         cut: MatrixUserRepository,
-        dbClient: DatabaseClient
-) : DescribeSpec(testBody(cut, dbClient))
+        db: R2dbcEntityTemplate
+) : DescribeSpec(testBody(cut, db))
 
-private fun testBody(cut: MatrixUserRepository, dbClient: DatabaseClient): DescribeSpec.() -> Unit {
+private fun testBody(cut: MatrixUserRepository, db: R2dbcEntityTemplate): DescribeSpec.() -> Unit {
     return {
-        val h = RepositoryTestHelper(dbClient)
-
         val userId1 = UserId("user1", "server")
         val userId2 = UserId("user2", "server")
         val userId3 = UserId("user3", "server")
@@ -33,17 +32,17 @@ private fun testBody(cut: MatrixUserRepository, dbClient: DatabaseClient): Descr
         val roomId3 = RoomId("room3", "server")
 
         beforeSpec {
-            h.insertUser(MatrixUser(userId1))
-            h.insertUser(MatrixUser(userId2))
-            h.insertUser(MatrixUser(userId3))
-            h.insertRoom(MatrixRoom(roomId1))
-            h.insertRoom(MatrixRoom(roomId2))
-            h.insertRoom(MatrixRoom(roomId3))
-            h.insertMembership(MatrixMembership(userId1, roomId1))
-            h.insertMembership(MatrixMembership(userId2, roomId1))
-            h.insertMembership(MatrixMembership(userId3, roomId1))
-            h.insertMembership(MatrixMembership(userId1, roomId2))
-            h.insertMembership(MatrixMembership(userId2, roomId2))
+            db.insert(MatrixUser(userId1)).awaitFirstOrNull()
+            db.insert(MatrixUser(userId2)).awaitFirstOrNull()
+            db.insert(MatrixUser(userId3)).awaitFirstOrNull()
+            db.insert(MatrixRoom(roomId1)).awaitFirstOrNull()
+            db.insert(MatrixRoom(roomId2)).awaitFirstOrNull()
+            db.insert(MatrixRoom(roomId3)).awaitFirstOrNull()
+            db.insert(MatrixMembership(userId1, roomId1)).awaitFirstOrNull()
+            db.insert(MatrixMembership(userId2, roomId1)).awaitFirstOrNull()
+            db.insert(MatrixMembership(userId3, roomId1)).awaitFirstOrNull()
+            db.insert(MatrixMembership(userId1, roomId2)).awaitFirstOrNull()
+            db.insert(MatrixMembership(userId2, roomId2)).awaitFirstOrNull()
         }
 
         describe(MatrixUserRepository::findByRoomId.name) {
@@ -60,9 +59,9 @@ private fun testBody(cut: MatrixUserRepository, dbClient: DatabaseClient): Descr
         }
 
         afterSpec {
-            h.deleteAllMemberships()
-            h.deleteAllRooms()
-            h.deleteAllUsers()
+            db.delete<MatrixMembership>().all().awaitFirstOrNull()
+            db.delete<MatrixRoom>().all().awaitFirstOrNull()
+            db.delete<MatrixUser>().all().awaitFirstOrNull()
         }
     }
 }

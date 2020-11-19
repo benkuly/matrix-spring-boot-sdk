@@ -16,6 +16,7 @@ import org.springframework.http.HttpHeaders.AUTHORIZATION
 import org.springframework.http.HttpHeaders.CONTENT_TYPE
 import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
 
@@ -44,7 +45,7 @@ class MatrixClientAutoconfigurationTest {
     fun `matrixWebClient should resolve to base url with json header and authentication bearer`() {
         mockWebServer.enqueue(MockResponse())
 
-        matrixWebClient.get().uri("/somePath").exchange().block()
+        matrixWebClient.get().uri("/somePath").retrieve().toBodilessEntity().block()
 
         val request = mockWebServer.takeRequest()
         assertThat(request.headers.get(CONTENT_TYPE)).isEqualTo(APPLICATION_JSON_VALUE)
@@ -62,7 +63,7 @@ class MatrixClientAutoconfigurationTest {
                         .setBody(objectMapper.writeValueAsString(errorResponse))
         )
 
-        val response = matrixWebClient.get().uri("/somePath").exchange()
+        val response = matrixWebClient.get().uri("/somePath").exchangeToMono { _ -> Mono.empty<Unit>() }
 
         StepVerifier.create(response).consumeErrorWith {
             if (it is MatrixServerException) {

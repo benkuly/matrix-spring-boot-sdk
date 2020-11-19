@@ -15,14 +15,14 @@ allprojects {
     apply(plugin = "kotlin")
 
     group = "net.folivo"
-    version = "0.4.1.RELEASE"
+    version = "0.4.2"
     java.sourceCompatibility = JavaVersion.VERSION_11
 
     repositories {
         mavenCentral()
     }
 
-    extra["isReleaseVersion"] = version.toString().endsWith("RELEASE")
+    extra["isReleaseVersion"] = !version.toString().contains('-')
 
 }
 subprojects {

@@ -1,8 +1,7 @@
 subprojects {
     dependencies {
         implementation(project(":matrix-spring-boot-bot"))
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}")
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${Versions.kotlinxCoroutines}")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
         implementation("io.r2dbc:r2dbc-h2")
         implementation("com.h2database:h2")
