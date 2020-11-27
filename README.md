@@ -14,6 +14,8 @@ It uses [Spring Reactive](https://spring.io/reactive) and [Reactor](https://proj
 
 The most developers only need to use [matrix-spring-boot-bot](./matrix-spring-boot-bot), which contains the other projects. Therefore, this documentation focuses on this sub-project.
 
+You need help? Ask your questions in [#matrix-spring-boot-sdk:imbitbu.de](https://matrix.to/#/#matrix-spring-boot-sdk:imbitbu.de)
+
 ## How to use
 Just add the maven/gradle dependency `net.folivo.matrix:matrix-spring-boot-bot` to you project.
 
