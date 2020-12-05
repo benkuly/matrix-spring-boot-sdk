@@ -11,12 +11,12 @@ import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
 
 open class DefaultMembershipChangeService(
-        private val roomService: MatrixRoomService,
-        private val membershipService: MatrixMembershipService,
-        private val userService: MatrixUserService,
-        private val membershipSyncService: MatrixMembershipSyncService,
-        private val matrixClient: MatrixClient,
-        private val botProperties: MatrixBotProperties
+    private val roomService: MatrixRoomService,
+    private val membershipService: MatrixMembershipService,
+    private val userService: MatrixUserService,
+    private val membershipSyncService: MatrixMembershipSyncService,
+    private val matrixClient: MatrixClient,
+    private val botProperties: MatrixBotProperties
 ) : MembershipChangeService {
 
     companion object {
@@ -39,11 +39,13 @@ open class DefaultMembershipChangeService(
 
             val noMembersLeft = membershipService.getMembershipsSizeByRoomId(roomId) == 0L
             val onlyManagedUsersLeft = membershipService.hasRoomOnlyManagedUsersLeft(roomId)
+            val isManaged = roomService.getOrCreateRoom(roomId).isManaged
 
-            if (onlyManagedUsersLeft) {
-                LOG.debug("leave room $roomId with all managed users because there are only managed users left")
-                val memberships = membershipService.getMembershipsByRoomId(roomId)
-                memberships
+            if (!isManaged) {
+                if (onlyManagedUsersLeft) {
+                    LOG.debug("leave room $roomId with all managed users because there are only managed users left")
+                    val memberships = membershipService.getMembershipsByRoomId(roomId)
+                    memberships
                         .map { it.userId }
                         .collect { joinedUserId ->
                             if (joinedUserId == botProperties.botUserId)
@@ -51,9 +53,10 @@ open class DefaultMembershipChangeService(
                             else matrixClient.roomsApi.leaveRoom(roomId, joinedUserId)
                             membershipService.deleteMembership(joinedUserId, roomId)
                         }
-            }
-            if (!roomService.getOrCreateRoom(roomId).isManaged && (onlyManagedUsersLeft || noMembersLeft)) {
-                roomService.deleteRoom(roomId)
+                }
+                if (onlyManagedUsersLeft || noMembersLeft) {
+                    roomService.deleteRoom(roomId)
+                }
             }
         }
     }
