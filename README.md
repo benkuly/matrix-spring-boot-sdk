@@ -17,7 +17,7 @@ The most developers only need to use [matrix-spring-boot-bot](./matrix-spring-bo
 You need help? Ask your questions in [#matrix-spring-boot-sdk:imbitbu.de](https://matrix.to/#/#matrix-spring-boot-sdk:imbitbu.de)
 
 ## How to use
-Just add the maven/gradle dependency `net.folivo.matrix:matrix-spring-boot-bot` to you project.
+Just add the maven/gradle dependency `net.folivo:matrix-spring-boot-bot` to you project.
 
 Then decide which database you want to use. E. g. for embeddable [H2](h2database.com) include `io.r2dbc:r2dbc-h2` and `com.h2database:h2`.
  
