@@ -14,8 +14,10 @@ It uses [Spring Reactive](https://spring.io/reactive) and [Reactor](https://proj
 
 The most developers only need to use [matrix-spring-boot-bot](./matrix-spring-boot-bot), which contains the other projects. Therefore, this documentation focuses on this sub-project.
 
+You need help? Ask your questions in [#matrix-spring-boot-sdk:imbitbu.de](https://matrix.to/#/#matrix-spring-boot-sdk:imbitbu.de)
+
 ## How to use
-Just add the maven/gradle dependency `net.folivo.matrix:matrix-spring-boot-bot` to you project.
+Just add the maven/gradle dependency `net.folivo:matrix-spring-boot-bot` to you project.
 
 Then decide which database you want to use. E. g. for embeddable [H2](h2database.com) include `io.r2dbc:r2dbc-h2` and `com.h2database:h2`.
  
