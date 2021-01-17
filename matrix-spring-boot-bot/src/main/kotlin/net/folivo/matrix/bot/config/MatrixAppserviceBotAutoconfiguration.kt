@@ -4,6 +4,7 @@ import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
 import net.folivo.matrix.appservice.api.event.AppserviceEventService
 import net.folivo.matrix.appservice.api.room.AppserviceRoomService
 import net.folivo.matrix.appservice.api.user.AppserviceUserService
+import net.folivo.matrix.appservice.config.AppserviceAutoconfiguration
 import net.folivo.matrix.appservice.config.AppserviceProperties
 import net.folivo.matrix.bot.appservice.AppserviceMemberEventHandler
 import net.folivo.matrix.bot.appservice.BotUserInitializer
@@ -23,18 +24,20 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Profile
 
 
 @Configuration
 @ConditionalOnProperty(prefix = "matrix.bot", name = ["mode"], havingValue = "APPSERVICE")
+@Import(AppserviceAutoconfiguration::class)
 class MatrixAppserviceBotAutoconfiguration {
 
     @Bean
     @ConditionalOnMissingBean
     fun defaultAppserviceEventService(
-            eventHandler: List<MatrixEventHandler>,
-            eventTransactionService: MatrixEventTransactionService
+        eventHandler: List<MatrixEventHandler>,
+        eventTransactionService: MatrixEventTransactionService
     ): AppserviceEventService {
         return DefaultAppserviceEventService(eventTransactionService, eventHandler)
     }
@@ -46,8 +49,8 @@ class MatrixAppserviceBotAutoconfiguration {
 
     @Bean
     fun appserviceMemberEventHandler(
-            membershipChangeHandler: MembershipChangeHandler,
-            appserviceHelper: AppserviceHandlerHelper
+        membershipChangeHandler: MembershipChangeHandler,
+        appserviceHelper: AppserviceHandlerHelper
     ): AppserviceMemberEventHandler {
         return AppserviceMemberEventHandler(membershipChangeHandler, appserviceHelper)
     }
@@ -61,9 +64,9 @@ class MatrixAppserviceBotAutoconfiguration {
     @Bean
     @Profile("initialsync")
     fun initialSyncService(
-            userService: MatrixUserService,
-            roomService: MatrixRoomService,
-            membershipSyncService: MatrixMembershipSyncService
+        userService: MatrixUserService,
+        roomService: MatrixRoomService,
+        membershipSyncService: MatrixMembershipSyncService
     ): InitialSyncService {
         return InitialSyncService(userService, roomService, membershipSyncService)
     }
@@ -71,8 +74,8 @@ class MatrixAppserviceBotAutoconfiguration {
     @Bean
     @Profile("!initialsync")
     fun botUserInitializer(
-            appserviceHandlerHelper: AppserviceHandlerHelper,
-            botProperties: MatrixBotProperties
+        appserviceHandlerHelper: AppserviceHandlerHelper,
+        botProperties: MatrixBotProperties
     ): BotUserInitializer {
         return BotUserInitializer(appserviceHandlerHelper, botProperties)
     }
@@ -80,22 +83,22 @@ class MatrixAppserviceBotAutoconfiguration {
     @Bean
     @ConditionalOnMissingBean
     fun defaultAppserviceUserService(
-            matrixUserService: MatrixUserService,
-            helper: BotServiceHelper,
-            botProperties: MatrixBotProperties
+        matrixUserService: MatrixUserService,
+        helper: BotServiceHelper,
+        botProperties: MatrixBotProperties
     ): AppserviceUserService {
         return DefaultAppserviceUserService(matrixUserService, helper, botProperties)
     }
 
     @Bean
     fun appserviceBotServiceHelper(
-            botProperties: MatrixBotProperties,
-            appserviceProperties: AppserviceProperties
+        botProperties: MatrixBotProperties,
+        appserviceProperties: AppserviceProperties
     ): BotServiceHelper {
         return BotServiceHelper(
-                botProperties,
-                appserviceProperties.namespaces.users.map { Regex(it.localpartRegex) }.toSet(),
-                appserviceProperties.namespaces.rooms.map { Regex(it.localpartRegex) }.toSet()
+            botProperties,
+            appserviceProperties.namespaces.users.map { Regex(it.localpartRegex) }.toSet(),
+            appserviceProperties.namespaces.rooms.map { Regex(it.localpartRegex) }.toSet()
         )
     }
 }

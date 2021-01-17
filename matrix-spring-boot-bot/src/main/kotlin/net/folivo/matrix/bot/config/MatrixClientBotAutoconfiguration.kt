@@ -22,22 +22,22 @@ class MatrixClientBotAutoconfiguration {
 
     @Bean
     fun matrixClientBot(
-            matrixClient: MatrixClient,
-            eventHandler: List<MatrixEventHandler>,
-            membershipChangeHandler: MembershipChangeHandler,
-            botProperties: MatrixBotProperties,
+        matrixClient: MatrixClient,
+        eventHandler: List<MatrixEventHandler>,
+        membershipChangeHandler: MembershipChangeHandler,
+        botProperties: MatrixBotProperties,
     ): MatrixClientBot {
         return MatrixClientBot(
-                matrixClient,
-                eventHandler,
-                membershipChangeHandler,
-                botProperties
+            matrixClient,
+            eventHandler,
+            membershipChangeHandler,
+            botProperties
         )
     }
 
     @Bean
     fun clientBotServiceHelper(
-            botProperties: MatrixBotProperties
+        botProperties: MatrixBotProperties
     ): BotServiceHelper {
         return BotServiceHelper(botProperties, setOf(), setOf())
     }

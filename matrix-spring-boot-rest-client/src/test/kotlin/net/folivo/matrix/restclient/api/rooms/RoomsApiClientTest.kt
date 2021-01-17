@@ -54,23 +54,23 @@ class RoomsApiClientTest {
     @Test
     fun `should get some room event`() {
         val response = NameEvent(
-                id = EventId("event", "server"),
-                roomId = RoomId("room", "server"),
-                unsigned = StateEvent.UnsignedData(),
-                originTimestamp = 1234,
-                sender = UserId("sender", "server"),
-                content = NameEventContent()
+            id = EventId("event", "server"),
+            roomId = RoomId("room", "server"),
+            unsigned = StateEvent.UnsignedData(),
+            originTimestamp = 1234,
+            sender = UserId("sender", "server"),
+            content = NameEventContent()
         )
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         val result = runBlocking {
             matrixClient.roomsApi.getEvent(
-                    RoomId("room", "server"),
-                    EventId("event", "server")
+                RoomId("room", "server"),
+                EventId("event", "server")
             )
         }
 
@@ -87,48 +87,48 @@ class RoomsApiClientTest {
     fun `should get some state event`() {
         val response = NameEventContent("name")
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         runBlocking {
             matrixClient.roomsApi.getStateEvent<NameEventContent>(
-                    roomId = RoomId("room", "server"),
+                roomId = RoomId("room", "server"),
             )
         }
 
         val request = mockWebServer.takeRequest()
         assertThat(request.path)
-                .isEqualTo("/_matrix/client/r0/rooms/%21room%3Aserver/state/m.room.name/")
+            .isEqualTo("/_matrix/client/r0/rooms/%21room%3Aserver/state/m.room.name/")
         assertThat(request.method).isEqualTo(HttpMethod.GET.toString())
     }
 
     @Test
     fun `should get complete state`() {
         val response = listOf(
-                NameEvent(
-                        id = EventId("event1", "server"),
-                        roomId = RoomId("room", "server"),
-                        unsigned = StateEvent.UnsignedData(),
-                        originTimestamp = 12341,
-                        sender = UserId("sender", "server"),
-                        content = NameEventContent()
-                ),
-                MemberEvent(
-                        id = EventId("event2", "server"),
-                        roomId = RoomId("room", "server"),
-                        unsigned = MemberEvent.MemberUnsignedData(),
-                        originTimestamp = 12342,
-                        sender = UserId("sender", "server"),
-                        relatedUser = UserId("user", "server"),
-                        content = MemberEvent.MemberEventContent(membership = MemberEvent.MemberEventContent.Membership.INVITE)
-                )
+            NameEvent(
+                id = EventId("event1", "server"),
+                roomId = RoomId("room", "server"),
+                unsigned = StateEvent.UnsignedData(),
+                originTimestamp = 12341,
+                sender = UserId("sender", "server"),
+                content = NameEventContent()
+            ),
+            MemberEvent(
+                id = EventId("event2", "server"),
+                roomId = RoomId("room", "server"),
+                unsigned = MemberEvent.MemberUnsignedData(),
+                originTimestamp = 12342,
+                sender = UserId("sender", "server"),
+                relatedUser = UserId("user", "server"),
+                content = MemberEvent.MemberEventContent(membership = MemberEvent.MemberEventContent.Membership.INVITE)
+            )
         )
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         val result = runBlocking { matrixClient.roomsApi.getState(RoomId("room", "server")).toList() }
@@ -150,38 +150,38 @@ class RoomsApiClientTest {
     @Test
     fun `should get members`() {
         val response = GetMembersResponse(
-                listOf(
-                        MemberEvent(
-                                id = EventId("event1", "server"),
-                                roomId = RoomId("room", "server"),
-                                unsigned = MemberEvent.MemberUnsignedData(),
-                                originTimestamp = 12341,
-                                sender = UserId("sender", "server"),
-                                relatedUser = UserId("user1", "server"),
-                                content = MemberEvent.MemberEventContent(membership = MemberEvent.MemberEventContent.Membership.INVITE)
-                        ),
-                        MemberEvent(
-                                id = EventId("event2", "server"),
-                                roomId = RoomId("room", "server"),
-                                unsigned = MemberEvent.MemberUnsignedData(),
-                                originTimestamp = 12342,
-                                sender = UserId("sender", "server"),
-                                relatedUser = UserId("user2", "server"),
-                                content = MemberEvent.MemberEventContent(membership = MemberEvent.MemberEventContent.Membership.INVITE)
-                        )
+            listOf(
+                MemberEvent(
+                    id = EventId("event1", "server"),
+                    roomId = RoomId("room", "server"),
+                    unsigned = MemberEvent.MemberUnsignedData(),
+                    originTimestamp = 12341,
+                    sender = UserId("sender", "server"),
+                    relatedUser = UserId("user1", "server"),
+                    content = MemberEvent.MemberEventContent(membership = MemberEvent.MemberEventContent.Membership.INVITE)
+                ),
+                MemberEvent(
+                    id = EventId("event2", "server"),
+                    roomId = RoomId("room", "server"),
+                    unsigned = MemberEvent.MemberUnsignedData(),
+                    originTimestamp = 12342,
+                    sender = UserId("sender", "server"),
+                    relatedUser = UserId("user2", "server"),
+                    content = MemberEvent.MemberEventContent(membership = MemberEvent.MemberEventContent.Membership.INVITE)
                 )
+            )
         )
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         val result = runBlocking {
             matrixClient.roomsApi.getMembers(
-                    roomId = RoomId("room", "server"),
-                    at = "someAt",
-                    membership = Membership.JOIN
+                roomId = RoomId("room", "server"),
+                at = "someAt",
+                membership = Membership.JOIN
             ).toList()
         }
 
@@ -196,15 +196,15 @@ class RoomsApiClientTest {
     @Test
     fun `should get joined members`() {
         val response = GetJoinedMembersResponse(
-                joined = mapOf(
-                        UserId("user1", "server") to GetJoinedMembersResponse.RoomMember("Unicorn"),
-                        UserId("user2", "server") to GetJoinedMembersResponse.RoomMember("Dino")
-                )
+            joined = mapOf(
+                UserId("user1", "server") to GetJoinedMembersResponse.RoomMember("Unicorn"),
+                UserId("user2", "server") to GetJoinedMembersResponse.RoomMember("Dino")
+            )
         )
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         println(objectMapper.writeValueAsString(response))
@@ -221,22 +221,22 @@ class RoomsApiClientTest {
     @Test
     fun `should get events`() {
         val response = GetEventsResponse(
-                start = "start",
-                end = "end",
-                chunk = listOf(),
-                state = listOf()
+            start = "start",
+            end = "end",
+            chunk = listOf(),
+            state = listOf()
         )
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         val result = runBlocking {
             matrixClient.roomsApi.getEvents(
-                    roomId = RoomId("room", "server"),
-                    from = "from",
-                    dir = Direction.FORWARD
+                roomId = RoomId("room", "server"),
+                from = "from",
+                dir = Direction.FORWARD
             )
         }
 
@@ -251,17 +251,17 @@ class RoomsApiClientTest {
     fun `should send state event`() {
         val response = SendEventResponse(EventId("event", "server"))
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         val eventContent = NameEventContent("name")
         val result = runBlocking {
             matrixClient.roomsApi.sendStateEvent(
-                    roomId = RoomId("room", "server"),
-                    eventContent = eventContent,
-                    stateKey = "someStateKey"
+                roomId = RoomId("room", "server"),
+                eventContent = eventContent,
+                stateKey = "someStateKey"
             )
         }
 
@@ -277,9 +277,9 @@ class RoomsApiClientTest {
     fun `should have error when no eventType found on sending state event`() {
         val response = SendEventResponse(EventId("event", "server"))
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         val eventContent = object : StateEventContent {
@@ -289,9 +289,9 @@ class RoomsApiClientTest {
         try {
             runBlocking {
                 matrixClient.roomsApi.sendStateEvent(
-                        roomId = RoomId("room", "server"),
-                        eventContent = eventContent,
-                        stateKey = "someStateKey"
+                    roomId = RoomId("room", "server"),
+                    eventContent = eventContent,
+                    stateKey = "someStateKey"
                 )
             }
             fail<Unit>("error has error")
@@ -306,17 +306,17 @@ class RoomsApiClientTest {
     fun `should send room event`() {
         val response = SendEventResponse(EventId("event", "server"))
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         val eventContent = TextMessageEventContent("someBody")
         val result = runBlocking {
             matrixClient.roomsApi.sendRoomEvent(
-                    roomId = RoomId("room", "server"),
-                    eventContent = eventContent,
-                    txnId = "someTxnId"
+                roomId = RoomId("room", "server"),
+                eventContent = eventContent,
+                txnId = "someTxnId"
             )
         }
 
@@ -332,9 +332,9 @@ class RoomsApiClientTest {
     fun `should have error when no eventType found on sending room event`() {
         val response = SendEventResponse(EventId("event", "server"))
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         val eventContent = object : RoomEventContent {
@@ -343,8 +343,8 @@ class RoomsApiClientTest {
         try {
             runBlocking {
                 matrixClient.roomsApi.sendRoomEvent(
-                        roomId = RoomId("room", "server"),
-                        eventContent = eventContent
+                    roomId = RoomId("room", "server"),
+                    eventContent = eventContent
                 )
             }
             fail<Unit>("error has error")
@@ -359,17 +359,17 @@ class RoomsApiClientTest {
     fun `should send redact event`() {
         val response = SendEventResponse(EventId("event", "server"))
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         val result = runBlocking {
             matrixClient.roomsApi.sendRedactEvent(
-                    roomId = RoomId("room", "server"),
-                    eventId = EventId("eventToRedact", "server"),
-                    reason = "someReason",
-                    txnId = "someTxnId"
+                roomId = RoomId("room", "server"),
+                eventId = EventId("eventToRedact", "server"),
+                reason = "someReason",
+                txnId = "someTxnId"
             )
         }
 
@@ -385,18 +385,18 @@ class RoomsApiClientTest {
     fun `should create room`() {
         val response = CreateRoomResponse(RoomId("room", "server"))
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         val result = runBlocking {
             matrixClient.roomsApi.createRoom(
-                    visibility = Visibility.PRIVATE,
-                    invite = setOf(UserId("user1", "server")),
-                    isDirect = true,
-                    name = "someRoomName",
-                    invite3Pid = setOf(Invite3Pid("identityServer", "token", "email", "user2@example.org"))
+                visibility = Visibility.PRIVATE,
+                invite = setOf(UserId("user1", "server")),
+                isDirect = true,
+                name = "someRoomName",
+                invite3Pid = setOf(Invite3Pid("identityServer", "token", "email", "user2@example.org"))
             )
         }
 
@@ -420,7 +420,7 @@ class RoomsApiClientTest {
             }
         """.trimIndent()
         assertThat(request.body.readUtf8()).isEqualTo(
-                objectMapper.readValue<JsonNode>(expectedRequest).toString()
+            objectMapper.readValue<JsonNode>(expectedRequest).toString()
         )
         assertThat(request.method).isEqualTo(HttpMethod.POST.toString())
     }
@@ -428,15 +428,15 @@ class RoomsApiClientTest {
     @Test
     fun `should set room alias`() {
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody("{}")
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody("{}")
         )
 
         runBlocking {
             matrixClient.roomsApi.setRoomAlias(
-                    roomId = RoomId("room", "server"),
-                    roomAliasId = RoomAliasId("unicorns", "server")
+                roomId = RoomId("room", "server"),
+                roomAliasId = RoomAliasId("unicorns", "server")
             )
         }
 
@@ -449,13 +449,13 @@ class RoomsApiClientTest {
     @Test
     fun `should get room alias`() {
         val response = GetRoomAliasResponse(
-                roomId = RoomId("room", "server"),
-                servers = listOf("server1", "server2")
+            roomId = RoomId("room", "server"),
+            servers = listOf("server1", "server2")
         )
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         val result = runBlocking { matrixClient.roomsApi.getRoomAlias(RoomAliasId("unicorns", "server")) }
@@ -470,9 +470,9 @@ class RoomsApiClientTest {
     @Test
     fun `should delete room alias`() {
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody("{}")
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody("{}")
         )
 
         runBlocking { matrixClient.roomsApi.deleteRoomAlias(RoomAliasId("unicorns", "server")) }
@@ -485,14 +485,14 @@ class RoomsApiClientTest {
     @Test
     fun `should get joined rooms`() {
         val response = GetJoinedRoomsResponse(
-                setOf(
-                        RoomId("room1", "server"), RoomId("room2", "server")
-                )
+            setOf(
+                RoomId("room1", "server"), RoomId("room2", "server")
+            )
         )
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         val result = runBlocking { matrixClient.roomsApi.getJoinedRooms().toSet() }
@@ -507,9 +507,9 @@ class RoomsApiClientTest {
     @Test
     fun `should invite user`() {
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody("{}")
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody("{}")
         )
 
         runBlocking { matrixClient.roomsApi.inviteUser(RoomId("room", "server"), UserId("user", "server")) }
@@ -524,24 +524,24 @@ class RoomsApiClientTest {
     fun `should join room by room id`() {
         val response = JoinRoomResponse(RoomId("room", "server"))
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         val result = runBlocking {
             matrixClient.roomsApi.joinRoom(
-                    roomId = RoomId("room", "server"),
-                    serverNames = setOf("server"),
-                    thirdPartySigned = ThirdPartySigned(
-                            sender = UserId("alice", "server"),
-                            mxid = UserId("bob", "server"),
-                            token = "someToken",
-                            signatures = mapOf(
-                                    "example.org" to
-                                            mapOf("ed25519:0" to "some9signature")
-                            )
+                roomId = RoomId("room", "server"),
+                serverNames = setOf("server"),
+                thirdPartySigned = ThirdPartySigned(
+                    sender = UserId("alice", "server"),
+                    mxid = UserId("bob", "server"),
+                    token = "someToken",
+                    signatures = mapOf(
+                        "example.org" to
+                                mapOf("ed25519:0" to "some9signature")
                     )
+                )
             )
         }
 
@@ -566,7 +566,7 @@ class RoomsApiClientTest {
         val request = mockWebServer.takeRequest()
         assertThat(request.path).isEqualTo("/_matrix/client/r0/join/%21room%3Aserver?server_name=server")
         assertThat(request.body.readUtf8()).isEqualTo(
-                objectMapper.readValue<JsonNode>(expectedRequest).toString()
+            objectMapper.readValue<JsonNode>(expectedRequest).toString()
         )
         assertThat(request.method).isEqualTo(HttpMethod.POST.toString())
     }
@@ -575,24 +575,24 @@ class RoomsApiClientTest {
     fun `should join room by room alias`() {
         val response = JoinRoomResponse(RoomId("room", "server"))
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody(objectMapper.writeValueAsString(response))
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody(objectMapper.writeValueAsString(response))
         )
 
         val result = runBlocking {
             matrixClient.roomsApi.joinRoom(
-                    roomAliasId = RoomAliasId("alias", "server"),
-                    serverNames = setOf("server"),
-                    thirdPartySigned = ThirdPartySigned(
-                            sender = UserId("alice", "server"),
-                            mxid = UserId("bob", "server"),
-                            token = "someToken",
-                            signatures = mapOf(
-                                    "example.org" to
-                                            mapOf("ed25519:0" to "some9signature")
-                            )
+                roomAliasId = RoomAliasId("alias", "server"),
+                serverNames = setOf("server1.com", "server2.com"),
+                thirdPartySigned = ThirdPartySigned(
+                    sender = UserId("alice", "server"),
+                    mxid = UserId("bob", "server"),
+                    token = "someToken",
+                    signatures = mapOf(
+                        "example.org" to
+                                mapOf("ed25519:0" to "some9signature")
                     )
+                )
             )
         }
 
@@ -615,9 +615,9 @@ class RoomsApiClientTest {
         result.shouldBe(RoomId("room", "server"))
 
         val request = mockWebServer.takeRequest()
-        assertThat(request.path).isEqualTo("/_matrix/client/r0/join/%23alias%3Aserver?server_name=server")
+        assertThat(request.path).isEqualTo("/_matrix/client/r0/join/%23alias%3Aserver?server_name=server1.com&server_name=server2.com")
         assertThat(request.body.readUtf8()).isEqualTo(
-                objectMapper.readValue<JsonNode>(expectedRequest).toString()
+            objectMapper.readValue<JsonNode>(expectedRequest).toString()
         )
         assertThat(request.method).isEqualTo(HttpMethod.POST.toString())
     }
@@ -625,9 +625,9 @@ class RoomsApiClientTest {
     @Test
     fun `should leave room`() {
         mockWebServer.enqueue(
-                MockResponse()
-                        .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .setBody("{}")
+            MockResponse()
+                .setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .setBody("{}")
         )
 
         runBlocking { matrixClient.roomsApi.leaveRoom(RoomId("room", "server")) }

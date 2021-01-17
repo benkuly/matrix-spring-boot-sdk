@@ -22,8 +22,8 @@ class MatrixBotAutoconfiguration {
 
     @Bean
     fun messageEventHandler(
-            matrixMessageHandler: List<MatrixMessageHandler>,
-            matrixClient: MatrixClient
+        matrixMessageHandler: List<MatrixMessageHandler>,
+        matrixClient: MatrixClient
     ): MatrixEventHandler {
         return MessageEventHandler(matrixMessageHandler, matrixClient)
     }
@@ -31,34 +31,34 @@ class MatrixBotAutoconfiguration {
     @Bean
     @ConditionalOnMissingBean
     fun persistentSyncBatchTokenService(
-            syncBatchTokenRepository: MatrixSyncBatchTokenRepository,
-            userService: MatrixUserService,
-            botProperties: MatrixBotProperties
+        syncBatchTokenRepository: MatrixSyncBatchTokenRepository,
+        userService: MatrixUserService,
+        botProperties: MatrixBotProperties
     ): SyncBatchTokenService {
         return PersistentSyncBatchTokenService(syncBatchTokenRepository, userService, botProperties)
     }
 
     @Bean
     fun matrixUserService(
-            userRepository: MatrixUserRepository,
-            helper: BotServiceHelper
+        userRepository: MatrixUserRepository,
+        helper: BotServiceHelper
     ): MatrixUserService {
         return MatrixUserService(userRepository, helper)
     }
 
     @Bean
     fun matrixRoomService(
-            roomRepository: MatrixRoomRepository,
-            roomAliasRepository: MatrixRoomAliasRepository
+        roomRepository: MatrixRoomRepository,
+        roomAliasRepository: MatrixRoomAliasRepository
     ): MatrixRoomService {
         return MatrixRoomService(roomRepository, roomAliasRepository)
     }
 
     @Bean
     fun matrixMembershipService(
-            membershipRepository: MatrixMembershipRepository,
-            userService: MatrixUserService,
-            roomService: MatrixRoomService
+        membershipRepository: MatrixMembershipRepository,
+        userService: MatrixUserService,
+        roomService: MatrixRoomService
     ): MatrixMembershipService {
         return MatrixMembershipService(membershipRepository, userService, roomService)
     }
@@ -66,40 +66,40 @@ class MatrixBotAutoconfiguration {
     @Bean
     @ConditionalOnMissingBean
     fun defaultMembershipChangeService(
-            roomService: MatrixRoomService,
-            membershipService: MatrixMembershipService,
-            userService: MatrixUserService,
-            membershipSyncService: MatrixMembershipSyncService,
-            matrixClient: MatrixClient,
-            botProperties: MatrixBotProperties
+        roomService: MatrixRoomService,
+        membershipService: MatrixMembershipService,
+        userService: MatrixUserService,
+        membershipSyncService: MatrixMembershipSyncService,
+        matrixClient: MatrixClient,
+        botProperties: MatrixBotProperties
     ): DefaultMembershipChangeService {
         return DefaultMembershipChangeService(
-                roomService,
-                membershipService,
-                userService,
-                membershipSyncService,
-                matrixClient,
-                botProperties
+            roomService,
+            membershipService,
+            userService,
+            membershipSyncService,
+            matrixClient,
+            botProperties
         )
     }
 
     @Bean
     fun membershipChangeHandler(
-            matrixClient: MatrixClient,
-            membershipChangeService: MembershipChangeService,
-            botHelper: BotServiceHelper,
-            botProperties: MatrixBotProperties
+        matrixClient: MatrixClient,
+        membershipChangeService: MembershipChangeService,
+        botHelper: BotServiceHelper,
+        botProperties: MatrixBotProperties
     ): MembershipChangeHandler {
         return MembershipChangeHandler(matrixClient, membershipChangeService, botHelper, botProperties)
     }
 
     @Bean
     fun matrixMembershipSyncService(
-            matrixClient: MatrixClient,
-            roomService: MatrixRoomService,
-            membershipService: MatrixMembershipService,
-            helper: BotServiceHelper,
-            botProperties: MatrixBotProperties
+        matrixClient: MatrixClient,
+        roomService: MatrixRoomService,
+        membershipService: MatrixMembershipService,
+        helper: BotServiceHelper,
+        botProperties: MatrixBotProperties
     ): MatrixMembershipSyncService {
         return MatrixMembershipSyncService(matrixClient, roomService, membershipService, helper, botProperties)
     }
