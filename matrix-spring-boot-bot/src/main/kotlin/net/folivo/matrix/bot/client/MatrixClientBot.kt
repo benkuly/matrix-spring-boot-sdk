@@ -13,15 +13,16 @@ import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent
 import net.folivo.matrix.core.model.events.m.room.MemberEvent.MemberEventContent.Membership.LEAVE
 import net.folivo.matrix.restclient.MatrixClient
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.DisposableBean
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 
 class MatrixClientBot(
-        private val matrixClient: MatrixClient,
-        private val eventHandler: List<MatrixEventHandler>,
-        private val membershipChangeHandler: MembershipChangeHandler,
-        private val botProperties: MatrixBotProperties
-) {
+    private val matrixClient: MatrixClient,
+    private val eventHandler: List<MatrixEventHandler>,
+    private val membershipChangeHandler: MembershipChangeHandler,
+    private val botProperties: MatrixBotProperties
+) : DisposableBean {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -40,24 +41,24 @@ class MatrixClientBot(
         val job = GlobalScope.launch {
             try {
                 matrixClient.syncApi
-                        .syncLoop()
-                        .collect { syncResponse ->
-                            try {
-                                syncResponse.room.join.forEach { (roomId, joinedRoom) ->
-                                    joinedRoom.timeline.events.forEach { handleEvent(it, roomId) }
-                                    joinedRoom.state.events.forEach { handleEvent(it, roomId) }
-                                }
-                                syncResponse.room.invite.forEach { (roomId) ->
-                                    membershipChangeHandler.handleMembership(botProperties.botUserId, roomId, INVITE)
-                                }
-                                syncResponse.room.leave.forEach { (roomId) ->
-                                    membershipChangeHandler.handleMembership(botProperties.botUserId, roomId, LEAVE)
-                                }
-                                LOG.debug("processed sync response")
-                            } catch (error: Throwable) {
-                                LOG.error("some error while processing response: ${error.message}")
+                    .syncLoop()
+                    .collect { syncResponse ->
+                        try {
+                            syncResponse.room.join.forEach { (roomId, joinedRoom) ->
+                                joinedRoom.timeline.events.forEach { handleEvent(it, roomId) }
+                                joinedRoom.state.events.forEach { handleEvent(it, roomId) }
                             }
+                            syncResponse.room.invite.forEach { (roomId) ->
+                                membershipChangeHandler.handleMembership(botProperties.botUserId, roomId, INVITE)
+                            }
+                            syncResponse.room.leave.forEach { (roomId) ->
+                                membershipChangeHandler.handleMembership(botProperties.botUserId, roomId, LEAVE)
+                            }
+                            LOG.debug("processed sync response")
+                        } catch (error: Throwable) {
+                            LOG.error("some error while processing response: ${error.message}")
                         }
+                    }
             } catch (error: CancellationException) {
                 LOG.info("stopped syncLoop")
             }
@@ -72,7 +73,11 @@ class MatrixClientBot(
 
     private suspend fun handleEvent(event: Event<*>, roomId: RoomId) {
         return eventHandler.asFlow()
-                .filter { it.supports(event::class.java) }
-                .collect { it.handleEvent(event, roomId) }
+            .filter { it.supports(event::class.java) }
+            .collect { it.handleEvent(event, roomId) }
+    }
+
+    override fun destroy() {
+        syncJob?.cancel()
     }
 }

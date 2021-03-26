@@ -41,31 +41,31 @@ class AppserviceAutoconfiguration(private val appserviceProperties: AppservicePr
     @Bean
     @ConditionalOnMissingBean
     fun appserviceHandlerHelper(
-            matrixClient: MatrixClient,
-            appserviceUserService: AppserviceUserService,
-            appserviceRoomService: AppserviceRoomService
+        matrixClient: MatrixClient,
+        appserviceUserService: AppserviceUserService,
+        appserviceRoomService: AppserviceRoomService
     ): AppserviceHandlerHelper {
         return AppserviceHandlerHelper(
-                matrixClient,
-                appserviceUserService,
-                appserviceRoomService
+            matrixClient,
+            appserviceUserService,
+            appserviceRoomService
         )
     }
 
     @Bean
     @ConditionalOnMissingBean
     fun defaultAppserviceHandler(
-            matrixClient: MatrixClient,
-            appserviceEventService: AppserviceEventService,
-            appserviceUserService: AppserviceUserService,
-            appserviceRoomService: AppserviceRoomService,
-            helper: AppserviceHandlerHelper
+        matrixClient: MatrixClient,
+        appserviceEventService: AppserviceEventService,
+        appserviceUserService: AppserviceUserService,
+        appserviceRoomService: AppserviceRoomService,
+        helper: AppserviceHandlerHelper
     ): AppserviceHandler {
         return DefaultAppserviceHandler(
-                appserviceEventService,
-                appserviceUserService,
-                appserviceRoomService,
-                helper
+            appserviceEventService,
+            appserviceUserService,
+            appserviceRoomService,
+            helper
         )
     }
 
@@ -81,37 +81,38 @@ class AppserviceAutoconfiguration(private val appserviceProperties: AppservicePr
 
     @Bean
     fun springSecurityFilterChain(
-            http: ServerHttpSecurity,
-            homeServerAuthenticationManager: HomeServerAuthenticationManager,
-            objectMapper: ObjectMapper
+        http: ServerHttpSecurity,
+        homeServerAuthenticationManager: HomeServerAuthenticationManager,
+        objectMapper: ObjectMapper
     ): SecurityWebFilterChain? {
         val authenticationWebFilter = AuthenticationWebFilter(homeServerAuthenticationManager)
         authenticationWebFilter.setServerAuthenticationConverter(HomeServerAuthenticationConverter())
         authenticationWebFilter.setSecurityContextRepository(NoOpServerSecurityContextRepository.getInstance())
         authenticationWebFilter.setAuthenticationFailureHandler { webFilterExchange, _ ->
             Mono.defer { Mono.just(webFilterExchange.exchange.response) }
-                    .flatMap { response: ServerHttpResponse ->
-                        response.statusCode = HttpStatus.FORBIDDEN
-                        response.headers.contentType = MediaType.APPLICATION_JSON
-                        val dataBufferFactory = response.bufferFactory()
-                        val buffer: DataBuffer = dataBufferFactory.wrap(
-                                objectMapper.writeValueAsBytes(ErrorResponse("403", "NET.FOLIVO.MATRIX_FORBIDDEN"))
-                        )
-                        response.writeWith(Mono.just(buffer))
-                                .doOnError { DataBufferUtils.release(buffer) }
-                    }
+                .flatMap { response: ServerHttpResponse ->
+                    response.statusCode = HttpStatus.FORBIDDEN
+                    response.headers.contentType = MediaType.APPLICATION_JSON
+                    val dataBufferFactory = response.bufferFactory()
+                    val buffer: DataBuffer = dataBufferFactory.wrap(
+                        objectMapper.writeValueAsBytes(ErrorResponse("403", "NET.FOLIVO.MATRIX_FORBIDDEN"))
+                    )
+                    response.writeWith(Mono.just(buffer))
+                        .doOnError { DataBufferUtils.release(buffer) }
+                }
         }
-
+        
         http.authorizeExchange()
-                .pathMatchers("/**").authenticated()
-                .and()
-                .csrf().disable()
-                .requestCache().disable()
-                .formLogin().disable()
-                .httpBasic().disable()
-                .logout().disable()
-                .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
-                .exceptionHandling()
+            .pathMatchers("/**").authenticated()
+            .and()
+            .cors().disable()
+            .csrf().disable()
+            .requestCache().disable()
+            .formLogin().disable()
+            .httpBasic().disable()
+            .logout().disable()
+            .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+            .exceptionHandling()
         return http.build()
     }
 

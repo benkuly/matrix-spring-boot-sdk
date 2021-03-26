@@ -61,8 +61,8 @@ publishing {
 
 signing {
     useInMemoryPgpKeys(
-            System.getenv("MAVEN_SIGN_KEY"),
-            System.getenv("MAVEN_SIGN_PASSWORD")
+        System.getenv("MAVEN_SIGN_KEY"),
+        System.getenv("MAVEN_SIGN_PASSWORD")
     )
     sign(publishing.publications["matrix-spring-boot-rest-appservice"])
 }
