@@ -45,13 +45,13 @@ matrix:
     # or only membership changes of users, which are MANAGED by the bridge. Default is ALL (no tracking/saving).
     trackMembership: MANAGED
     # Connection settings to the database (only r2dbc drivers are supported)
-    migration:
-      url: jdbc:h2:file:./testdb/testdb
+    database:
+      url: r2dbc:h2:file:///./testdb/testdb
       username: sa
       password:
     # Connection setting to the database for migration purpose only (only jdbc drivers ar supported)
-    database:
-      url: r2dbc:h2:file:///./testdb/testdb
+    migration:
+      url: jdbc:h2:file:./testdb/testdb
       username: sa
       password:
   client:
@@ -102,14 +102,16 @@ By default, this framework does not persist anything. It is recommended to persi
 #### Appservice mode
 To customize the default behaviour of (and add persistence to) the `APPSERVICE` mode you may override [`DefaultMatrixAppserviceEventService`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/appservice/DefaultMatrixAppserviceEventService.kt),  [`DefaultMatrixAppserviceRoomService`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/appservice/DefaultMatrixAppserviceRoomService.kt) and/or [`DefaultMatrixAppserviceUserService`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/appservice/DefaultMatrixAppserviceUserService.kt) and make them available as bean (annotate it with `@Component`). This allows you to control which and how users and rooms should be created and events are handled.
 
+`matrix-spring-boot-rest-appservice` uses Spring Webflux, which is incompatible with Spring MVC. If your project uses MVC Controllers, you cannot use Appservice mode without extensive tweaking.
+
 ### Handle messages
-Just implement [`MatrixMessageContentHandler`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/handler/MatrixMessageContentHandler.kt) and make it available as bean (annotate it with `@Component`).
+Just implement [`MatrixMessageHandler`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/event/MatrixMessageHandler.kt) and make it available as bean (annotate it with `@Component`).
 This allows you to react and answer to all Message Events from any room, that you joined.
 
 ## Advanced usage
 
 #### Handle all incoming events
-Implement [`MatrixEventHandler`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/handler/MatrixEventHandler.kt) and make it available as bean (annotate it with `@Component`).
+Implement [`MatrixEventHandler`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/event/MatrixEventHandler.kt) and make it available as bean (annotate it with `@Component`).
 This allows you to react to every Event from any room, that you joined.
 
 #### Interact with Homeserver
