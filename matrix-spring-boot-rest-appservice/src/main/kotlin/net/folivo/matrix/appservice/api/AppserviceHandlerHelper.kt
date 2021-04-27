@@ -6,6 +6,7 @@ import net.folivo.matrix.core.api.MatrixServerException
 import net.folivo.matrix.core.model.MatrixId.RoomAliasId
 import net.folivo.matrix.core.model.MatrixId.UserId
 import net.folivo.matrix.restclient.MatrixClient
+import net.folivo.matrix.restclient.api.user.RegisterResponse
 import org.slf4j.LoggerFactory
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
@@ -43,7 +44,7 @@ class AppserviceHandlerHelper(
     }
 
     suspend fun registerUserRequest(userId: UserId) { // TODO not testes yet
-        return webClient
+        webClient
             .post().uri {
                 it.apply {
                     path("/r0/register")
@@ -56,7 +57,8 @@ class AppserviceHandlerHelper(
                 )
             )
             .retrieve()
-            .awaitBody()
+            .awaitBody<RegisterResponse>()
+
     }
 
     suspend fun createManagedRoom(roomAlias: RoomAliasId) {
