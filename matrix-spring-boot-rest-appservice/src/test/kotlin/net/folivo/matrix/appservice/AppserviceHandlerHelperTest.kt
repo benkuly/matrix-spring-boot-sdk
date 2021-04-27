@@ -1,12 +1,7 @@
 package net.folivo.matrix.appservice
 
-import io.mockk.Runs
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.impl.annotations.InjectMockKs
-import io.mockk.impl.annotations.MockK
+import io.mockk.*
 import io.mockk.junit5.MockKExtension
-import io.mockk.just
 import kotlinx.coroutines.runBlocking
 import net.folivo.matrix.appservice.api.AppserviceHandlerHelper
 import net.folivo.matrix.appservice.api.room.AppserviceRoomService
@@ -19,60 +14,61 @@ import net.folivo.matrix.core.api.MatrixServerException
 import net.folivo.matrix.core.model.MatrixId.*
 import net.folivo.matrix.restclient.MatrixClient
 import net.folivo.matrix.restclient.api.rooms.Visibility
-import net.folivo.matrix.restclient.api.user.RegisterResponse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.fail
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
+import org.springframework.web.reactive.function.client.WebClient
 
 @ExtendWith(MockKExtension::class)
 class AppserviceHandlerHelperTest {
 
-    @MockK
-    lateinit var matrixClientMock: MatrixClient
+    val matrixClientMock: MatrixClient = mockk(relaxed = true)
 
-    @MockK
-    lateinit var appserviceUserServiceMock: AppserviceUserService
+    val webClientMock: WebClient = mockk()
 
-    @MockK
-    lateinit var appserviceRoomServiceMock: AppserviceRoomService
+    val appserviceUserServiceMock: AppserviceUserService = mockk()
 
-    @InjectMockKs
-    lateinit var cut: AppserviceHandlerHelper
+    val appserviceRoomServiceMock: AppserviceRoomService = mockk()
+
+    val cut = spyk(
+        AppserviceHandlerHelper(
+            matrixClientMock,
+            webClientMock,
+            appserviceUserServiceMock,
+            appserviceRoomServiceMock
+        )
+    )
 
     @BeforeEach
     fun beforeEach() {
         coEvery { appserviceUserServiceMock.userExistingState(allAny()) }
-                .returns(UserExistingState.CAN_BE_CREATED)
+            .returns(UserExistingState.CAN_BE_CREATED)
         coEvery { appserviceUserServiceMock.getRegisterUserParameter(allAny()) }
-                .returns(RegisterUserParameter())
+            .returns(RegisterUserParameter())
         coEvery { appserviceUserServiceMock.onRegisteredUser(allAny()) } just Runs
         coEvery { appserviceRoomServiceMock.onCreatedRoom(any(), any()) } just Runs
         coEvery { appserviceRoomServiceMock.getCreateRoomParameter(any()) }
-                .returns(CreateRoomParameter())
+            .returns(CreateRoomParameter())
+        coEvery { cut.registerUserRequest(any()) } just Runs
     }
 
     @Test
     fun `should create and save user`() {
         coEvery { appserviceUserServiceMock.getRegisterUserParameter(UserId("user", "server")) }
-                .returns(RegisterUserParameter("someDisplayName"))
-        coEvery { matrixClientMock.userApi.register(allAny()) }
-                .returns(RegisterResponse(UserId("user", "server")))
+            .returns(RegisterUserParameter("someDisplayName"))
         coEvery { matrixClientMock.userApi.setDisplayName(allAny()) } just Runs
 
         runBlocking { cut.registerManagedUser(UserId("user", "server")) }
 
         coVerify {
-            matrixClientMock.userApi.register(
-                    authenticationType = "m.login.application_service",
-                    username = "user"
-            )
+            cut.registerUserRequest(UserId("user", "server"))
             matrixClientMock.userApi.setDisplayName(
-                    UserId("user", "server"),
-                    "someDisplayName",
-                    UserId("user", "server")
+                UserId("user", "server"),
+                "someDisplayName",
+                UserId("user", "server")
             )
             appserviceUserServiceMock.onRegisteredUser(UserId("user", "server"))
         }
@@ -81,15 +77,15 @@ class AppserviceHandlerHelperTest {
     @Test
     fun `should have error when register fails`() {
         coEvery { appserviceUserServiceMock.userExistingState(UserId("user", "server")) }
-                .returns(UserExistingState.CAN_BE_CREATED)
+            .returns(UserExistingState.CAN_BE_CREATED)
 
-        coEvery { matrixClientMock.userApi.register(allAny()) }
-                .throws(
-                        MatrixServerException(
-                                INTERNAL_SERVER_ERROR,
-                                ErrorResponse("500", "M_UNKNOWN")
-                        )
+        coEvery { cut.registerUserRequest(UserId("user", "server")) }
+            .throws(
+                MatrixServerException(
+                    INTERNAL_SERVER_ERROR,
+                    ErrorResponse("500", "M_UNKNOWN")
                 )
+            )
 
         try {
             runBlocking { cut.registerManagedUser(UserId("user", "server")) }
@@ -104,32 +100,26 @@ class AppserviceHandlerHelperTest {
     @Test
     fun `should catch error when register fails due to already existing id`() {
         coEvery { appserviceUserServiceMock.getRegisterUserParameter(UserId("user", "server")) }
-                .returns(RegisterUserParameter("someDisplayName"))
-        coEvery { matrixClientMock.userApi.register(allAny()) }
-                .returns(RegisterResponse(UserId("user", "server")))
+            .returns(RegisterUserParameter("someDisplayName"))
         coEvery { matrixClientMock.userApi.setDisplayName(allAny()) } just Runs
 
-        coEvery { matrixClientMock.userApi.register(allAny()) }
-                .throws(
-                        MatrixServerException(
-                                BAD_REQUEST,
-                                ErrorResponse("M_USER_IN_USE", "Desired user ID is already taken.")
-                        )
+        coEvery { cut.registerUserRequest(UserId("user", "server")) }
+            .throws(
+                MatrixServerException(
+                    BAD_REQUEST,
+                    ErrorResponse("M_USER_IN_USE", "Desired user ID is already taken.")
                 )
+            )
 
         runBlocking {
             cut.registerManagedUser(UserId("user", "server"))
         }
 
         coVerify {
-            matrixClientMock.userApi.register(
-                    authenticationType = "m.login.application_service",
-                    username = "user"
-            )
             matrixClientMock.userApi.setDisplayName(
-                    UserId("user", "server"),
-                    "someDisplayName",
-                    UserId("user", "server")
+                UserId("user", "server"),
+                "someDisplayName",
+                UserId("user", "server")
             )
             appserviceUserServiceMock.onRegisteredUser(UserId("user", "server"))
         }
@@ -138,13 +128,11 @@ class AppserviceHandlerHelperTest {
     @Test
     fun `should have error when saving by user service fails`() {
         coEvery { appserviceUserServiceMock.onRegisteredUser(UserId("user", "server")) }
-                .throws(RuntimeException())
+            .throws(RuntimeException())
         coEvery { appserviceUserServiceMock.getRegisterUserParameter(UserId("user", "server")) }
-                .returns(RegisterUserParameter(displayName = "someDisplayName"))
+            .returns(RegisterUserParameter(displayName = "someDisplayName"))
 
         coEvery { matrixClientMock.userApi.setDisplayName(allAny()) } just Runs
-        coEvery { matrixClientMock.userApi.register(allAny()) }
-                .returns(RegisterResponse(UserId("user", "server")))
 
         try {
             runBlocking { cut.registerManagedUser(UserId("user", "server")) }
@@ -154,9 +142,9 @@ class AppserviceHandlerHelperTest {
 
         coVerify {
             matrixClientMock.userApi.setDisplayName(
-                    UserId("user", "server"),
-                    displayName = "someDisplayName",
-                    asUserId = UserId("user", "server")
+                UserId("user", "server"),
+                displayName = "someDisplayName",
+                asUserId = UserId("user", "server")
             )
         }
     }
@@ -164,9 +152,7 @@ class AppserviceHandlerHelperTest {
     @Test
     fun `should not set displayName if null`() {
         coEvery { appserviceUserServiceMock.getRegisterUserParameter(UserId("user", "server")) }
-                .returns(RegisterUserParameter())
-        coEvery { matrixClientMock.userApi.register(allAny()) }
-                .returns(RegisterResponse(UserId("user", "server")))
+            .returns(RegisterUserParameter())
 
         runBlocking { cut.registerManagedUser(UserId("user", "server")) }
 
@@ -177,9 +163,7 @@ class AppserviceHandlerHelperTest {
     @Test
     fun `should not have error when setting displayName fails`() {
         coEvery { matrixClientMock.userApi.setDisplayName(allAny()) }
-                .throws(MatrixServerException(BAD_REQUEST, ErrorResponse("M_UNKNOWN")))
-        coEvery { matrixClientMock.userApi.register(allAny()) }
-                .returns(RegisterResponse(UserId("user", "server")))
+            .throws(MatrixServerException(BAD_REQUEST, ErrorResponse("M_UNKNOWN")))
 
         runBlocking { cut.registerManagedUser(UserId("user", "server")) }
     }
@@ -187,18 +171,18 @@ class AppserviceHandlerHelperTest {
     @Test
     fun `should create and save room`() {
         coEvery { appserviceRoomServiceMock.getCreateRoomParameter(RoomAliasId("alias", "server")) }
-                .returns(CreateRoomParameter(name = "someName"))
+            .returns(CreateRoomParameter(name = "someName"))
 
         coEvery { matrixClientMock.roomsApi.createRoom(allAny()) }
-                .returns(RoomId("room", "server"))
+            .returns(RoomId("room", "server"))
 
         runBlocking { cut.createManagedRoom(RoomAliasId("alias", "server")) }
 
         coVerify {
             matrixClientMock.roomsApi.createRoom(
-                    roomAliasId = RoomAliasId("alias", "server"),
-                    visibility = Visibility.PUBLIC,
-                    name = "someName"
+                roomAliasId = RoomAliasId("alias", "server"),
+                visibility = Visibility.PUBLIC,
+                name = "someName"
             )
             appserviceRoomServiceMock.onCreatedRoom(RoomAliasId("alias", "server"), any())
         }
@@ -207,12 +191,12 @@ class AppserviceHandlerHelperTest {
     @Test
     fun `should have error when creation fails`() {
         coEvery { matrixClientMock.roomsApi.createRoom(allAny()) }
-                .throws(
-                        MatrixServerException(
-                                INTERNAL_SERVER_ERROR,
-                                ErrorResponse("500", "M_UNKNOWN")
-                        )
+            .throws(
+                MatrixServerException(
+                    INTERNAL_SERVER_ERROR,
+                    ErrorResponse("500", "M_UNKNOWN")
                 )
+            )
 
         try {
             runBlocking { cut.createManagedRoom(RoomAliasId("alias", "server")) }
@@ -227,10 +211,10 @@ class AppserviceHandlerHelperTest {
     @Test
     fun `should have error when saving by room service fails`() {
         coEvery { appserviceRoomServiceMock.onCreatedRoom(RoomAliasId("alias", "server"), any()) }
-                .throws(RuntimeException())
+            .throws(RuntimeException())
 
         coEvery { matrixClientMock.roomsApi.createRoom(allAny()) }
-                .returns(RoomId("room", "server"))
+            .returns(RoomId("room", "server"))
 
         try {
             runBlocking { cut.createManagedRoom(RoomAliasId("alias", "server")) }

@@ -10,6 +10,7 @@ import net.folivo.matrix.appservice.api.room.AppserviceRoomService
 import net.folivo.matrix.appservice.api.user.AppserviceUserService
 import net.folivo.matrix.core.api.ErrorResponse
 import net.folivo.matrix.restclient.MatrixClient
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -28,6 +29,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository
 import org.springframework.web.reactive.config.EnableWebFlux
+import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
 
@@ -42,11 +44,13 @@ class AppserviceAutoconfiguration(private val appserviceProperties: AppservicePr
     @ConditionalOnMissingBean
     fun appserviceHandlerHelper(
         matrixClient: MatrixClient,
+        @Qualifier("matrixWebClient") webClient: WebClient,
         appserviceUserService: AppserviceUserService,
         appserviceRoomService: AppserviceRoomService
     ): AppserviceHandlerHelper {
         return AppserviceHandlerHelper(
             matrixClient,
+            webClient,
             appserviceUserService,
             appserviceRoomService
         )
@@ -101,7 +105,7 @@ class AppserviceAutoconfiguration(private val appserviceProperties: AppservicePr
                         .doOnError { DataBufferUtils.release(buffer) }
                 }
         }
-        
+
         http.authorizeExchange()
             .pathMatchers("/**").authenticated()
             .and()
