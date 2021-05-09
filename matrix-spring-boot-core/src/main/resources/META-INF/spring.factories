@@ -1,2 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  net.folivo.matrix.core.config.MatrixAutoconfiguration

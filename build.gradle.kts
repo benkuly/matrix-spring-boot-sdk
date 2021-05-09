@@ -9,22 +9,26 @@ plugins {
     kotlin("jvm") version Versions.kotlin
     kotlin("kapt") version Versions.kotlin
     kotlin("plugin.spring") version Versions.kotlin apply false
+    `maven-publish`
+    signing
 }
 
 allprojects {
     apply(plugin = "kotlin")
 
     group = "net.folivo"
-    version = "0.4.8"
+    version = "0.5.0"
     java.sourceCompatibility = JavaVersion.VERSION_11
 
     repositories {
         mavenCentral()
+        mavenLocal()
     }
-
-    extra["isReleaseVersion"] = !version.toString().contains('-')
-
 }
+
+inline val Project.isRelease
+    get() = !version.toString().contains('-')
+
 subprojects {
     apply(plugin = "org.springframework.boot")
     apply(plugin = "io.spring.dependency-management")
@@ -83,14 +87,53 @@ subprojects {
         }
     }
 
-    tasks.withType<Sign>().configureEach {
-        onlyIf { project.extra["isReleaseVersion"] as Boolean }
-    }
-}
+    if (!project.name.startsWith("matrix-spring-boot-bot-examples")) {
+        apply(plugin = "maven-publish")
+        apply(plugin = "signing")
 
-dependencies {
-    // Make the root project archives configuration depend on every subproject
-    subprojects.forEach {
-        archives(it)
+        publishing {
+            publications.configureEach {
+                if (this is MavenPublication) {
+                    pom {
+                        name.set(project.name)
+                        description.set(project.description)
+                        url.set("https://github.com/benkuly/matrix-spring-boot-sdk")
+                        licenses {
+                            license {
+                                name.set("GNU Affero General Public License, Version 3.0")
+                                url.set("http://www.gnu.org/licenses/agpl-3.0.de.html")
+                            }
+                        }
+                        developers {
+                            developer {
+                                id.set("benkuly")
+                            }
+                        }
+                        scm {
+                            url.set("https://github.com/benkuly/matrix-spring-boot-sdk")
+                        }
+                    }
+                }
+            }
+            repositories {
+                maven {
+                    name = "OSSRH"
+                    url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+                    credentials {
+                        username = System.getenv("OSSRH_USERNAME")
+                        password = System.getenv("OSSRH_PASSWORD")
+                    }
+                }
+            }
+        }
+
+        signing {
+            isRequired = isRelease
+            useInMemoryPgpKeys(
+                System.getenv("OSSRH_PGP_KEY"),
+                System.getenv("OSSRH_PGP_PASSWORD")
+            )
+            sign(publishing.publications)
+        }
     }
 }
