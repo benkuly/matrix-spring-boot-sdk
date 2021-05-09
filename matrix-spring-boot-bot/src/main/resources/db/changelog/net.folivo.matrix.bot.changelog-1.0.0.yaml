@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: net.folivo.matrix.bot.changelog-1.0.0
+      author: benkuly
+      changes:
+        - dropColumn:
+            tableName: matrix_event_transaction
+            columnName: tnx_id

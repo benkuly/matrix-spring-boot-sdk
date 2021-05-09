@@ -1,3 +1,5 @@
 databaseChangeLog:
   - include:
       file: db/changelog/net.folivo.matrix.bot.changelog-0.4.0.RELEASE.yaml
+  - include:
+      file: db/changelog/net.folivo.matrix.bot.changelog-1.0.0.yaml
