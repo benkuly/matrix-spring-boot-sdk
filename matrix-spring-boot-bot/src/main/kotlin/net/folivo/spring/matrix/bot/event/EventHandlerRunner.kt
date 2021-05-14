@@ -26,6 +26,7 @@ class EventHandlerRunner(
             eventHandler.forEach { handler ->
                 val eventFlow = eventEmitter.events(handler.supports())
                 launch(Dispatchers.Default) {
+                    @Suppress("UNCHECKED_CAST")
                     eventFlow.collect { handler.handleEvent(it as Event<Nothing>) }
                 }
             }

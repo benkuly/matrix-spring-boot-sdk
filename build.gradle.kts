@@ -54,7 +54,6 @@ subprojects {
             exclude(group = "org.mockito", module = "mockito-core")
             exclude(group = "org.mockito", module = "mockito-junit-jupiter")
         }
-
     }
 
     the<DependencyManagementExtension>().apply {
@@ -87,17 +86,19 @@ subprojects {
         }
     }
 
-    if (!project.name.startsWith("matrix-spring-boot-bot-examples")) {
+    val projectParent = parent
+    if (project.name != "examples" && (projectParent == null || projectParent.name != "examples")) {
         apply(plugin = "maven-publish")
         apply(plugin = "signing")
 
         publishing {
-            publications.configureEach {
-                if (this is MavenPublication) {
+            publications {
+                create<MavenPublication>(name) {
                     pom {
+                        from(components["java"])
                         name.set(project.name)
                         description.set(project.description)
-                        url.set("https://github.com/benkuly/matrix-spring-boot-sdk")
+                        url.set("https://gitlab.com/benkuly/matrix-spring-boot-sdk")
                         licenses {
                             license {
                                 name.set("GNU Affero General Public License, Version 3.0")
@@ -110,7 +111,7 @@ subprojects {
                             }
                         }
                         scm {
-                            url.set("https://github.com/benkuly/matrix-spring-boot-sdk")
+                            url.set("https://gitlab.com/benkuly/matrix-spring-boot-sdk")
                         }
                     }
                 }
