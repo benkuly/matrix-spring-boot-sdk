@@ -1,5 +1,3 @@
-description = "Spring Boot Starter for [Matrix] bots and appservices based on Trixnity."
-
 dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")

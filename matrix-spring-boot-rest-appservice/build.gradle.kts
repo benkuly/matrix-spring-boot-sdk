@@ -1,5 +1,3 @@
-description = "Spring Boot Starter for [Matrix] appservices based on Trixnity."
-
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
 

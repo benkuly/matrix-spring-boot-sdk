@@ -93,11 +93,12 @@ subprojects {
 
         publishing {
             publications {
-                create<MavenPublication>(name) {
+                create<MavenPublication>(project.name) {
                     pom {
                         from(components["java"])
                         name.set(project.name)
-                        description.set(project.description)
+                        println(project.description)
+                        description.set("Spring Boot Starter for [Matrix] bots, clients and appservices based on Trixnity.")
                         url.set("https://gitlab.com/benkuly/matrix-spring-boot-sdk")
                         licenses {
                             license {
