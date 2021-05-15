@@ -2,15 +2,13 @@
 
 # matrix-spring-boot-sdk
 
-This project contains tools to use [matrix](https://matrix.org/) with Spring Boot and is written in Kotlin. It should
-also work with Java, but it hasn't been tested yet. It uses [Spring Reactive](https://spring.io/reactive)
-and [Reactor](https://projectreactor.io/) to create unblocking applications.
+This project contains tools to use [Matrix](https://matrix.org/) with Spring Boot and is based
+on [Trixnity](https://gitlab.com/benkuly/trixnity).
 
-* [matrix-spring-boot-core](./matrix-spring-boot-core) contains the matrix event model and some shared code.
-* [matrix-spring-boot-rest-client](./matrix-spring-boot-rest-client) to interact with the matrix-api on a low level.
-* [matrix-spring-boot-rest-appservice](./matrix-spring-boot-rest-appservice) to create an appservice on a low level.
+* [matrix-spring-boot-rest-client](./matrix-spring-boot-rest-client) creates a Trixnity MatrixClient for you.
+* [matrix-spring-boot-rest-appservice](./matrix-spring-boot-rest-appservice) creates a Trixnity Appservice for you.
 * [matrix-spring-boot-bot](./matrix-spring-boot-bot) to create bots and appservices easily.
-* [matrix-spring-boot-bot-examples](./matrix-spring-boot-bot-examples) contains examples how to create bots.
+* [examples](./examples) contains examples how to create bots.
 
 The most developers only need to use [matrix-spring-boot-bot](./matrix-spring-boot-bot), which contains the other
 projects. Therefore, this documentation focuses on this sub-project.
@@ -91,63 +89,68 @@ for more information about the properties defined under `appservice`.
 ### Persistence
 
 The bot uses JDBC for migrations within the database (via liquibase, which doesn't support R2DBC yet) and R2DBC for
-standard database operations. Therefore, you need to integrate both JDBC and R2DBC into you project.
+unblocking database operations. Therefore, you need to integrate both JDBC and R2DBC into you project.
 
 ### Bot modes
 
-There are two modes how you can run your bot. The `CLIENT` mode simply acts as a matrix user client. This allows you to
-create bots without an additional configuration on the Homerserver. The `APPSERVICE` mode acts as a matrix appservice,
-which allows more customized bots.
+You can run your bot in two modes.
 
 #### Client mode
 
-The `CLIENT` mode does sync endless to the Homeserver as soon as you start your application. To manually stop and start
-the sync to the Homeserver you can
-autowire [`MatrixClientBot`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/client/MatrixClientBot.kt)
-
-By default, this framework does not persist anything. It is recommended to persist the sync batch token by
-implementing [`SyncBatchTokenService`](./matrix-spring-boot-rest-client/src/main/kotlin/net/folivo/matrix/restclient/api/sync/SyncBatchTokenService.kt)
-.
+The `CLIENT` mode simply acts as a matrix client. This allows you to create bots without any additional configuration on
+the Homerserver. It does does sync endless to the Homeserver as soon as you start your application.
 
 #### Appservice mode
 
-To customize the default behaviour of (and add persistence to) the `APPSERVICE` mode you may
-override [`DefaultMatrixAppserviceEventService`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/appservice/DefaultMatrixAppserviceEventService.kt)
-,  [`DefaultMatrixAppserviceRoomService`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/appservice/DefaultMatrixAppserviceRoomService.kt)
-and/or [`DefaultMatrixAppserviceUserService`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/appservice/DefaultMatrixAppserviceUserService.kt)
-and make them available as bean (annotate it with `@Component`). This allows you to control which and how users and
-rooms should be created and events are handled.
+The `APPSERVICE` mode acts as a matrix appservice, which allows more customized bots. To customize the default behaviour
+of the `APPSERVICE` mode you may override `DefaultAppserviceEventService`,  `DefaultAppserviceRoomService`
+and/or `DefaultAppserviceUserService` and make them available as bean (annotate it with `@Component`). This allows you
+to control which and how users and rooms should be created and events are handled.
 
-`matrix-spring-boot-rest-appservice` uses Spring Webflux, which is incompatible with Spring MVC. If your project uses
-MVC Controllers, you cannot use Appservice mode without extensive tweaking.
+### Handle events
 
-### Handle messages
+#### MessageEvents
 
-Just
-implement [`MatrixMessageHandler`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/event/MatrixMessageHandler.kt)
-and make it available as bean (annotate it with `@Component`). This allows you to react and answer to all Message Events
-from any room, that you joined.
+Just implement `MatrixMessageHandler` and make it available as bean (annotate it with `@Component`). This allows you to
+react and answer to all Message Events from any room, that you joined.
 
-## Advanced usage
+```kotlin
+@Component
+class PingHandler : MatrixMessageHandler {
+    override suspend fun handleMessage(content: MessageEventContent, context: MessageContext) {
+        if (content is TextMessageEventContent && content.body.contains("ping")) {
+            context.answer("pong")
+        }
+    }
+}
+```
 
 #### Handle all incoming events
 
-Implement [`MatrixEventHandler`](./matrix-spring-boot-bot/src/main/kotlin/net/folivo/matrix/bot/event/MatrixEventHandler.kt)
-and make it available as bean (annotate it with `@Component`). This allows you to react to every Event from any room,
-that you joined.
+Implement `MatrixEventHandler` and make it available as bean (annotate it with `@Component`). This allows you to react
+to every Event from any room, that you joined.
 
-#### Interact with Homeserver
+```kotlin
+class MemberEventHandler : MatrixEventHandler<MemberEventContent> {
+    override suspend fun supports(): KClass<MemberEventContent> {
+        return MemberEventContent::class
+    }
+    override suspend fun handleEvent(event: Event<out MemberEventContent>) {
+        if (event is Event.StateEvent) {
+            println("${event.stateKey} did ${event.content.membership} in room ${event.roomId}")
+        }
+    }
+}
+```
 
-A Bean of
-type [`MatrixClient`](./matrix-spring-boot-rest-client/src/main/kotlin/net/folivo/matrix/restclient/MatrixClient.kt) is
-created, which can be autowired and used to interact with the matrix API. Currently, not all endpoints of
-the [Client-Server API](https://matrix.org/docs/spec/client_server/r0.6.0) are implemented (let me know if something you
-need is missing).
+### Interact with Homeserver
+
+A Bean of type `MatrixClient` from Trixnity is created, which can be autowired and used to interact with the Matrix
+Client-Server-API.
 
 ## Examples
 
-The module [matrix-spring-boot-bot-examples](./matrix-spring-boot-bot-examples) contains some examples how to use this
-framework in practice.
+The module [examples](./examples) contains some examples how to use this framework in practice.
 
 Copy the `application.yml.example` file and save it at the same place as `application.yml`. You eventually need to
-modify the matrix-properties in that file.
+modify the properties in that file.
