@@ -17,7 +17,7 @@ allprojects {
     apply(plugin = "kotlin")
 
     group = "net.folivo"
-    version = "0.5.1"
+    version = "0.5.2"
     java.sourceCompatibility = JavaVersion.VERSION_11
 
     repositories {
@@ -97,7 +97,6 @@ subprojects {
                     pom {
                         from(components["java"])
                         name.set(project.name)
-                        println(project.description)
                         description.set("Spring Boot Starter for [Matrix] bots, clients and appservices based on Trixnity.")
                         url.set("https://gitlab.com/benkuly/matrix-spring-boot-sdk")
                         licenses {

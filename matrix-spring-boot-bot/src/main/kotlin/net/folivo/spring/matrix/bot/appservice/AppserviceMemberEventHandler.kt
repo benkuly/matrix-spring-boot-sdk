@@ -20,7 +20,7 @@ class AppserviceMemberEventHandler(
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    override suspend fun supports(): KClass<MemberEventContent> {
+    override fun supports(): KClass<MemberEventContent> {
         return MemberEventContent::class
     }
 

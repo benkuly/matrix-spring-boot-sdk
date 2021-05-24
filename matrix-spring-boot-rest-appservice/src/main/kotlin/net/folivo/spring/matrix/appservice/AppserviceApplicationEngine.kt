@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
+import kotlin.concurrent.thread
 
 class AppserviceApplicationEngine(
     properties: MatrixAppserviceConfigurationProperties,
@@ -25,8 +26,10 @@ class AppserviceApplicationEngine(
 
     @EventListener(ApplicationReadyEvent::class)
     fun startApplicationEngine() {
-        LOG.debug("starting appservice webserver")
-        engine.start(wait = true)
+        thread {
+            LOG.debug("starting appservice webserver")
+            engine.start(wait = true)
+        }
     }
 
     override fun destroy() {

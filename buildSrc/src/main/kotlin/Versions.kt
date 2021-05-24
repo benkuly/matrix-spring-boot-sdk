@@ -6,6 +6,6 @@ object Versions {
     const val springBoot = "2.4.5" // https://spring.io/projects/spring-boot
     const val springDependencyManagement =
         "1.0.11.RELEASE" // https://github.com/spring-gradle-plugins/dependency-management-plugin/releases
-    const val trixnity = "0.1.4"
+    const val trixnity = "0.1.5"
     const val springMockk = "3.0.1" // https://github.com/Ninja-Squad/springmockk/releases
 }

@@ -15,7 +15,7 @@ class MessageEventHandler(
         private val LOG = LoggerFactory.getLogger(this::class.java)
     }
 
-    override suspend fun supports(): KClass<MessageEventContent> {
+    override fun supports(): KClass<MessageEventContent> {
         return MessageEventContent::class
     }
 

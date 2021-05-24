@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
+import kotlin.concurrent.thread
 
 class MatrixClientSyncRunner(
     private val matrixClient: MatrixClient,
@@ -18,9 +19,11 @@ class MatrixClientSyncRunner(
 
     @EventListener(ApplicationReadyEvent::class)
     fun startClientJob() {
-        runBlocking {
-            LOG.debug("starting sync")
-            matrixClient.sync.start()
+        thread {
+            runBlocking {
+                LOG.debug("starting sync")
+                matrixClient.sync.start(wait = true)
+            }
         }
     }
 

@@ -14,7 +14,7 @@ class MatrixClientSyncRunnerTest : DescribeSpec({
     describe(MatrixClientSyncRunner::startClientJob.name) {
         it("should start sync") {
             cut.startClientJob()
-            coVerify { matrixClientMock.sync.start() }
+            coVerify { matrixClientMock.sync.start(wait = true) }
             cut.destroy()
         }
     }

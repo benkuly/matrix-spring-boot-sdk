@@ -7,7 +7,7 @@ import kotlin.reflect.KClass
 
 interface MatrixEventHandler<T : EventContent> {
 
-    suspend fun supports(): KClass<T>
+    fun supports(): KClass<T>
 
     suspend fun handleEvent(event: Event<out T>)
 }

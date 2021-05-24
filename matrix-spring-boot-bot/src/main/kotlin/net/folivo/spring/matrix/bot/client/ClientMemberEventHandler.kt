@@ -11,7 +11,7 @@ class ClientMemberEventHandler(
     private val membershipChangeHandler: MembershipChangeHandler
 ) : MatrixEventHandler<MemberEventContent> {
 
-    override suspend fun supports(): KClass<MemberEventContent> {
+    override fun supports(): KClass<MemberEventContent> {
         return MemberEventContent::class
     }
 
